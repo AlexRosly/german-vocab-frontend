@@ -54,3 +54,143 @@ h4{font:700 15px Manrope,sans-serif;margin-bottom:7px}
 footer{text-align:center;padding:26px 0 0;color:#98a29b;font-size:11px}
 @media(max-width:760px){.shell{padding:20px 15px}.intro{padding:34px 0 25px;align-items:flex-start}.summary-card{min-width:105px;padding:15px;border-radius:16px}.summary-card strong{font-size:32px} .content-grid{grid-template-columns:1fr}.panel,.word-section{padding:19px}.status{max-width:150px;text-align:right;line-height:1.35}.intro-copy{font-size:13px}}
 @media(max-width:420px){.intro{display:block}.summary-card{margin-top:20px;display:inline-flex;min-width:120px}h2{font-size:39px}.status{font-size:10px;padding:7px 9px}}
+
+.word-extra {
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+}
+
+.form-panel textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  font: inherit;
+}
+
+.example-form {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 12px;
+  background: #f7faf6;
+  border: 1px dashed #dce7dc;
+  border-radius: 12px;
+}
+.example-form label {
+  font-size: 11px;
+}
+.example-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 58px;
+  border: 1px solid #e1e7e0;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 11px;
+  color: var(--ink);
+  outline: none;
+  font: 12px/1.5 'DM Sans', sans-serif;
+}
+.example-form textarea:focus {
+  border-color: #67a889;
+  box-shadow: 0 0 0 3px #e6f4eb;
+}
+.example-form-actions {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.example-form-actions button {
+  justify-content: center;
+}
+
+@media (max-width: 520px) {
+  .example-item {
+    flex-direction: column;
+  }
+  .example-actions {
+    flex-direction: row;
+    width: 100%;
+  }
+  .example-actions button {
+    flex: 1;
+  }
+}
+
+/* Улучшение блока примеров */
+.examples-section {
+  width: 100%;
+  min-width: 0;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #e1e9e0;
+}
+
+.example-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+button.small-button {
+  min-height: 30px;
+  padding: 0 10px;
+  font-size: 11px;
+  border-radius: 8px;
+  margin: 0;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.example-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px;
+  background: #f7faf6;
+  border: 1px dashed #dce7dc;
+  border-radius: 13px;
+}
+
+.example-form textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 72px;
+  border: 1px solid #e1e7e0;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 11px;
+  color: var(--ink);
+  font: 12px/1.5 'DM Sans', sans-serif;
+}
+
+.example-form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .example-form {
+    grid-template-columns: 1fr;
+  }
+
+  .example-form-actions {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .example-item {
+    flex-direction: column;
+  }
+
+  .example-actions {
+    width: 100%;
+  }
+}

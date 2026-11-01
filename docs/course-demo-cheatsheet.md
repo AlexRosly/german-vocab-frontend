@@ -40,7 +40,8 @@ Word — общая карточка, UserWord — связь с личным с
 
 **Есть:** аккаунты, личный словарь, библиотека, поиск/фильтры, примеры,
 озвучивание при поддержке браузера, переводы ru/de/en/uk, роли/модерация,
-персональное повторение, основная статистика и экран истории; интерфейс
+персональное повторение, основная статистика, экран истории и управление
+активными входами (после Deploy обоих сервисов); интерфейс
 ru/de/en/uk с независимым языком переводов. История доступна после Deploy
 backend и frontend. Настройки позволяют сохранить ежедневную цель и часовой
 пояс после отдельной миграции и Deploy обоих сервисов.
@@ -62,6 +63,7 @@ Man kann ein Tagesziel und eine Zeitzone im Konto speichern.
 Im Verlauf kann man die gespeicherten Übungen und Antworten ansehen.
 Die Oberfläche ist auf Deutsch, Russisch, Englisch und Ukrainisch verfügbar.
 Die Sprache der Übersetzungen kann man unabhängig davon wählen.
+In den Einstellungen kann man andere Anmeldungen oder alle Anmeldungen beenden.
 Als Nächstes möchte ich einen Import und eine Übersicht der Verbformen ergänzen. Das Projekt ist noch in Entwicklung.
 
 ## Перед показом

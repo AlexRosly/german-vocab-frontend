@@ -6,6 +6,7 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { apiClient, apiFetch, fetchDueWords, fetchNewWords } from "@/lib/api";
 import type { AuthUser } from "@/lib/api-client";
 import { canEditWord, displayTranslation, publicationLabel } from "@/lib/word-view";
+import { AccountSessionsPanel } from "./account-sessions-panel";
 import { DailyGoalCard, StudySettingsPanel } from "./study-settings-panel";
 import { validSettings } from "@/lib/study-settings-client";
 import { StudyHistoryPanel } from "./study-history-panel";
@@ -1026,7 +1027,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
           disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("settings")}>{t("Настройки")}</button>
       </nav>
 
-      {activeTab === "settings" && <StudySettingsPanel key={user.id} userId={user.id} onSaved={() => setSettingsVersion((value) => value + 1)} />}
+      {activeTab === "settings" && <><StudySettingsPanel key={user.id} userId={user.id} onSaved={() => setSettingsVersion((value) => value + 1)} /><AccountSessionsPanel key={`sessions-${user.id}`} userId={user.id} /></>}
 
       {activeTab === "history" && <StudyHistoryPanel userId={user.id} language={user.translationLanguage} version={historyVersion} />}
 

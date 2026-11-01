@@ -1,5 +1,130 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Активные входы": {
+    "de": "Aktive Anmeldungen",
+    "en": "Active sign-ins",
+    "uk": "Активні входи"
+  },
+  "Обновить список входов": {
+    "de": "Anmeldungen aktualisieren",
+    "en": "Refresh sign-ins",
+    "uk": "Оновити список входів"
+  },
+  "Здесь входы в ваш аккаунт. Завершённый вход потребует повторной авторизации.": {
+    "de": "Hier siehst du Anmeldungen bei deinem Konto. Nach dem Beenden ist eine erneute Anmeldung nötig.",
+    "en": "These are sign-ins to your account. Ending one requires signing in again.",
+    "uk": "Тут входи у ваш акаунт. Після завершення потрібно буде увійти знову."
+  },
+  "Обновление доступа не означает активность человека. Названия устройств и IP пока не сохраняются.": {
+    "de": "Eine Zugriffsaktualisierung bedeutet keine Benutzeraktivität. Gerätenamen und IP-Adressen werden noch nicht gespeichert.",
+    "en": "A token refresh does not mean someone was active. Device names and IP addresses are not stored yet.",
+    "uk": "Оновлення доступу не означає активність людини. Назви пристроїв та IP поки не зберігаються."
+  },
+  "Загружаем активные входы…": {
+    "de": "Aktive Anmeldungen werden geladen…",
+    "en": "Loading active sign-ins…",
+    "uk": "Завантажуємо активні входи…"
+  },
+  "Этот вход": {
+    "de": "Diese Anmeldung",
+    "en": "This sign-in",
+    "uk": "Цей вхід"
+  },
+  "Другой вход {number}": {
+    "de": "Andere Anmeldung {number}",
+    "en": "Other sign-in {number}",
+    "uk": "Інший вхід {number}"
+  },
+  "Создан: {date}": {
+    "de": "Erstellt: {date}",
+    "en": "Created: {date}",
+    "uk": "Створено: {date}"
+  },
+  "Действует до: {date}": {
+    "de": "Gültig bis: {date}",
+    "en": "Valid until: {date}",
+    "uk": "Діє до: {date}"
+  },
+  "Обновление доступа: {date}": {
+    "de": "Zugriff aktualisiert: {date}",
+    "en": "Token refreshed: {date}",
+    "uk": "Оновлення доступу: {date}"
+  },
+  "Завершить этот вход": {
+    "de": "Diese Anmeldung beenden",
+    "en": "End this sign-in",
+    "uk": "Завершити цей вхід"
+  },
+  "Для выхода здесь используйте кнопку «Выйти» вверху страницы.": {
+    "de": "Zum Abmelden hier verwende die Schaltfläche „Abmelden“ oben auf der Seite.",
+    "en": "To sign out here, use the Sign out button at the top of the page.",
+    "uk": "Щоб вийти тут, скористайтеся кнопкою «Вийти» вгорі сторінки."
+  },
+  "Показаны последние 100 других входов. Чтобы завершить все, используйте «Выйти на всех устройствах».": {
+    "de": "Die letzten 100 anderen Anmeldungen werden angezeigt. Mit „Überall abmelden“ kannst du alle beenden.",
+    "en": "The latest 100 other sign-ins are shown. Use Sign out everywhere to end all of them.",
+    "uk": "Показано останні 100 інших входів. Щоб завершити всі, натисніть «Вийти на всіх пристроях»."
+  },
+  "Выйти на всех устройствах": {
+    "de": "Überall abmelden",
+    "en": "Sign out everywhere",
+    "uk": "Вийти на всіх пристроях"
+  },
+  "Подтверждение выхода": {
+    "de": "Abmelden bestätigen",
+    "en": "Confirm sign-out",
+    "uk": "Підтвердження виходу"
+  },
+  "Завершить все входы, включая текущий? Потребуется войти снова.": {
+    "de": "Alle Anmeldungen einschließlich dieser beenden? Du musst dich erneut anmelden.",
+    "en": "End all sign-ins, including this one? You will need to sign in again.",
+    "uk": "Завершити всі входи, включно з поточним? Потрібно буде увійти знову."
+  },
+  "Завершить выбранный вход? На нём потребуется войти снова.": {
+    "de": "Die ausgewählte Anmeldung beenden? Dort ist eine erneute Anmeldung nötig.",
+    "en": "End the selected sign-in? It will require signing in again.",
+    "uk": "Завершити вибраний вхід? Для нього потрібно буде увійти знову."
+  },
+  "Подтвердить выход": {
+    "de": "Abmelden bestätigen",
+    "en": "Confirm sign-out",
+    "uk": "Підтвердити вихід"
+  },
+  "Завершаем вход…": {
+    "de": "Anmeldung wird beendet…",
+    "en": "Ending sign-in…",
+    "uk": "Завершуємо вхід…"
+  },
+  "Вход завершён.": {
+    "de": "Anmeldung beendet.",
+    "en": "Sign-in ended.",
+    "uk": "Вхід завершено."
+  },
+  "Не удалось загрузить активные входы": {
+    "de": "Aktive Anmeldungen konnten nicht geladen werden",
+    "en": "Could not load active sign-ins",
+    "uk": "Не вдалося завантажити активні входи"
+  },
+  "Некорректный ответ активных входов": {
+    "de": "Ungültige Antwort zu aktiven Anmeldungen",
+    "en": "Invalid active sign-ins response",
+    "uk": "Некоректна відповідь активних входів"
+  },
+  "Некорректный идентификатор входа": {
+    "de": "Ungültige Anmeldekennung",
+    "en": "Invalid sign-in identifier",
+    "uk": "Некоректний ідентифікатор входу"
+  },
+  "Не удалось завершить вход": {
+    "de": "Anmeldung konnte nicht beendet werden",
+    "en": "Could not end sign-in",
+    "uk": "Не вдалося завершити вхід"
+  },
+  "Не удалось выйти на всех устройствах. Повторите попытку.": {
+    "de": "Abmelden auf allen Geräten fehlgeschlagen. Versuche es erneut.",
+    "en": "Could not sign out everywhere. Try again.",
+    "uk": "Не вдалося вийти на всіх пристроях. Спробуйте ще раз."
+  },
   "Настройки": {
     "de": "Einstellungen",
     "en": "Settings",

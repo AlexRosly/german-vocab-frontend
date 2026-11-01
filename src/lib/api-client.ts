@@ -127,6 +127,41 @@ export class ApiClient {
     return work;
   }
 
+  logoutAll(): Promise<void> {
+    if (this.logoutPromise) return this.logoutPromise;
+    const owner = this.snapshot.user?.id;
+    if (!owner) return Promise.reject(new SessionChangedError());
+    const generation = ++this.generation;
+    const work = this.enqueueAuth(async () => {
+      this.checkGeneration(generation);
+      const send = () => this.raw("/auth/logout-all", { method: "POST", headers: { Authorization: `Bearer ${this.accessToken ?? ""}` } });
+      let response = await send();
+      if (response.status === 401) {
+        // Refresh inside the same auth lock; never queue another lock recursively.
+        const refresh = await this.raw("/auth/refresh", { method: "POST" });
+        this.checkGeneration(generation);
+        if (!refresh.ok) {
+          if (refresh.status === 401) { this.accessToken = null; this.publish(null); this.onAuthMutation?.(); }
+          throw await this.errorFrom(refresh);
+        }
+        const result = await this.readAuth(refresh);
+        this.checkGeneration(generation);
+        if (result.user.id !== owner) { this.accessToken = null; this.publish(null); this.onAuthMutation?.(); throw new SessionChangedError(); }
+        this.accessToken = result.accessToken;
+        response = await send();
+      }
+      if (response.status !== 204) {
+        if (response.status === 401 && this.generation === generation) { this.accessToken = null; this.publish(null); this.onAuthMutation?.(); }
+        throw await this.errorFrom(response);
+      }
+      this.onAuthMutation?.();
+      if (this.generation === generation) { this.accessToken = null; this.publish(null); }
+    });
+    this.logoutPromise = work;
+    void work.finally(() => { if (this.logoutPromise === work) this.logoutPromise = null; }).catch(() => {});
+    return work;
+  }
+
   async request(path: string, init: RequestInit = {}): Promise<Response> {
     this.url(path);
     if (this.logoutPromise) throw new SessionChangedError();

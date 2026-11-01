@@ -6,6 +6,8 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { apiClient, apiFetch, fetchDueWords, fetchNewWords } from "@/lib/api";
 import type { AuthUser } from "@/lib/api-client";
 import { canEditWord, displayTranslation, publicationLabel } from "@/lib/word-view";
+import { DailyGoalCard, StudySettingsPanel } from "./study-settings-panel";
+import { validSettings } from "@/lib/study-settings-client";
 import { StudyHistoryPanel } from "./study-history-panel";
 import { LibraryPanel } from "./library-panel";
 import { TranslationLanguagePicker } from "./translation-language-picker";
@@ -57,6 +59,9 @@ type StudyProgress = {
   needsReviewAnswers: number;
   words: WordProgressItem[];
   studiedToday: number;
+  timeZone: string;
+  dailyGoal: number;
+  studyDate: string;
   dueCount: number;
 };
 
@@ -137,10 +142,12 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const [moderationBusy, setModerationBusy] = useState(false);
   const [translationTarget, setTranslationTarget] = useState<{ id: string; german: string } | null>(null);
   const [translationVersion, setTranslationVersion] = useState(0);
+  const [settingsVersion, setSettingsVersion] = useState(0);
+  const progressRequest = useRef(0);
   const [historyVersion, setHistoryVersion] = useState(0);
   const [dictionaryLoading, setDictionaryLoading] = useState(true);
 
-  const [activeTab, setActiveTab] = useState<"dictionary" | "progress" | "history" | "library" | "moderation">(
+  const [activeTab, setActiveTab] = useState<"dictionary" | "progress" | "history" | "settings" | "library" | "moderation">(
     "dictionary",
   );
 
@@ -824,7 +831,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       return 0;
     });
 
-  async function loadStudyProgress() {
+  const loadStudyProgress = useCallback(async () => {
+    const request = ++progressRequest.current;
     setProgressLoading(true);
     setProgressError("");
 
@@ -841,15 +849,27 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       }
 
       const data: StudyProgress = await response.json();
-      setStudyProgress(data);
+      if (!validSettings(data) || !Number.isInteger(data.studiedToday) || data.studiedToday < 0 ||
+        typeof data.studyDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(data.studyDate)) {
+        throw new Error("Не удалось загрузить статистику обучения");
+      }
+      if (request === progressRequest.current) setStudyProgress(data);
     } catch (error) {
-      setProgressError(
+      if (request === progressRequest.current) setProgressError(
         error instanceof Error ? safeErrorMessage(error) : "Ошибка загрузки статистики",
       );
     } finally {
-      setProgressLoading(false);
+      if (request === progressRequest.current) setProgressLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    void loadStudyProgress();
+    const refresh = () => { if (document.visibilityState === "visible") void loadStudyProgress(); };
+    const timer = window.setInterval(refresh, 60_000);
+    document.addEventListener("visibilitychange", refresh);
+    return () => { window.clearInterval(timer); document.removeEventListener("visibilitychange", refresh); progressRequest.current += 1; };
+  }, [user.id, settingsVersion, loadStudyProgress]);
 
   async function loadDueWords(): Promise<Word[]> {
     try {
@@ -1002,7 +1022,11 @@ export function WordDashboard({ user }: { user: AuthUser }) {
         {user.role === "ADMIN" && <button type="button"
           className={activeTab === "moderation" ? "dashboard-tab active" : "dashboard-tab"}
           disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("moderation")}>{t("Модерация")}</button>}
+        <button type="button" className={activeTab === "settings" ? "dashboard-tab active" : "dashboard-tab"}
+          disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("settings")}>{t("Настройки")}</button>
       </nav>
+
+      {activeTab === "settings" && <StudySettingsPanel key={user.id} userId={user.id} onSaved={() => setSettingsVersion((value) => value + 1)} />}
 
       {activeTab === "history" && <StudyHistoryPanel userId={user.id} language={user.translationLanguage} version={historyVersion} />}
 
@@ -1143,6 +1167,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                     <span>{t("Слов с ответом «Знаю»")}</span>
                   </div>
                 </div>
+
+                <DailyGoalCard progress={studyProgress} loading={progressLoading} error={progressError} onRetry={() => void loadStudyProgress()} />
 
                 <div className="progress-overview">
                   <div className="progress-overview-heading">
@@ -1896,33 +1922,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                 </button> */}
                 </div>
 
-                <div className="daily-goal">
-                  <h3>{t("Цель на сегодня")}</h3>
-                  <p>{t("Изучено слов в этой тренировке:")}{" "}
-                    <strong>{studyWords.length}</strong>{" "}{t("из 10")}</p>
-
-                  <div
-                    className="daily-goal-track"
-                    role="progressbar"
-                    aria-label={t("Прогресс тренировки")}
-                    aria-valuemin={0}
-                    aria-valuemax={10}
-                    aria-valuenow={Math.min(studyWords.length, 10)}
-                  >
-                    <div
-                      className="daily-goal-fill"
-                      style={{
-                        width: `${Math.min(studyWords.length / 10, 1) * 100}%`,
-                      }}
-                    />
-                  </div>
-
-                  <p>
-                    {studyWords.length >= 10
-                      ? t("Цель достигнута!")
-                      : t("До цели осталось: {count}", { count: count(10 - studyWords.length) })}
-                  </p>
-                </div>
+                <DailyGoalCard progress={studyProgress} loading={progressLoading} error={progressError} onRetry={() => void loadStudyProgress()} />
               </section>
             )}
 

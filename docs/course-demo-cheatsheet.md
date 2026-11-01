@@ -42,10 +42,11 @@ Word — общая карточка, UserWord — связь с личным с
 озвучивание при поддержке браузера, переводы ru/de/en/uk, роли/модерация,
 персональное повторение, основная статистика и экран истории; интерфейс
 ru/de/en/uk с независимым языком переводов. История доступна после Deploy
-backend и frontend.
+backend и frontend. Настройки позволяют сохранить ежедневную цель и часовой
+пояс после отдельной миграции и Deploy обоих сервисов.
 
-**Дальше:** профиль/часовой пояс,
-ежедневная цель, восстановление пароля, импорт/экспорт, справочник глаголов,
+**Дальше:** полноценный профиль,
+восстановление пароля, импорт/экспорт, справочник глаголов,
 расширенные режимы повторения; позже PWA, изображения, ИИ и подписка.
 Браузерные mock-проверки не заменяют проверку реального демо-сервера.
 
@@ -57,6 +58,7 @@ Die Artikel haben feste Farben. Man kann Wörter, Beispiele und Übersetzungen
 hinzufügen. Neue Wörter werden vor der Veröffentlichung geprüft.
 Beim Lernen wählt man: „Ich weiß es“ oder „Ich muss es wiederholen“.
 Die App plant die nächste Wiederholung.
+Man kann ein Tagesziel und eine Zeitzone im Konto speichern.
 Im Verlauf kann man die gespeicherten Übungen und Antworten ansehen.
 Die Oberfläche ist auf Deutsch, Russisch, Englisch und Ukrainisch verfügbar.
 Die Sprache der Übersetzungen kann man unabhängig davon wählen.

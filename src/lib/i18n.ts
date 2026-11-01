@@ -1,5 +1,105 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Настройки": {
+    "de": "Einstellungen",
+    "en": "Settings",
+    "uk": "Налаштування"
+  },
+  "Настройки обучения": {
+    "de": "Lerneinstellungen",
+    "en": "Study settings",
+    "uk": "Налаштування навчання"
+  },
+  "Цель и часовой пояс сохраняются в вашем аккаунте.": {
+    "de": "Ziel und Zeitzone werden in deinem Konto gespeichert.",
+    "en": "Your goal and time zone are saved in your account.",
+    "uk": "Ціль і часовий пояс зберігаються у вашому акаунті."
+  },
+  "Загружаем настройки…": {
+    "de": "Einstellungen werden geladen…",
+    "en": "Loading settings…",
+    "uk": "Завантажуємо налаштування…"
+  },
+  "Ежедневная цель, слов": {
+    "de": "Tagesziel in Wörtern",
+    "en": "Daily word goal",
+    "uk": "Щоденна ціль, слів"
+  },
+  "Часовой пояс": {
+    "de": "Zeitzone",
+    "en": "Time zone",
+    "uk": "Часовий пояс"
+  },
+  "Использовать часовой пояс браузера": {
+    "de": "Zeitzone des Browsers verwenden",
+    "en": "Use browser time zone",
+    "uk": "Використати часовий пояс браузера"
+  },
+  "Например, Europe/Berlin. Сутки учитывают переход на летнее и зимнее время.": {
+    "de": "Zum Beispiel Europe/Berlin. Tage berücksichtigen die Sommer- und Winterzeit.",
+    "en": "For example, Europe/Berlin. Days account for daylight saving time.",
+    "uk": "Наприклад, Europe/Berlin. Доба враховує перехід на літній і зимовий час."
+  },
+  "Цель считает разные слова текущего словаря, изученные за день. Повтор одного слова в тот же день не увеличивает цель.": {
+    "de": "Das Ziel zählt verschiedene Wörter deines aktuellen Wörterbuchs pro Tag. Dasselbe Wort zählt am selben Tag nur einmal.",
+    "en": "The goal counts distinct words from your current dictionary studied during the day. Repeating a word that day does not increase the count.",
+    "uk": "Ціль рахує різні слова поточного словника, вивчені за день. Повтор одного слова того самого дня не збільшує лічильник."
+  },
+  "Сохраняем настройки…": {
+    "de": "Einstellungen werden gespeichert…",
+    "en": "Saving settings…",
+    "uk": "Зберігаємо налаштування…"
+  },
+  "Сохранить настройки": {
+    "de": "Einstellungen speichern",
+    "en": "Save settings",
+    "uk": "Зберегти налаштування"
+  },
+  "Настройки обучения сохранены.": {
+    "de": "Lerneinstellungen gespeichert.",
+    "en": "Study settings saved.",
+    "uk": "Налаштування навчання збережено."
+  },
+  "Изучено сегодня: {done} из {goal}": {
+    "de": "Heute gelernt: {done} von {goal}",
+    "en": "Studied today: {done} of {goal}",
+    "uk": "Вивчено сьогодні: {done} з {goal}"
+  },
+  "Учебный день: {date} · {zone}": {
+    "de": "Lerntag: {date} · {zone}",
+    "en": "Study day: {date} · {zone}",
+    "uk": "Навчальний день: {date} · {zone}"
+  },
+  "Не удалось сохранить или загрузить настройки обучения": {
+    "de": "Lerneinstellungen konnten nicht gespeichert oder geladen werden",
+    "en": "Could not save or load study settings",
+    "uk": "Не вдалося зберегти або завантажити налаштування навчання"
+  },
+  "Некорректный ответ настроек обучения": {
+    "de": "Ungültige Antwort zu den Lerneinstellungen",
+    "en": "Invalid study settings response",
+    "uk": "Некоректна відповідь налаштувань навчання"
+  },
+  "Проверьте часовой пояс и цель от 1 до 500": {
+    "de": "Prüfe die Zeitzone und das Ziel von 1 bis 500",
+    "en": "Check the time zone and a goal from 1 to 500",
+    "uk": "Перевірте часовий пояс і ціль від 1 до 500"
+  },
+  "Некорректный часовой пояс": {
+    "de": "Ungültige Zeitzone",
+    "en": "Invalid time zone",
+    "uk": "Некоректний часовий пояс"
+  },
+  "Ежедневная цель должна быть целым числом от 1 до 500": {
+    "de": "Das Tagesziel muss eine ganze Zahl von 1 bis 500 sein",
+    "en": "The daily goal must be a whole number from 1 to 500",
+    "uk": "Щоденна ціль має бути цілим числом від 1 до 500"
+  },
+  "Укажите хотя бы одну настройку": {
+    "de": "Gib mindestens eine Einstellung an",
+    "en": "Provide at least one setting",
+    "uk": "Укажіть хоча б одне налаштування"
+  },
   "Wortkarten — немецкие слова": {
     "de": "Wortkarten — deutscher Wortschatz",
     "en": "Wortkarten — German vocabulary",

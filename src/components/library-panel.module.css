@@ -1,0 +1,24 @@
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 24px; padding: 28px; }
+.heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.heading h3 { margin-bottom: 10px; font-size: 22px; }
+.count { white-space: nowrap; font-size: 13px; color: var(--muted); }
+.hint { color: #58685e; font-size: 13px; line-height: 1.6; }
+.search { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin: 24px 0; }
+.search label { grid-column: 1 / -1; font-size: 13px; font-weight: 600; }
+.search input, .preferences select { border: 1px solid #cbd6cd; border-radius: 12px; padding: 11px 14px; background: white; min-width: 0; color: var(--ink); }
+.panel button, .preferences button { border: 1px solid #b7d5c2; border-radius: 12px; background: var(--green-soft); color: #18543c; padding: 10px 14px; cursor: pointer; font-weight: 600; }
+.panel button:disabled { opacity: .65; cursor: default; }
+.panel button:focus-visible, .preferences select:focus-visible, .search input:focus-visible { outline: 3px solid #82b999; outline-offset: 3px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 255px), 1fr)); gap: 16px; }
+.card { border: 1px solid var(--line); border-radius: 18px; padding: 22px; overflow-wrap: anywhere; }
+.card h4 { font-size: 26px; margin: 12px 0; }
+.meta { font-size: 11px; color: #58685e; line-height: 1.7; }
+.examples { margin: 12px 0; }
+.examples .link { border: 0; padding: 4px 0; background: none; text-decoration: underline; font-size: 13px; }
+.notice { background: #e3f3e9; padding: 14px; border-radius: 12px; font-size: 14px; line-height: 1.6; }
+.error { color: #922d25; font-size: 14px; line-height: 1.6; }
+.preferences { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 18px 0 0; }
+.preferences label { font-size: 13px; font-weight: 600; }
+.preferences select { width: auto; min-width: 145px; }
+.preferences .error { flex-basis: 100%; margin: 0; }
+@media (max-width: 600px) { .panel { padding: 18px; } .heading { align-items: start; } .search { grid-template-columns: 1fr; } .preferences .hint { flex-basis: 100%; } }

@@ -1,5 +1,5 @@
-import { WordDashboard } from "@/components/word-dashboard";
+import { AuthGate } from "@/components/auth-gate";
 
 export default function Home() {
-  return <WordDashboard />;
+  return <AuthGate />;
 }

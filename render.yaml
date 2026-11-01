@@ -1,0 +1,22 @@
+# Create the frontend from this repository after the backend URL is known.
+# Migration commands intentionally do not run during build or startup.
+services:
+  - type: web
+    name: wortkarten-web-demo
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: main
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm run start -- --hostname 0.0.0.0
+    healthCheckPath: /
+    autoDeployTrigger: "off"
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: /api/v1
+      - key: API_PROXY_ORIGIN
+        sync: false

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test:client": "node --experimental-strip-types --test test/api-client.test.mjs test/word-view.test.mjs"
+    "test:client": "node --experimental-strip-types --test test/api-client.test.mjs test/word-view.test.mjs test/moderation-client.test.mjs"
   },
   "dependencies": {
     "next": "^15.5.0",

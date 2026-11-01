@@ -6,6 +6,7 @@ import type { AuthUser } from "@/lib/api-client";
 import { canEditWord, displayTranslation, publicationLabel } from "@/lib/word-view";
 import { LibraryPanel } from "./library-panel";
 import { TranslationLanguagePicker } from "./translation-language-picker";
+import { ModerationPanel } from "./moderation-panel";
 
 type Article = "der" | "das" | "die" | "none";
 type GrammaticalNumber = "singular" | "plural" | "not_applicable";
@@ -127,9 +128,10 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const [studySaved, setStudySaved] = useState(false);
   const [languageChanging, setLanguageChanging] = useState(false);
   const [libraryBusy, setLibraryBusy] = useState(false);
+  const [moderationBusy, setModerationBusy] = useState(false);
   const [dictionaryLoading, setDictionaryLoading] = useState(true);
 
-  const [activeTab, setActiveTab] = useState<"dictionary" | "progress" | "library">(
+  const [activeTab, setActiveTab] = useState<"dictionary" | "progress" | "library" | "moderation">(
     "dictionary",
   );
 
@@ -896,7 +898,13 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   });
 
   const languageLocked = studyMode || studySaving || (studyFinished && !studySaved) ||
-    busy || libraryBusy || dictionaryLoading || dueLoading || newWordsLoading || progressLoading || exampleBusyWordId !== null;
+    busy || libraryBusy || moderationBusy || dictionaryLoading || dueLoading || newWordsLoading || progressLoading || exampleBusyWordId !== null;
+
+  async function syncAfterModeration() {
+    setStudyWords([]); setStudyFinished(false); setStudySaved(false);
+    setKnownWordIds([]); setUnknownWordIds([]); studyRequestKey.current = null;
+    await Promise.all([loadWords(), loadStudyProgress(), loadDueWords()]);
+  }
 
   async function changeTranslationLanguage(language: string) {
     if (languageLocked || languageChanging || language === user.translationLanguage) return;
@@ -959,7 +967,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
               : "dashboard-tab"
           }
           onClick={() => setActiveTab("dictionary")}
-          disabled={libraryBusy}
+          disabled={libraryBusy || moderationBusy}
         >
           Словарь
         </button>
@@ -973,18 +981,25 @@ export function WordDashboard({ user }: { user: AuthUser }) {
             setActiveTab("progress");
             void loadStudyProgress();
           }}
-          disabled={libraryBusy}
+          disabled={libraryBusy || moderationBusy}
         >
           Прогресс
         </button>
         <button type="button" className={activeTab === "library" ? "dashboard-tab active" : "dashboard-tab"}
-          disabled={libraryBusy} onClick={() => setActiveTab("library")}>
+          disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("library")}>
           Библиотека
         </button>
+        {user.role === "ADMIN" && <button type="button"
+          className={activeTab === "moderation" ? "dashboard-tab active" : "dashboard-tab"}
+          disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("moderation")}>Модерация</button>}
       </nav>
 
       {activeTab === "library" && <LibraryPanel language={user.translationLanguage}
         onDictionaryChange={loadWords} onBusyChange={setLibraryBusy} />}
+
+      {activeTab === "moderation" && user.role === "ADMIN" && <ModerationPanel
+        decisionsLocked={studyMode || studySaving || (studyFinished && !studySaved)}
+        onDecision={syncAfterModeration} onBusyChange={setModerationBusy} />}
 
       {
         activeTab === "progress" ? (

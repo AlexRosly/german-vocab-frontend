@@ -1,0 +1,4 @@
+.panel { margin-top: 16px; padding-top: 14px; border-top: 1px solid #dce5de; }
+.editor { margin-top: 14px; padding: 16px; background: #f3f7f1; border-radius: 12px; }
+.editor textarea { display: block; width: 100%; box-sizing: border-box; margin: 10px 0; padding: 10px; border: 1px solid #c4d4c9; border-radius: 8px; font: inherit; white-space: pre-wrap; }
+.hint { margin: 8px 0; color: #607166; font-size: .9rem; line-height: 1.5; }

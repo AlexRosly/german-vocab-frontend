@@ -6,6 +6,7 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { apiClient, apiFetch, fetchDueWords, fetchNewWords } from "@/lib/api";
 import type { AuthUser } from "@/lib/api-client";
 import { canEditWord, displayTranslation, publicationLabel } from "@/lib/word-view";
+import { PersonalNote } from "./personal-note";
 import { AccountSessionsPanel } from "./account-sessions-panel";
 import { DailyGoalCard, StudySettingsPanel } from "./study-settings-panel";
 import { validSettings } from "@/lib/study-settings-client";
@@ -1433,13 +1434,15 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                 />
               </label>
 
-              <label>{t("Заметки")}{" "}<textarea
+              <label>{t("Общая заметка карточки")}{" "}<textarea
                   value={notes}
                   onChange={(event) => setNotes(event.target.value)}
                   placeholder={t("Контекст, произношение или подсказка")}
                   rows={3}
                 />
               </label>
+
+              <p className="hint">{t("Эта заметка относится к общей карточке. Личную можно добавить после сохранения.")}</p>
 
               {!editingId && <InitialExamples drafts={newExamples} onChange={setNewExamples} language={formLanguage} disabled={busy} />}
 
@@ -1997,7 +2000,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
                         {word.notes && (
                           <p className="word-extra">
-                            <strong>{t("Заметки:")}</strong> {word.notes}
+                            <strong>{t("Общая заметка:")}</strong> {word.notes}
                           </p>
                         )}
 
@@ -2008,6 +2011,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                             <span>{t("Урок")}{" "}{word.lessonNumber}</span>
                           )}
                         </div>
+
+                        <PersonalNote wordId={word.id} userId={user.id} disabled={busy} />
 
                         <section className="examples-section">
                           <h4 className="examples-title">{t("Примеры употребления")}{" "}<span>{examples.length}</span>

@@ -39,6 +39,7 @@ Word — общая карточка, UserWord — связь с личным с
 ## Что уже есть / что дальше
 
 **Есть:** аккаунты, личный словарь, библиотека, поиск/фильтры, примеры,
+личные заметки (после миграции/Deploy обоих сервисов),
 озвучивание при поддержке браузера, переводы ru/de/en/uk, роли/модерация,
 персональное повторение, основная статистика, экран истории и управление
 активными входами (после Deploy обоих сервисов); интерфейс
@@ -64,6 +65,7 @@ Im Verlauf kann man die gespeicherten Übungen und Antworten ansehen.
 Die Oberfläche ist auf Deutsch, Russisch, Englisch und Ukrainisch verfügbar.
 Die Sprache der Übersetzungen kann man unabhängig davon wählen.
 In den Einstellungen kann man andere Anmeldungen oder alle Anmeldungen beenden.
+Zu jedem Wort kann man eine persönliche Notiz speichern. Nur der Benutzer sieht sie.
 Als Nächstes möchte ich einen Import und eine Übersicht der Verbformen ergänzen. Das Projekt ist noch in Entwicklung.
 
 ## Перед показом

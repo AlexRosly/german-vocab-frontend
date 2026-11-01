@@ -1,5 +1,95 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Личная заметка": {
+    "de": "Persönliche Notiz",
+    "en": "Personal note",
+    "uk": "Особиста нотатка"
+  },
+  "Моя заметка": {
+    "de": "Meine Notiz",
+    "en": "My note",
+    "uk": "Моя нотатка"
+  },
+  "Скрыть личную заметку": {
+    "de": "Persönliche Notiz ausblenden",
+    "en": "Hide personal note",
+    "uk": "Сховати особисту нотатку"
+  },
+  "Видна только вам. Не попадает в общую карточку и модерацию.": {
+    "de": "Nur für dich sichtbar. Nicht Teil der gemeinsamen Karte oder Moderation.",
+    "en": "Visible only to you. It is not part of the shared card or moderation.",
+    "uk": "Видна лише вам. Не потрапляє до спільної картки та модерації."
+  },
+  "Загружаем личную заметку…": {
+    "de": "Persönliche Notiz wird geladen…",
+    "en": "Loading personal note…",
+    "uk": "Завантажуємо особисту нотатку…"
+  },
+  "Текст личной заметки": {
+    "de": "Text der persönlichen Notiz",
+    "en": "Personal note text",
+    "uk": "Текст особистої нотатки"
+  },
+  "До 2000 символов. Чтобы убрать заметку, очистите текст и сохраните.": {
+    "de": "Bis zu 2000 Zeichen. Zum Entfernen den Text leeren und speichern.",
+    "en": "Up to 2000 characters. To remove the note, clear the text and save.",
+    "uk": "До 2000 символів. Щоб прибрати нотатку, очистіть текст і збережіть."
+  },
+  "Сохранить мою заметку": {
+    "de": "Meine Notiz speichern",
+    "en": "Save my note",
+    "uk": "Зберегти мою нотатку"
+  },
+  "Личная заметка сохранена.": {
+    "de": "Persönliche Notiz gespeichert.",
+    "en": "Personal note saved.",
+    "uk": "Особисту нотатку збережено."
+  },
+  "Личная заметка удалена.": {
+    "de": "Persönliche Notiz entfernt.",
+    "en": "Personal note removed.",
+    "uk": "Особисту нотатку видалено."
+  },
+  "Не удалось загрузить или сохранить личную заметку": {
+    "de": "Persönliche Notiz konnte nicht geladen oder gespeichert werden",
+    "en": "Could not load or save personal note",
+    "uk": "Не вдалося завантажити або зберегти особисту нотатку"
+  },
+  "Личная заметка изменилась. Загрузите актуальную версию.": {
+    "de": "Die persönliche Notiz wurde geändert. Lade die aktuelle Version.",
+    "en": "The personal note changed. Load the latest version.",
+    "uk": "Особиста нотатка змінилася. Завантажте актуальну версію."
+  },
+  "Скопируйте свой черновик перед загрузкой: сохранённая версия заменит текст в поле.": {
+    "de": "Kopiere deinen Entwurf vor dem Laden: Die gespeicherte Version ersetzt den Text im Feld.",
+    "en": "Copy your draft before loading: the saved version will replace the text in the field.",
+    "uk": "Скопіюйте чернетку перед завантаженням: збережена версія замінить текст у полі."
+  },
+  "Загрузить сохранённую заметку": {
+    "de": "Gespeicherte Notiz laden",
+    "en": "Load saved note",
+    "uk": "Завантажити збережену нотатку"
+  },
+  "Общая заметка карточки": {
+    "de": "Gemeinsame Kartennotiz",
+    "en": "Shared card note",
+    "uk": "Спільна нотатка картки"
+  },
+  "Общая заметка:": {
+    "de": "Gemeinsame Notiz:",
+    "en": "Shared note:",
+    "uk": "Спільна нотатка:"
+  },
+  "Эта заметка относится к общей карточке. Личную можно добавить после сохранения.": {
+    "de": "Diese Notiz gehört zur gemeinsamen Karte. Eine persönliche Notiz kannst du nach dem Speichern ergänzen.",
+    "en": "This note belongs to the shared card. You can add a personal note after saving.",
+    "uk": "Ця нотатка належить до спільної картки. Особисту можна додати після збереження."
+  },
+  "Слово недоступно в вашем словаре": {
+    "de": "Das Wort ist in deinem Wörterbuch nicht verfügbar",
+    "en": "This word is not available in your dictionary",
+    "uk": "Слово недоступне у вашому словнику"
+  },
   "Активные входы": {
     "de": "Aktive Anmeldungen",
     "en": "Active sign-ins",

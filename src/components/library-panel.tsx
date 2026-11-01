@@ -1,4 +1,5 @@
 "use client";
+import type { WordExample } from "@/lib/card-draft";
 
 import { FormEvent, useEffect, useState } from "react";
 import { apiFetch, type StudyWord } from "@/lib/api";
@@ -100,7 +101,7 @@ export function LibraryPanel({ language, onDictionaryChange, onBusyChange }: {
 
 function LibraryExamples({ wordId }: { wordId: string }) {
   const [open, setOpen] = useState(false);
-  const [examples, setExamples] = useState<{ id: string; german: string; translation: string }[] | null>(null);
+  const [examples, setExamples] = useState<WordExample[] | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
@@ -108,7 +109,7 @@ function LibraryExamples({ wordId }: { wordId: string }) {
     const controller = new AbortController();
     setExamples(null); setError("");
     void apiFetch(`/words/${encodeURIComponent(wordId)}/examples`, { signal: controller.signal })
-      .then(readResponse<{ id: string; german: string; translation: string }[]>).then((data) => { if (!controller.signal.aborted) setExamples(data); })
+      .then(readResponse<WordExample[]>).then((data) => { if (!controller.signal.aborted) setExamples(data); })
       .catch((failure: unknown) => { if (!controller.signal.aborted) setError(failure instanceof Error ? failure.message : "Не удалось загрузить примеры"); });
     return () => controller.abort();
   }, [open, wordId, attempt]);
@@ -116,6 +117,6 @@ function LibraryExamples({ wordId }: { wordId: string }) {
     <button className={styles.link} type="button" aria-expanded={open} onClick={() => setOpen((value) => !value)}>{open ? "Скрыть примеры" : "Показать примеры"}</button>
     {open && <div>{error ? <p role="alert">{error} <button type="button" onClick={() => setAttempt((value) => value + 1)}>Повторить</button></p>
       : examples === null ? <p role="status">Загружаем примеры…</p> : !examples.length ? <p className={styles.hint}>Примеров пока нет.</p>
-      : <><p className={styles.hint}>Переводы примеров пока доступны на русском.</p>{examples.map((example) => <p key={example.id}>{example.german}<br /><span className={styles.hint}>{example.translation}</span></p>)}</>}</div>}
+      : <>{examples.map((example) => <p key={example.id}>{example.german}<br /><span className={styles.hint}>{displayTranslation(example)}</span></p>)}</>}</div>}
   </div>;
 }

@@ -13,12 +13,9 @@ import type { SavedTranslation } from "@/lib/word-translations-client";
 type Article = "der" | "das" | "die" | "none";
 type GrammaticalNumber = "singular" | "plural" | "not_applicable";
 
-type WordExample = {
-  id: string;
-  wordId: string;
-  german: string;
-  translation: string;
-};
+import { InitialExamples } from "./initial-examples";
+import { TranslationDraftFields } from "./translation-draft-fields";
+import { emptyExample, examplePayload, initialExamples, translationDraft, translationPatch, type ExampleDraft, type WordExample, type TranslationEntry } from "@/lib/card-draft";
 
 type Word = {
   id: string;
@@ -26,6 +23,7 @@ type Word = {
   article: Article;
   grammaticalNumber: GrammaticalNumber;
   translation: string;
+  translations: TranslationEntry[];
   selectedTranslation: { language: string; text: string | null };
   publicationStatus: "PENDING_REVIEW" | "PUBLISHED" | "REJECTED";
   createdByUserId: string | null;
@@ -86,7 +84,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     Record<string, WordExample[]>
   >({});
   const [exampleInputs, setExampleInputs] = useState<
-    Record<string, { german: string; translation: string }>
+    Record<string, ExampleDraft>
   >({});
   const [editingExampleId, setEditingExampleId] = useState<string | null>(null);
   const [editingExampleWordId, setEditingExampleWordId] = useState<
@@ -100,7 +98,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const [article, setArticle] = useState<Article>("der");
   const [grammaticalNumber, setGrammaticalNumber] =
     useState<GrammaticalNumber>("singular");
-  const [translation, setTranslation] = useState("");
+  const [translationValues, setTranslationValues] = useState<Record<string, string>>({});
+  const [formLanguage, setFormLanguage] = useState(user.translationLanguage);
+  const [newExamples, setNewExamples] = useState<ExampleDraft[]>([emptyExample(user.translationLanguage)]);
   const [level, setLevel] = useState("A1");
   const [lessonNumber, setLessonNumber] = useState("1");
   const [pluralForm, setPluralForm] = useState("");
@@ -243,7 +243,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     setSpeakingExampleId(null);
   }
 
-  function speakExample(example: WordExample) {
+  function speakExample(example: Pick<WordExample, "id" | "german">) {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
       setStatus("Этот браузер не поддерживает озвучивание.");
       return;
@@ -313,9 +313,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
     speakExample({
       id: `word-${word.id}`,
-      wordId: word.id,
       german: spokenWord,
-      translation: word.translation,
     });
   }
 
@@ -324,7 +322,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     setGerman("");
     setArticle("der");
     setGrammaticalNumber("singular");
-    setTranslation("");
+    setTranslationValues({});
+    setFormLanguage(user.translationLanguage);
+    setNewExamples([emptyExample(user.translationLanguage)]);
     setLevel("A1");
     setLessonNumber("1");
     setPluralForm("");
@@ -336,7 +336,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     setGerman(word.german);
     setArticle(word.article);
     setGrammaticalNumber(word.grammaticalNumber);
-    setTranslation(word.translation);
+    setTranslationValues(translationDraft(word.translations));
+    setFormLanguage(user.translationLanguage);
     setLevel(word.level ?? "A1");
     setLessonNumber(word.lessonNumber == null ? "" : String(word.lessonNumber));
     setPluralForm(word.pluralForm ?? "");
@@ -354,7 +355,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
         german: german.trim(),
         article,
         grammaticalNumber,
-        translation: translation.trim(),
+        translations: translationPatch(translationValues),
+        ...(!editingId ? { examples: initialExamples(newExamples) } : {}),
         level,
         lessonNumber: lessonNumber ? Number(lessonNumber) : null,
         pluralForm: pluralForm.trim() || null,
@@ -427,16 +429,15 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
   function updateExampleInput(
     wordId: string,
-    field: "german" | "translation",
+    field: "german" | "language" | "translation",
     value: string,
   ) {
     setExampleInputs((current) => ({
       ...current,
-      [wordId]: {
-        german: current[wordId]?.german ?? "",
-        translation: current[wordId]?.translation ?? "",
-        [field]: value,
-      },
+      [wordId]: (() => {
+        const draft = current[wordId] ?? emptyExample(user.translationLanguage);
+        return field === "translation" ? { ...draft, translations: { ...draft.translations, [draft.language]: value } } : { ...draft, [field]: value };
+      })(),
     }));
   }
 
@@ -448,7 +449,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       ...current,
       [wordId]: {
         german: example.german,
-        translation: example.translation,
+        language: user.translationLanguage,
+        translations: translationDraft(example.translations),
       },
     }));
   }
@@ -459,7 +461,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
     setExampleInputs((current) => ({
       ...current,
-      [wordId]: { german: "", translation: "" },
+      [wordId]: emptyExample(user.translationLanguage),
     }));
   }
 
@@ -469,13 +471,10 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   ) {
     event.preventDefault();
 
-    const input = exampleInputs[wordId] ?? {
-      german: "",
-      translation: "",
-    };
+    const input = exampleInputs[wordId] ?? emptyExample(user.translationLanguage);
 
-    if (!input.german.trim() || !input.translation.trim()) {
-      setStatus("Заполни немецкое предложение и перевод.");
+    if (!input.german.trim()) {
+      setStatus("Заполните немецкое предложение. Перевод необязателен.");
       return;
     }
 
@@ -492,10 +491,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       const response = await apiFetch(url, {
         method: isEditing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          german: input.german.trim(),
-          translation: input.translation.trim(),
-        }),
+        body: JSON.stringify(examplePayload(input)),
       });
 
       if (!response.ok) {
@@ -512,7 +508,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
       setExampleInputs((current) => ({
         ...current,
-        [wordId]: { german: "", translation: "" },
+        [wordId]: emptyExample(user.translationLanguage),
       }));
 
       setEditingExampleId(null);
@@ -776,7 +772,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
         word.selectedTranslation?.text ?? "",
         word.pluralForm ?? "",
         word.notes ?? "",
-        ...examples.flatMap((example) => [example.german, example.translation]),
+        ...examples.flatMap((example) => [example.german, example.selectedTranslation.text ?? ""]),
       ]
         .join(" ")
         .toLocaleLowerCase();
@@ -917,7 +913,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   }
 
   async function syncAfterTranslation(saved: SavedTranslation) {
-    if (saved.language === "ru" && editingId === saved.wordId) setTranslation(saved.text);
+    if (editingId === saved.wordId) setTranslationValues((current) => ({ ...current, [saved.language]: saved.text }));
     setTranslationVersion((value) => value + 1);
     await syncAfterCardChange();
   }
@@ -1432,15 +1428,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                 </select>
               </label>
 
-              <label>
-                Перевод на русский
-                <input
-                  required
-                  value={translation}
-                  onChange={(event) => setTranslation(event.target.value)}
-                  placeholder="яблоко"
-                />
-              </label>
+              <TranslationDraftFields label="Перевод слова (необязательно)" language={formLanguage} values={translationValues} disabled={busy}
+                onLanguage={setFormLanguage} onText={(language, text) => setTranslationValues((current) => ({ ...current, [language]: text }))} />
 
               <label>
                 Множественное число
@@ -1460,6 +1449,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                   rows={3}
                 />
               </label>
+
+              {!editingId && <InitialExamples drafts={newExamples} onChange={setNewExamples} language={formLanguage} disabled={busy} />}
 
               <div className="form-row">
                 <label>
@@ -1771,7 +1762,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         .map((example) => (
                           <div key={example.id} className="study-example">
                             <p>{example.german}</p>
-                            <p>{example.translation}</p>
+                            <p>{displayTranslation(example)}</p>
                             <button
                               type="button"
                               className="small-button secondary-button"
@@ -2036,10 +2027,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
               <div className="word-list">
                 {filteredWords.map((word) => {
                   const examples = examplesByWord[word.id] ?? [];
-                  const exampleInput = exampleInputs[word.id] ?? {
-                    german: "",
-                    translation: "",
-                  };
+                  const exampleInput = exampleInputs[word.id] ?? emptyExample(user.translationLanguage);
 
                   const editingThisExample =
                     editingExampleWordId === word.id &&
@@ -2158,7 +2146,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                                         </button>
                                       </div>
 
-                                      <p>{example.translation}</p>
+                                      <p>{displayTranslation(example)}</p>
                                     </div>
 
                                     {editable && (
@@ -2220,22 +2208,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                               />
                             </label>
 
-                            <label>
-                              Перевод на русский
-                              <textarea
-                                rows={2}
-                                required
-                                value={exampleInput.translation}
-                                onChange={(event) =>
-                                  updateExampleInput(
-                                    word.id,
-                                    "translation",
-                                    event.target.value,
-                                  )
-                                }
-                                placeholder="Например: Я ем яблоко."
-                              />
-                            </label>
+                            <TranslationDraftFields language={exampleInput.language} values={exampleInput.translations} disabled={exampleBusyWordId === word.id || busy}
+                              onLanguage={(value) => updateExampleInput(word.id, "language", value)}
+                              onText={(_language, text) => updateExampleInput(word.id, "translation", text)} />
 
                             <div className="example-form-actions">
                               <button

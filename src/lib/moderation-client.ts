@@ -6,7 +6,7 @@ export type ModerationWord = Omit<StudyWord, "selectedTranslation"> & {
 };
 export type ReviewCard = ModerationWord & {
   revision: string;
-  examples: { id: string; german: string; translation: string }[];
+  examples: { id: string; german: string; translation: string; translations: { language: string; text: string }[] }[];
 };
 type Requester = (path: string, init?: RequestInit) => Promise<Response>;
 const statuses: PublicationStatus[] = ["PENDING_REVIEW", "PUBLISHED", "REJECTED"];
@@ -40,7 +40,8 @@ function isReview(value: unknown): value is ReviewCard {
   const card = value as ReviewCard;
   return typeof card.revision === "string" && /^[a-f0-9]{64}$/.test(card.revision) &&
     Array.isArray(card.examples) && card.examples.every((row) => row && typeof row.id === "string" &&
-      typeof row.german === "string" && typeof row.translation === "string");
+      typeof row.german === "string" && typeof row.translation === "string" &&
+      Array.isArray(row.translations) && row.translations.every((entry) => entry && typeof entry.language === "string" && typeof entry.text === "string"));
 }
 
 async function read(response: Response): Promise<unknown> {

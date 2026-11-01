@@ -1017,3 +1017,11 @@ button.small-button {
   color: white;
   border-color: var(--ink);
 }
+
+.initial-examples { min-width: 0; margin: 1rem 0; padding: 1rem; border: 1px solid var(--border, #dce5df); border-radius: 16px; }
+.initial-examples legend { padding: 0 .35rem; font-weight: 700; }
+.initial-example { min-width: 0; margin: .75rem 0; padding: .75rem; border: 1px solid #dce5df; border-radius: 12px; background: #f8faf7; }
+.translation-draft { min-width: 0; }
+.translation-draft textarea, .initial-example textarea { box-sizing: border-box; width: 100%; resize: vertical; }
+.translation-draft textarea, .initial-example textarea { padding: .65rem .75rem; border: 1px solid #dce5df; border-radius: 12px; background: #fcfdfb; font: inherit; line-height: 1.5; min-height: 80px; }
+.example-form .translation-draft { grid-column: 1 / -1; }

@@ -7,7 +7,7 @@ const card = (extra = {}) => ({
   selectedTranslation: { language: "en", text: "tree" }, level: "A1", lessonNumber: 1, notes: null,
   publicationStatus: "PENDING_REVIEW", createdByUserId: "author-a", pluralForm: "Bäume",
   translations: [{ language: "ru", text: "дерево" }, { language: "en", text: "tree" }],
-  examples: [{ id: "example-a", german: "Ein Baum.", translation: "Дерево." }], revision: "a".repeat(64), ...extra,
+  examples: [{ id: "example-a", german: "Ein Baum.", translation: "Дерево.", translations: [{ language: "ru", text: "Дерево." }] }], revision: "a".repeat(64), ...extra,
 });
 
 test("moderation lists use only the requested status and pass cancellation through", async () => {

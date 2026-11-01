@@ -25,6 +25,7 @@ export type StudyWord = {
   article: "der" | "das" | "die" | "none";
   grammaticalNumber: "singular" | "plural" | "not_applicable";
   translation: string;
+  translations: { language: string; text: string }[];
   selectedTranslation: { language: string; text: string | null };
   publicationStatus: "PENDING_REVIEW" | "PUBLISHED" | "REJECTED";
   createdByUserId: string | null;

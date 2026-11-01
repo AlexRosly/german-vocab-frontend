@@ -117,7 +117,7 @@ export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange, tra
               setConfirmation(null); onEditTranslations(detail);
             }}>Редактировать переводы</button>
             <h5>Примеры употребления</h5>
-            {!detail.examples.length ? <p className={styles.hint}>Примеров пока нет.</p> : <><p className={styles.hint}>Переводы примеров — на русском.</p>{detail.examples.map((example) => <blockquote key={example.id}><p>{example.german}</p><p className={styles.hint}>{example.translation}</p></blockquote>)}</>}
+            {!detail.examples.length ? <p className={styles.hint}>Примеров пока нет.</p> : <>{detail.examples.map((example) => <blockquote key={example.id}><p>{example.german}</p>{example.translations.length ? example.translations.map((entry) => <p className={styles.hint} key={entry.language}>{entry.language}: {entry.text}</p>) : <p className={styles.hint}>Переводов пока нет.</p>}</blockquote>)}</>}
             {decisionError && <div className={styles.warning} role="alert"><p>{decisionError}</p><p>Перед следующим решением откройте актуальную карточку и проверьте её ещё раз.</p>
               {duplicateId && <button type="button" disabled={saving} onClick={() => openCard(duplicateId)}>Посмотреть существующую карточку</button>}
             </div>}

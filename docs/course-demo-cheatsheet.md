@@ -8,6 +8,9 @@
 
 ## Что показать за 3–5 минут
 
+Перед показом обновить frontend на Render и выбрать Deutsch в переключателе
+«Язык интерфейса». Язык перевода карточек можно оставить русским или английским.
+
 1. **Вход и личный словарь.** Открыть заранее подготовленный USER; показать
    der Baum, das Haus, die Schule и die Bücher, фильтр урока/уровня и поиск.
 2. **Создание.** Добавить одно заранее проверенное слово и пример. Объяснить:
@@ -36,9 +39,10 @@ Word — общая карточка, UserWord — связь с личным с
 
 **Есть:** аккаунты, личный словарь, библиотека, поиск/фильтры, примеры,
 озвучивание при поддержке браузера, переводы ru/de/en/uk, роли/модерация,
-персональное повторение и основная статистика.
+персональное повторение и основная статистика; интерфейс ru/de/en/uk
+с независимым языком переводов (после Deploy frontend).
 
-**Дальше:** перевод интерфейса (сейчас русский), профиль/часовой пояс,
+**Дальше:** профиль/часовой пояс,
 восстановление пароля, экран истории, импорт/экспорт, справочник глаголов,
 расширенные режимы повторения; позже PWA, изображения, ИИ и подписка.
 Браузерные mock-проверки не заменяют проверку реального демо-сервера.
@@ -51,11 +55,13 @@ Die Artikel haben feste Farben. Man kann Wörter, Beispiele und Übersetzungen
 hinzufügen. Neue Wörter werden vor der Veröffentlichung geprüft.
 Beim Lernen wählt man: „Ich weiß es“ oder „Ich muss es wiederholen“.
 Die App plant die nächste Wiederholung.
-Als Nächstes möchte ich die Oberfläche übersetzen und einen Import sowie
-eine Übersicht der Verbformen ergänzen. Das Projekt ist noch in Entwicklung.
+Die Oberfläche ist auf Deutsch, Russisch, Englisch und Ukrainisch verfügbar.
+Die Sprache der Übersetzungen kann man unabhängig davon wählen.
+Als Nächstes möchte ich einen Import und eine Übersicht der Verbformen ergänzen. Das Projekt ist noch in Entwicklung.
 
 ## Перед показом
 
 За 5–10 минут открыть сайт, проверить вход и тренировку; подготовить USER/ADMIN
 в разных профилях, запасной локальный запуск и эту шпаргалку.
-Не обещать офлайн/PWA, Google/Apple, ИИ, FSRS и немецкий интерфейс как готовые.
+Перед показом проверить немецкий интерфейс на публичном сайте.
+Офлайн/PWA, Google/Apple, ИИ и FSRS пока относятся к планам.

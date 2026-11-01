@@ -39,6 +39,7 @@ export class ApiClient {
   private snapshot: AuthSnapshot = INITIAL_AUTH;
   private generation = 0;
   private preferencesVersion = 0;
+  private preferencesQueue: Promise<void> = Promise.resolve();
   private listeners = new Set<() => void>();
   private authQueue: Promise<void> = Promise.resolve();
   private refreshPromise: Promise<AuthUser | null> | null = null;
@@ -76,24 +77,37 @@ export class ApiClient {
     return this.authenticate("/auth/register", email, password);
   }
 
-  async updateTranslationLanguage(language: string): Promise<void> {
+  updateTranslationLanguage(language: string): Promise<void> {
+    return this.updateLanguage("translationLanguage", language);
+  }
+
+  updateInterfaceLanguage(language: string): Promise<void> {
+    return this.updateLanguage("interfaceLanguage", language);
+  }
+
+  private updateLanguage(field: "interfaceLanguage" | "translationLanguage", language: string): Promise<void> {
+    if (!["ru", "de", "en", "uk"].includes(language)) return Promise.reject(new ApiError(400, "Проверьте введённые данные."));
     const generation = this.generation;
-    const response = await this.request("/users/me/preferences", {
-      method: "PATCH", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ translationLanguage: language }),
+    const work = this.preferencesQueue.then(async () => {
+      this.checkGeneration(generation);
+      const response = await this.request("/users/me/preferences", {
+        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ [field]: language }),
+      });
+      if (!response.ok) throw await this.errorFrom(response);
+      const value: unknown = await response.json();
+      this.checkGeneration(generation);
+      if (!value || typeof value !== "object" || !("interfaceLanguage" in value) || !("translationLanguage" in value) ||
+        typeof value.interfaceLanguage !== "string" || !["ru", "de", "en", "uk"].includes(value.interfaceLanguage) ||
+        typeof value.translationLanguage !== "string" || !["ru", "de", "en", "uk"].includes(value.translationLanguage) || value[field] !== language) {
+        throw new ApiError(502, "Некорректный ответ языковых настроек");
+      }
+      if (!this.snapshot.user) throw new SessionChangedError();
+      this.preferencesVersion += 1;
+      // One preference save cannot replace identity, role or the other language.
+      this.publish({ ...this.snapshot.user, [field]: language });
     });
-    if (!response.ok) throw await this.errorFrom(response);
-    const value: unknown = await response.json();
-    this.checkGeneration(generation);
-    if (!value || typeof value !== "object" ||
-      !("interfaceLanguage" in value) || typeof value.interfaceLanguage !== "string" || !value.interfaceLanguage ||
-      !("translationLanguage" in value) || typeof value.translationLanguage !== "string" || !value.translationLanguage) {
-      throw new ApiError(502, "Некорректный ответ языковых настроек");
-    }
-    if (!this.snapshot.user) throw new SessionChangedError();
-    // Preferences may update only language fields, never the authenticated identity or role.
-    this.preferencesVersion += 1;
-    this.publish({ ...this.snapshot.user, interfaceLanguage: value.interfaceLanguage, translationLanguage: value.translationLanguage });
+    this.preferencesQueue = work.then(() => undefined, () => undefined);
+    return work;
   }
 
   logout(): Promise<void> {

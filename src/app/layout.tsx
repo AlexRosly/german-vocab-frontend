@@ -1,15 +1,10 @@
-import type { Metadata } from "next";
 import "./globals.css";
-
-export const metadata: Metadata = {
-  title: "Wortkarten — немецкие слова",
-  description: "Личные карточки немецких слов и интервальное повторение"
-};
+import { UiLanguageProvider } from "@/components/ui-language-provider";
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ru">
-      <body>{children}</body>
+      <body><UiLanguageProvider>{children}</UiLanguageProvider></body>
     </html>
   );
 }

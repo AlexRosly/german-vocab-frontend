@@ -1,4 +1,5 @@
 "use client";
+import { useI18n } from "./ui-language-provider";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { WordTranslationsClient, type TranslationLanguage } from "@/lib/word-translations-client";
@@ -8,6 +9,7 @@ export function TranslationDraftFields({ language, values, onLanguage, onText, d
   language: string; values: Record<string, string>; onLanguage: (language: string) => void;
   onText: (language: string, text: string) => void; disabled?: boolean; label?: string;
 }) {
+  const { t, errorText } = useI18n();
   const [languages, setLanguages] = useState<TranslationLanguage[]>([]);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -18,13 +20,13 @@ export function TranslationDraftFields({ language, values, onLanguage, onText, d
     return () => controller.abort();
   }, [attempt]);
   return <div className="translation-draft">
-    <label>Язык перевода<select value={language} disabled={disabled || !languages.length} onChange={(event) => onLanguage(event.target.value)}>
+    <label>{t("Язык перевода")}<select value={language} disabled={disabled || !languages.length} onChange={(event) => onLanguage(event.target.value)}>
       {!languages.some((item) => item.code === language) && <option value={language}>{language}</option>}
       {languages.map((item) => <option value={item.code} key={item.code}>{item.label}</option>)}
     </select></label>
-    <label>{label}<textarea rows={2} maxLength={1000} value={values[language] ?? ""} disabled={disabled}
-      onChange={(event) => onText(language, event.target.value)} placeholder="Можно оставить пустым" /></label>
-    <p className="hint">Можно заполнить несколько языков. При переключении текст останется в форме.</p>
-    {error && <p role="alert">{error} <button type="button" onClick={() => setAttempt((value) => value + 1)}>Повторить</button></p>}
+    <label>{t(label)}<textarea rows={2} maxLength={1000} value={values[language] ?? ""} disabled={disabled}
+      onChange={(event) => onText(language, event.target.value)} placeholder={t("Можно оставить пустым")} /></label>
+    <p className="hint">{t("Можно заполнить несколько языков. При переключении текст останется в форме.")}</p>
+    {error && <p role="alert">{errorText(error)} <button type="button" onClick={() => setAttempt((value) => value + 1)}>{t("Повторить")}</button></p>}
   </div>;
 }

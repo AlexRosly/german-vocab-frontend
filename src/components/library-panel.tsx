@@ -1,4 +1,6 @@
 "use client";
+import { safeErrorMessage } from "@/lib/i18n";
+import { useI18n } from "./ui-language-provider";
 import type { WordExample } from "@/lib/card-draft";
 
 import { FormEvent, useEffect, useState } from "react";
@@ -17,6 +19,7 @@ async function readResponse<T>(response: Response): Promise<T> {
 export function LibraryPanel({ language, onDictionaryChange, onBusyChange }: {
   language: string; onDictionaryChange: () => Promise<void>; onBusyChange: (busy: boolean) => void;
 }) {
+  const { t, errorText } = useI18n();
   const [input, setInput] = useState("");
   const [search, setSearch] = useState({ query: "", attempt: 0 });
   const [words, setWords] = useState<StudyWord[]>([]);
@@ -39,7 +42,7 @@ export function LibraryPanel({ language, onDictionaryChange, onBusyChange }: {
           setWords(library); setMembership(new Set(mine.map((word) => word.id)));
         }
       } catch (failure) {
-        if (!controller.signal.aborted) setError(failure instanceof Error ? failure.message : "Не удалось загрузить библиотеку");
+        if (!controller.signal.aborted) setError(failure instanceof Error ? safeErrorMessage(failure) : "Не удалось загрузить библиотеку");
       } finally { if (!controller.signal.aborted) setLoading(false); }
     })();
     return () => controller.abort();
@@ -59,7 +62,7 @@ export function LibraryPanel({ language, onDictionaryChange, onBusyChange }: {
       setNotice(`«${word.german}» добавлено в ваш словарь. Можно начать тренировку во вкладке «Словарь».`);
       await onDictionaryChange();
     } catch (failure) {
-      setError(failure instanceof Error ? failure.message : "Не удалось добавить слово. Повторите попытку.");
+      setError(failure instanceof Error ? safeErrorMessage(failure) : "Не удалось добавить слово. Повторите попытку.");
     } finally { setAddingId(null); }
   }
 
@@ -69,30 +72,30 @@ export function LibraryPanel({ language, onDictionaryChange, onBusyChange }: {
   }
 
   return <section className={styles.panel} aria-labelledby="library-heading">
-    <div className={styles.heading}><div><p className="eyebrow">ОБЩАЯ БИБЛИОТЕКА</p><h3 id="library-heading">Готовые слова для вашего словаря</h3></div>
-      {!loading && !error && <span className={styles.count}>{words.length} найдено</span>}
+    <div className={styles.heading}><div><p className="eyebrow">{t("ОБЩАЯ БИБЛИОТЕКА")}</p><h3 id="library-heading">{t("Готовые слова для вашего словаря")}</h3></div>
+      {!loading && !error && <span className={styles.count}>{words.length}{" "}{t("найдено")}</span>}
     </div>
-    <p className={styles.hint}>Здесь только опубликованные карточки. Добавьте слово в свой словарь, чтобы изучать его со своим прогрессом.</p>
-    <form className={styles.search} onSubmit={submit} role="search" aria-label="Поиск в библиотеке">
-      <label htmlFor="library-search">Поиск по слову или переводу</label>
-      <input id="library-search" value={input} maxLength={100} placeholder="Например, Baum" disabled={addingId !== null} onChange={(event) => setInput(event.target.value)} />
-      <button type="submit" disabled={addingId !== null}>Найти</button>
+    <p className={styles.hint}>{t("Здесь только опубликованные карточки. Добавьте слово в свой словарь, чтобы изучать его со своим прогрессом.")}</p>
+    <form className={styles.search} onSubmit={submit} role="search" aria-label={t("Поиск в библиотеке")}>
+      <label htmlFor="library-search">{t("Поиск по слову или переводу")}</label>
+      <input id="library-search" value={input} maxLength={100} placeholder={t("Например, Baum")} disabled={addingId !== null} onChange={(event) => setInput(event.target.value)} />
+      <button type="submit" disabled={addingId !== null}>{t("Найти")}</button>
     </form>
-    {notice && <p className={styles.notice} role="status">{notice}</p>}
-    {error && <p className={styles.error} role="alert">{error} <button type="button" disabled={addingId !== null} onClick={() => setSearch((current) => ({ ...current, attempt: current.attempt + 1 }))}>Обновить библиотеку</button></p>}
-    {loading ? <p role="status">Загружаем библиотеку…</p> : !error && !words.length ? <p>Слова не найдены. Попробуйте другой запрос.</p> : <div className={styles.grid}>
+    {notice && <p className={styles.notice} role="status">{t(notice)}</p>}
+    {error && <p className={styles.error} role="alert">{errorText(error)} <button type="button" disabled={addingId !== null} onClick={() => setSearch((current) => ({ ...current, attempt: current.attempt + 1 }))}>{t("Обновить библиотеку")}</button></p>}
+    {loading ? <p role="status">{t("Загружаем библиотеку…")}</p> : !error && !words.length ? <p>{t("Слова не найдены. Попробуйте другой запрос.")}</p> : <div className={styles.grid}>
       {words.map((word) => <article className={styles.card} key={word.id}>
-        <p className={styles.meta}>Опубликовано · {word.level ?? "Уровень не указан"}{word.lessonNumber !== null ? ` · Урок ${word.lessonNumber}` : ""}</p>
+        <p className={styles.meta}>{t("Опубликовано ·")}{" "}{word.level ?? t("Уровень не указан")}{word.lessonNumber !== null ? t(" · Урок {0}", { 0: word.lessonNumber }) : ""}</p>
         <h4 className={word.grammaticalNumber === "plural" ? "article-orange" : word.article === "der" ? "article-blue" : word.article === "die" ? "article-red" : word.article === "das" ? "article-green" : "article-neutral"}>
           {word.article !== "none" && `${word.article} `}{word.german}
         </h4>
-        <p>{displayTranslation(word)}</p>
-        {word.pluralForm && <p className={styles.hint}>Мн. число: {word.pluralForm}</p>}
+        <p>{displayTranslation(word, t("Перевод отсутствует"))}</p>
+        {word.pluralForm && <p className={styles.hint}>{t("Мн. число:")}{" "}{word.pluralForm}</p>}
         {word.notes && <p className={styles.hint}>{word.notes}</p>}
         <LibraryExamples wordId={word.id} />
         <button type="button" disabled={addingId !== null || membership.has(word.id)} onClick={() => void add(word)}
-          aria-label={`${membership.has(word.id) ? "Уже в словаре" : "Добавить в мой словарь"}: ${word.german}`}>
-          {addingId === word.id ? "Добавляем…" : membership.has(word.id) ? "Уже в словаре ✓" : "+ В мой словарь"}
+          aria-label={`${membership.has(word.id) ? t("Уже в словаре") : t("Добавить в мой словарь")}: ${word.german}`}>
+          {addingId === word.id ? t("Добавляем…") : membership.has(word.id) ? t("Уже в словаре ✓") : t("+ В мой словарь")}
         </button>
       </article>)}
     </div>}
@@ -100,6 +103,7 @@ export function LibraryPanel({ language, onDictionaryChange, onBusyChange }: {
 }
 
 function LibraryExamples({ wordId }: { wordId: string }) {
+  const { t, errorText } = useI18n();
   const [open, setOpen] = useState(false);
   const [examples, setExamples] = useState<WordExample[] | null>(null);
   const [error, setError] = useState("");
@@ -110,13 +114,13 @@ function LibraryExamples({ wordId }: { wordId: string }) {
     setExamples(null); setError("");
     void apiFetch(`/words/${encodeURIComponent(wordId)}/examples`, { signal: controller.signal })
       .then(readResponse<WordExample[]>).then((data) => { if (!controller.signal.aborted) setExamples(data); })
-      .catch((failure: unknown) => { if (!controller.signal.aborted) setError(failure instanceof Error ? failure.message : "Не удалось загрузить примеры"); });
+      .catch((failure: unknown) => { if (!controller.signal.aborted) setError(failure instanceof Error ? safeErrorMessage(failure) : "Не удалось загрузить примеры"); });
     return () => controller.abort();
   }, [open, wordId, attempt]);
   return <div className={styles.examples}>
-    <button className={styles.link} type="button" aria-expanded={open} onClick={() => setOpen((value) => !value)}>{open ? "Скрыть примеры" : "Показать примеры"}</button>
-    {open && <div>{error ? <p role="alert">{error} <button type="button" onClick={() => setAttempt((value) => value + 1)}>Повторить</button></p>
-      : examples === null ? <p role="status">Загружаем примеры…</p> : !examples.length ? <p className={styles.hint}>Примеров пока нет.</p>
-      : <>{examples.map((example) => <p key={example.id}>{example.german}<br /><span className={styles.hint}>{displayTranslation(example)}</span></p>)}</>}</div>}
+    <button className={styles.link} type="button" aria-expanded={open} onClick={() => setOpen((value) => !value)}>{open ? t("Скрыть примеры") : t("Показать примеры")}</button>
+    {open && <div>{error ? <p role="alert">{errorText(error)} <button type="button" onClick={() => setAttempt((value) => value + 1)}>{t("Повторить")}</button></p>
+      : examples === null ? <p role="status">{t("Загружаем примеры…")}</p> : !examples.length ? <p className={styles.hint}>{t("Примеров пока нет.")}</p>
+      : <>{examples.map((example) => <p key={example.id}>{example.german}<br /><span className={styles.hint}>{displayTranslation(example, t("Перевод отсутствует"))}</span></p>)}</>}</div>}
   </div>;
 }

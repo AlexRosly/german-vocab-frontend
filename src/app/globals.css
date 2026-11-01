@@ -1025,3 +1025,12 @@ button.small-button {
 .translation-draft textarea, .initial-example textarea { box-sizing: border-box; width: 100%; resize: vertical; }
 .translation-draft textarea, .initial-example textarea { padding: .65rem .75rem; border: 1px solid #dce5df; border-radius: 12px; background: #fcfdfb; font: inherit; line-height: 1.5; min-height: 80px; }
 .example-form .translation-draft { grid-column: 1 / -1; }
+
+.ui-language { box-sizing: border-box; max-width: 1240px; margin: 16px auto; padding: 0 24px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.ui-language label { font-weight: 600; }
+.ui-language select { width: auto; min-width: 150px; margin: 0; }
+.ui-language .hint { margin: 0; }
+.ui-language p[role="alert"] { width: 100%; margin: 0; color: #a52a24; }
+.not-found { max-width: 720px; margin: 10vh auto; padding: 24px; }
+.not-found a { display: inline-block; margin-top: 24px; color: #207955; text-decoration: underline; }
+@media (max-width: 600px) { .ui-language { padding: 0 16px; } .ui-language .hint { flex-basis: 100%; } }

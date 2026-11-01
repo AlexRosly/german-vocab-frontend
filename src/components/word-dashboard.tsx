@@ -1,4 +1,6 @@
 "use client";
+import { safeErrorMessage } from "@/lib/i18n";
+import { useI18n } from "./ui-language-provider";
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { apiClient, apiFetch, fetchDueWords, fetchNewWords } from "@/lib/api";
@@ -79,6 +81,7 @@ async function fetchExamples(wordId: string): Promise<WordExample[]> {
 }
 
 export function WordDashboard({ user }: { user: AuthUser }) {
+  const { t, errorText, date, count, noun } = useI18n();
   const [words, setWords] = useState<Word[]>([]);
   const [examplesByWord, setExamplesByWord] = useState<
     Record<string, WordExample[]>
@@ -168,7 +171,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       setNewWordCount(data.count);
       setNewWordsError("");
     } catch (error) {
-      setNewWordsError(error instanceof Error ? error.message : "Не удалось обновить новые слова");
+      setNewWordsError(error instanceof Error ? safeErrorMessage(error) : "Не удалось обновить новые слова");
     }
   }, []);
 
@@ -382,7 +385,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       await loadWords();
       setStatus(wasEditing ? "Изменения сохранены" : "Слово добавлено");
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Ошибка сохранения");
+      setStatus(error instanceof Error ? safeErrorMessage(error) : "Ошибка сохранения");
     } finally {
       setBusy(false);
     }
@@ -392,7 +395,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     if (studyMode || studySaving || (studyFinished && !studySaved)) return;
     if (
       !window.confirm(
-        `Убрать слово «${word.german}» из личного словаря?`,
+        t("Убрать слово «{0}» из личного словаря?", { 0: word.german }),
       )
     ) {
       return;
@@ -421,7 +424,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       await loadWords();
       setStatus(`Убрано из словаря: ${word.german}`);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Ошибка удаления");
+      setStatus(error instanceof Error ? safeErrorMessage(error) : "Ошибка удаления");
     } finally {
       setBusy(false);
     }
@@ -516,7 +519,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       setStatus(isEditing ? "Пример обновлён" : "Пример добавлен");
     } catch (error) {
       setStatus(
-        error instanceof Error ? error.message : "Ошибка сохранения примера",
+        error instanceof Error ? safeErrorMessage(error) : "Ошибка сохранения примера",
       );
     } finally {
       setExampleBusyWordId(null);
@@ -524,7 +527,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   }
 
   async function deleteExample(wordId: string, example: WordExample) {
-    if (!window.confirm("Удалить этот пример?")) return;
+    if (!window.confirm(t("Удалить этот пример?"))) return;
 
     setExampleBusyWordId(wordId);
 
@@ -557,7 +560,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       setStatus("Пример удалён");
     } catch (error) {
       setStatus(
-        error instanceof Error ? error.message : "Ошибка удаления примера",
+        error instanceof Error ? safeErrorMessage(error) : "Ошибка удаления примера",
       );
     } finally {
       setExampleBusyWordId(null);
@@ -659,7 +662,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     } catch (error) {
       setNewWordsError(
         error instanceof Error
-          ? error.message
+          ? safeErrorMessage(error)
           : "Не удалось загрузить новые слова",
       );
     } finally {
@@ -684,7 +687,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     } catch (error) {
       setDueError(
         error instanceof Error
-          ? error.message
+          ? safeErrorMessage(error)
           : "Не удалось загрузить новые слова",
       );
     } finally {
@@ -753,7 +756,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     } catch (error) {
       setStatus(
         error instanceof Error
-          ? `Тренировка завершена, но сохранить результаты не удалось: ${error.message}`
+          ? `Тренировка завершена, но сохранить результаты не удалось: ${safeErrorMessage(error)}`
           : "Тренировка завершена, но сохранить результаты не удалось.",
       );
     } finally {
@@ -838,7 +841,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       setStudyProgress(data);
     } catch (error) {
       setProgressError(
-        error instanceof Error ? error.message : "Ошибка загрузки статистики",
+        error instanceof Error ? safeErrorMessage(error) : "Ошибка загрузки статистики",
       );
     } finally {
       setProgressLoading(false);
@@ -859,7 +862,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
       setDueError(
         error instanceof Error
-          ? error.message
+          ? safeErrorMessage(error)
           : "Не удалось загрузить слова для повторения",
       );
 
@@ -941,10 +944,10 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       <header className="topbar">
         <div className="brand-mark">W</div>
         <div>
-          <p className="eyebrow">DEUTSCH LERNEN</p>
+          <p className="eyebrow">{t("DEUTSCH LERNEN")}</p>
           <h1>Wortkarten</h1>
         </div>
-        <span className="status">{status}</span>
+        <span className="status">{errorText(status)}</span>
       </header>
 
       <TranslationLanguagePicker language={user.translationLanguage} disabled={languageLocked}
@@ -954,23 +957,19 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
       <section className="intro">
         <div>
-          <p className="eyebrow">ТВОЙ СЛОВАРЬ</p>
-          <h2>
-            Слова, которые
-            <br />
-            <span>запоминаются.</span>
+          <p className="eyebrow">{t("ТВОЙ СЛОВАРЬ")}</p>
+          <h2>{t("Слова, которые")}{" "}<br />
+            <span>{t("запоминаются.")}</span>
           </h2>
-          <p className="intro-copy">
-            Собирай лексику по урокам и повторяй её с умом.
-          </p>
+          <p className="intro-copy">{t("Собирай лексику по урокам и повторяй её с умом.")}</p>
         </div>
         <div className="summary-card">
-          <span className="summary-label">В словаре</span>
+          <span className="summary-label">{t("В словаре")}</span>
           <strong>{words.length}</strong>
-          <span className="summary-caption">карточек</span>
+          <span className="summary-caption">{noun(words.length, "card")}</span>
         </div>
       </section>
-      <nav className="dashboard-tabs" aria-label="Разделы приложения">
+      <nav className="dashboard-tabs" aria-label={t("Разделы приложения")}>
         <button
           type="button"
           className={
@@ -980,9 +979,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
           }
           onClick={() => setActiveTab("dictionary")}
           disabled={libraryBusy || moderationBusy}
-        >
-          Словарь
-        </button>
+        >{t("Словарь")}</button>
 
         <button
           type="button"
@@ -994,16 +991,12 @@ export function WordDashboard({ user }: { user: AuthUser }) {
             void loadStudyProgress();
           }}
           disabled={libraryBusy || moderationBusy}
-        >
-          Прогресс
-        </button>
+        >{t("Прогресс")}</button>
         <button type="button" className={activeTab === "library" ? "dashboard-tab active" : "dashboard-tab"}
-          disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("library")}>
-          Библиотека
-        </button>
+          disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("library")}>{t("Библиотека")}</button>
         {user.role === "ADMIN" && <button type="button"
           className={activeTab === "moderation" ? "dashboard-tab active" : "dashboard-tab"}
-          disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("moderation")}>Модерация</button>}
+          disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("moderation")}>{t("Модерация")}</button>}
       </nav>
 
       {activeTab === "library" && <LibraryPanel language={user.translationLanguage}
@@ -1035,8 +1028,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
             <div className="section-heading">
               <div>
-                <p className="eyebrow">WORD BY WORD</p>
-                <h3>Статистика по словам</h3>
+                <p className="eyebrow">{t("СЛОВО ЗА СЛОВОМ")}</p>
+                <h3>{t("Статистика по словам")}</h3>
               </div>
             </div>
 
@@ -1045,17 +1038,14 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                 type="button"
                 className={progressStatusFilter === "all" ? "active" : ""}
                 onClick={() => setProgressStatusFilter("all")}
-              >
-                Все ({studyProgress?.words.length ?? 0})
+              >{t("Все (")}{studyProgress?.words.length ?? 0})
               </button>
 
               <button
                 type="button"
                 className={progressStatusFilter === "learning" ? "active" : ""}
                 onClick={() => setProgressStatusFilter("learning")}
-              >
-                Закрепляется (
-                {
+              >{t("Закрепляется (")}{" "}{
                   (studyProgress?.words ?? []).filter(
                     (item) => getWordStatus(item) === "Закрепляется",
                   ).length
@@ -1067,9 +1057,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                 type="button"
                 className={progressStatusFilter === "review" ? "active" : ""}
                 onClick={() => setProgressStatusFilter("review")}
-              >
-                Пора повторить (
-                {
+              >{t("Пора повторить (")}{" "}{
                   (studyProgress?.words ?? []).filter(
                     (item) => getWordStatus(item) === "Пора повторить",
                   ).length
@@ -1081,9 +1069,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                 type="button"
                 className={progressStatusFilter === "known" ? "active" : ""}
                 onClick={() => setProgressStatusFilter("known")}
-              >
-                Закреплено (
-                {
+              >{t("Закреплено (")}{" "}{
                   (studyProgress?.words ?? []).filter(
                     (item) => getWordStatus(item) === "Закреплено",
                   ).length
@@ -1093,48 +1079,46 @@ export function WordDashboard({ user }: { user: AuthUser }) {
             </div>
 
             {progressLoading && !studyProgress ? (
-              <p>Загружаем статистику…</p>
+              <p>{t("Загружаем статистику…")}</p>
             ) : progressError && !studyProgress ? (
               <div className="empty-state">
-                <h4>Не удалось загрузить статистику</h4>
-                <p>{progressError}</p>
+                <h4>{t("Не удалось загрузить статистику")}</h4>
+                <p>{errorText(progressError)}</p>
                 <button
                   type="button"
                   className="small-button"
                   onClick={() => void loadStudyProgress()}
-                >
-                  Попробовать снова
-                </button>
+                >{t("Попробовать снова")}</button>
               </div>
             ) : studyProgress ? (
               <>
-                {progressError && <p role="alert">{progressError}</p>}
+                {progressError && <p role="alert">{errorText(progressError)}</p>}
 
                 <div className="study-results-grid progress-summary">
                   <div>
                     <strong>{studyProgress.totalSessions}</strong>
-                    <span>Тренировок</span>
+                    <span>{t("Тренировок")}</span>
                   </div>
 
                   <div>
                     <strong>{studyProgress.knownAnswers}</strong>
-                    <span>Ответов «Знаю»</span>
+                    <span>{t("Ответов «Знаю»")}</span>
                   </div>
 
                   <div>
                     {/* <strong>{studyProgress.needsReviewAnswers}</strong> */}
                     {/* <span>Нужно повторить</span> */}
                     <strong>{studyProgress.dueCount}</strong>
-                    <span>Пора повторить</span>
+                    <span>{t("Пора повторить")}</span>
                   </div>
 
                   <div>
                     <strong>{studyProgress.wordsWithProgress}</strong>
-                    <span>Слов изучалось</span>
+                    <span>{t("Слов изучалось")}</span>
                   </div>
                   <div>
                     <strong>{studyProgress.studiedToday}</strong>
-                    <span>Изучено сегодня</span>
+                    <span>{t("Изучено сегодня")}</span>
                   </div>
 
                   {/* <div>
@@ -1149,13 +1133,13 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         ).length
                       }
                     </strong>
-                    <span>Слов с ответом «Знаю»</span>
+                    <span>{t("Слов с ответом «Знаю»")}</span>
                   </div>
                 </div>
 
                 <div className="progress-overview">
                   <div className="progress-overview-heading">
-                    <h4>Общий результат</h4>
+                    <h4>{t("Общий результат")}</h4>
                     <strong>
                       {studyProgress.knownAnswers +
                         studyProgress.needsReviewAnswers >
@@ -1206,17 +1190,13 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                     />
                   </div>
 
-                  <p className="hint">
-                    Всего слов в словаре: {studyProgress.totalWordsInDictionary}
-                    . Показатель отражает самооценку ответов, а не
-                    автоматическую проверку знаний.
-                  </p>
+                  <p className="hint">{t("Всего слов в словаре:")}{" "}{studyProgress.totalWordsInDictionary}{" "}{t(". Показатель отражает самооценку ответов, а не автоматическую проверку знаний.")}</p>
                 </div>
 
                 <div className="progress-words">
                   {/* <div className="section-heading">
                     <div>
-                      <p className="eyebrow">WORD BY WORD</p>
+                      <p className="eyebrow">{t("СЛОВО ЗА СЛОВОМ")}</p>
                       <h3>Статистика по словам</h3>
                     </div>
                   </div> */}
@@ -1234,13 +1214,13 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                       <div className="empty-state">
                         <h4>
                           {studyProgress.words.length === 0
-                            ? "Пока нет истории повторений"
-                            : "В этой категории пока нет слов"}
+                            ? t("Пока нет истории повторений")
+                            : t("В этой категории пока нет слов")}
                         </h4>
                         <p>
                           {studyProgress.words.length === 0
-                            ? "Пройди тренировку, и здесь появятся результаты по словам."
-                            : "Выбери другую категорию или продолжи обучение."}
+                            ? t("Пройди тренировку, и здесь появятся результаты по словам.")
+                            : t("Выбери другую категорию или продолжи обучение.")}
                         </p>
                       </div>
                     ) : (
@@ -1285,44 +1265,39 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                                         : "word-status--learning"
                                   }`}
                                 >
-                                  {getWordStatus(item)}
+                                  {t(getWordStatus(item))}
                                 </span>
 
-                                <p>{displayTranslation(item.word)}</p>
+                                <p>{displayTranslation(item.word, t("Перевод отсутствует"))}</p>
 
                                 <div className="word-meta">
-                                  <span>Знаю: {item.knownCount}</span>
-                                  <span>
-                                    Повторить: {item.needsReviewCount}
+                                  <span>{t("Знаю:")}{" "}{item.knownCount}</span>
+                                  <span>{t("Повторить:")}{" "}{item.needsReviewCount}
                                   </span>
                                 </div>
                                 <p className="word-extra">
-                                  <strong>Последнее повторение:</strong>{" "}
+                                  <strong>{t("Последнее повторение:")}</strong>{" "}
                                   {item.lastReviewedAt
-                                    ? new Date(
-                                        item.lastReviewedAt,
-                                      ).toLocaleString("ru-RU")
-                                    : "Нет данных"}
+                                    ? date(item.lastReviewedAt)
+                                    : t("Нет данных")}
                                 </p>
 
                                 <p className="word-extra">
-                                  <strong>Следующее повторение:</strong>{" "}
+                                  <strong>{t("Следующее повторение:")}</strong>{" "}
                                   {item.nextReviewAt
-                                    ? new Date(
-                                        item.nextReviewAt,
-                                      ).toLocaleString("ru-RU")
-                                    : "Не запланировано"}
+                                    ? date(item.nextReviewAt)
+                                    : t("Не запланировано")}
                                 </p>
 
                                 <p className="word-extra">
-                                  <strong>Текущий интервал:</strong>{" "}
+                                  <strong>{t("Текущий интервал:")}</strong>{" "}
                                   {item.currentIntervalDays > 0
-                                    ? `${item.currentIntervalDays} дн.`
-                                    : "Ещё не установлен"}
+                                    ? count(item.currentIntervalDays, "day")
+                                    : t("Ещё не установлен")}
                                 </p>
 
                                 <p className="word-extra">
-                                  <strong>Успешных ответов подряд:</strong>{" "}
+                                  <strong>{t("Успешных ответов подряд:")}</strong>{" "}
                                   {item.consecutiveKnown}
                                 </p>
                                 {/* <p className="word-extra">
@@ -1362,7 +1337,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
                 <div>
                   <strong>{studyProgress.dueCount}</strong>
-                  <span>Пора повторить</span>
+                  <span>{t("Пора повторить")}</span>
                 </div>
               </>
             ) : null}
@@ -1379,27 +1354,23 @@ export function WordDashboard({ user }: { user: AuthUser }) {
             <div className="section-heading">
               <div>
                 <p className="eyebrow">
-                  {editingId ? "ИЗМЕНЕНИЕ ЗАПИСИ" : "НОВАЯ ЗАПИСЬ"}
+                  {editingId ? t("ИЗМЕНЕНИЕ ЗАПИСИ") : t("НОВАЯ ЗАПИСЬ")}
                 </p>
-                <h3>{editingId ? "Редактировать слово" : "Добавить слово"}</h3>
+                <h3>{editingId ? t("Редактировать слово") : t("Добавить слово")}</h3>
               </div>
               <span className="plus">{editingId ? "✎" : "+"}</span>
             </div>
 
             <form onSubmit={submitWord}>
-              <label>
-                Немецкое слово
-                <input
+              <label>{t("Немецкое слово")}{" "}<input
                   required
                   value={german}
                   onChange={(event) => setGerman(event.target.value)}
-                  placeholder="например, Apfel"
+                  placeholder={t("например, Apfel")}
                 />
               </label>
 
-              <label>
-                Артикль / категория
-                <select
+              <label>{t("Артикль / категория")}{" "}<select
                   value={`${article}:${grammaticalNumber}`}
                   onChange={(event) => {
                     const [nextArticle, nextNumber] = event.target.value.split(
@@ -1410,42 +1381,28 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                     setGrammaticalNumber(nextNumber);
                   }}
                 >
-                  <option value="der:singular">
-                    der — мужской род (синий)
-                  </option>
-                  <option value="das:singular">
-                    das — средний род (зелёный)
-                  </option>
-                  <option value="die:singular">
-                    die — женский род, ед. ч. (красный/розовый)
-                  </option>
-                  <option value="die:plural">
-                    die — множественное число (жёлтый/оранжевый)
-                  </option>
-                  <option value="none:not_applicable">
-                    Без артикля / не указан
-                  </option>
+                  <option value="der:singular">{t("der — мужской род (синий)")}</option>
+                  <option value="das:singular">{t("das — средний род (зелёный)")}</option>
+                  <option value="die:singular">{t("die — женский род, ед. ч. (красный/розовый)")}</option>
+                  <option value="die:plural">{t("die — множественное число (жёлтый/оранжевый)")}</option>
+                  <option value="none:not_applicable">{t("Без артикля / не указан")}</option>
                 </select>
               </label>
 
-              <TranslationDraftFields label="Перевод слова (необязательно)" language={formLanguage} values={translationValues} disabled={busy}
+              <TranslationDraftFields label={t("Перевод слова (необязательно)")} language={formLanguage} values={translationValues} disabled={busy}
                 onLanguage={setFormLanguage} onText={(language, text) => setTranslationValues((current) => ({ ...current, [language]: text }))} />
 
-              <label>
-                Множественное число
-                <input
+              <label>{t("Множественное число")}{" "}<input
                   value={pluralForm}
                   onChange={(event) => setPluralForm(event.target.value)}
-                  placeholder="Например: die Äpfel"
+                  placeholder={t("Например: die Äpfel")}
                 />
               </label>
 
-              <label>
-                Заметки
-                <textarea
+              <label>{t("Заметки")}{" "}<textarea
                   value={notes}
                   onChange={(event) => setNotes(event.target.value)}
-                  placeholder="Контекст, произношение или подсказка"
+                  placeholder={t("Контекст, произношение или подсказка")}
                   rows={3}
                 />
               </label>
@@ -1453,9 +1410,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
               {!editingId && <InitialExamples drafts={newExamples} onChange={setNewExamples} language={formLanguage} disabled={busy} />}
 
               <div className="form-row">
-                <label>
-                  Уровень
-                  <select
+                <label>{t("Уровень")}{" "}<select
                     value={level}
                     onChange={(event) => setLevel(event.target.value)}
                   >
@@ -1467,9 +1422,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                   </select>
                 </label>
 
-                <label>
-                  № урока
-                  <input
+                <label>{t("№ урока")}{" "}<input
                     type="number"
                     min="1"
                     value={lessonNumber}
@@ -1480,10 +1433,10 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
               <button disabled={busy} type="submit">
                 {busy
-                  ? "Сохраняем…"
+                  ? t("Сохраняем…")
                   : editingId
-                    ? "Сохранить изменения"
-                    : "Добавить в словарь"}{" "}
+                    ? t("Сохранить изменения")
+                    : t("Добавить в словарь")}{" "}
                 <span>↗</span>
               </button>
 
@@ -1493,50 +1446,41 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                   disabled={busy}
                   type="button"
                   onClick={resetForm}
-                >
-                  Отмена
-                </button>
+                >{t("Отмена")}</button>
               )}
             </form>
 
-            <p className="hint">
-              Добавляй формы множественного числа, заметки и примеры
-              употребления.
-            </p>
+            <p className="hint">{t("Добавляй формы множественного числа, заметки и примеры употребления.")}</p>
           </section>
 
           <section className="word-section">
             <div className="section-heading list-heading">
               <div>
-                <p className="eyebrow">ТВОЯ КОЛЛЕКЦИЯ</p>
-                <h3>Последние слова</h3>
+                <p className="eyebrow">{t("ТВОЯ КОЛЛЕКЦИЯ")}</p>
+                <h3>{t("Последние слова")}</h3>
                 <button
                   type="button"
                   className="study-start-button"
                   onClick={startStudy}
                   disabled={filteredWords.length === 0}
-                >
-                  Начать тренировку ({filteredWords.length} слов)
-                </button>
+                >{t("Начать тренировку ({count})", { count: count(filteredWords.length) })}</button>
                 <button
                   type="button"
                   onClick={() => void startNewStudy()}
                   disabled={dueLoading}
                 >
-                  {dueLoading ? "Загрузка..." : "Новые слова"}
+                  {dueLoading ? t("Загрузка...") : t("Новые слова")}
                 </button>
                 <button
                   type="button"
                   onClick={startDueStudy}
                   disabled={dueLoading || dueCount === 0}
                 >
-                  {dueLoading ? "Загрузка..." : `Пора повторить (${dueCount})`}
+                  {dueLoading ? t("Загрузка...") : t("Пора повторить ({0})", { 0: dueCount })}
                 </button>
 
                 <div className="new-words-controls">
-                  <label htmlFor="new-words-limit">
-                    Сколько новых слов изучить?
-                  </label>
+                  <label htmlFor="new-words-limit">{t("Сколько новых слов изучить?")}</label>
 
                   <select
                     id="new-words-limit"
@@ -1550,10 +1494,10 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                     }
                     disabled={newWordsLoading || studyMode}
                   >
-                    <option value="5">5 слов</option>
-                    <option value="10">10 слов</option>
-                    <option value="20">20 слов</option>
-                    <option value="all">Все новые слова</option>
+                    <option value="5">{count(5)}</option>
+                    <option value="10">{count(10)}</option>
+                    <option value="20">{count(20)}</option>
+                    <option value="all">{t("Все новые слова")}</option>
                   </select>
 
                   <button
@@ -1563,33 +1507,29 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                     disabled={newWordsLoading || studyMode}
                   >
                     {newWordsLoading
-                      ? "Загрузка..."
-                      : `Изучить новые слова (${newWordCount})`}
+                      ? t("Загрузка...")
+                      : t("Изучить новые слова ({0})", { 0: newWordCount })}
                   </button>
 
-                  {newWordsError && <p role="alert">{newWordsError}</p>}
+                  {newWordsError && <p role="alert">{errorText(newWordsError)}</p>}
                 </div>
 
-                {dueError && <p role="alert">{dueError}</p>}
+                {dueError && <p role="alert">{errorText(dueError)}</p>}
                 <div className="word-filters">
-                  <label>
-                    Поиск
-                    <input
+                  <label>{t("Поиск")}{" "}<input
                       type="search"
                       value={searchQuery}
                       onChange={(event) => setSearchQuery(event.target.value)}
-                      placeholder="Слово, перевод, заметка или пример…"
+                      placeholder={t("Слово, перевод, заметка или пример…")}
                     />
                   </label>
 
                   <div className="form-row">
-                    <label>
-                      Уровень
-                      <select
+                    <label>{t("Уровень")}{" "}<select
                         value={filterLevel}
                         onChange={(event) => setFilterLevel(event.target.value)}
                       >
-                        <option value="all">Все уровни</option>
+                        <option value="all">{t("Все уровни")}</option>
                         {["A1", "A2", "B1", "B2", "C1", "C2"].map((item) => (
                           <option key={item} value={item}>
                             {item}
@@ -1598,15 +1538,13 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                       </select>
                     </label>
 
-                    <label>
-                      Урок
-                      <select
+                    <label>{t("Урок")}{" "}<select
                         value={filterLesson}
                         onChange={(event) =>
                           setFilterLesson(event.target.value)
                         }
                       >
-                        <option value="all">Все уроки</option>
+                        <option value="all">{t("Все уроки")}</option>
                         {[
                           ...new Set(
                             words
@@ -1618,8 +1556,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         ]
                           .sort((a, b) => a - b)
                           .map((lesson) => (
-                            <option key={lesson} value={String(lesson)}>
-                              Урок {lesson}
+                            <option key={lesson} value={String(lesson)}>{t("Урок")}{" "}{lesson}
                             </option>
                           ))}
                       </select>
@@ -1627,40 +1564,34 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                   </div>
 
                   <div className="form-row">
-                    <label>
-                      Артикль
-                      <select
+                    <label>{t("Артикль")}{" "}<select
                         value={filterArticle}
                         onChange={(event) =>
                           setFilterArticle(event.target.value)
                         }
                       >
-                        <option value="all">Все категории</option>
-                        <option value="der">der — мужской</option>
-                        <option value="das">das — средний</option>
-                        <option value="die">die — женский</option>
-                        <option value="plural">Множественное число</option>
-                        <option value="none">Без артикля</option>
+                        <option value="all">{t("Все категории")}</option>
+                        <option value="der">{t("der — мужской")}</option>
+                        <option value="das">{t("das — средний")}</option>
+                        <option value="die">{t("die — женский")}</option>
+                        <option value="plural">{t("Множественное число")}</option>
+                        <option value="none">{t("Без артикля")}</option>
                       </select>
                     </label>
 
-                    <label>
-                      Сортировка
-                      <select
+                    <label>{t("Сортировка")}{" "}<select
                         value={sortOrder}
                         onChange={(event) => setSortOrder(event.target.value)}
                       >
-                        <option value="recent">Сначала новые</option>
-                        <option value="az">По алфавиту: А–Я</option>
-                        <option value="za">По алфавиту: Я–А</option>
-                        <option value="level">По уровню и уроку</option>
+                        <option value="recent">{t("Сначала новые")}</option>
+                        <option value="az">{t("По алфавиту: А–Я")}</option>
+                        <option value="za">{t("По алфавиту: Я–А")}</option>
+                        <option value="level">{t("По уровню и уроку")}</option>
                       </select>
                     </label>
                   </div>
 
-                  <p className="hint">
-                    Показано {filteredWords.length} из {words.length} слов
-                  </p>
+                  <p className="hint">{t("Показано {shown} из {total}", { shown: filteredWords.length, total: words.length })}</p>
 
                   {(searchQuery ||
                     filterLevel !== "all" ||
@@ -1677,13 +1608,11 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         setFilterArticle("all");
                         setSortOrder("recent");
                       }}
-                    >
-                      Сбросить поиск и фильтры
-                    </button>
+                    >{t("Сбросить поиск и фильтры")}</button>
                   )}
                 </div>
               </div>
-              <span className="count">{words.length} всего</span>
+              <span className="count">{words.length}{" "}{t("всего")}</span>
             </div>
 
             {/* {words.length === 0 ? (
@@ -1696,17 +1625,14 @@ export function WordDashboard({ user }: { user: AuthUser }) {
             {studyMode && studyWords[studyIndex] && (
               <section className="study-panel">
                 <div className="study-header">
-                  <span>
-                    Карточка {studyIndex + 1} из {studyWords.length}
+                  <span>{t("Карточка {current} из {total}", { current: studyIndex + 1, total: studyWords.length })}
                   </span>
 
                   <button
                     type="button"
                     className="small-button secondary-button"
                     onClick={() => setStudyMode(false)}
-                  >
-                    Завершить
-                  </button>
+                  >{t("Завершить")}</button>
                 </div>
 
                 <div className="study-progress">
@@ -1722,7 +1648,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                   className={`study-card ${colorClass(studyWords[studyIndex])}`}
                 >
                   <p className="eyebrow">
-                    {studyWords[studyIndex].level ?? "Немецкий"}
+                    {studyWords[studyIndex].level ?? t("Немецкий")}
                   </p>
 
                   <h3>
@@ -1735,8 +1661,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                   </h3>
 
                   {studyWords[studyIndex].pluralForm && (
-                    <p>
-                      Множественное число: {studyWords[studyIndex].pluralForm}
+                    <p>{t("Множественное число:")}{" "}{studyWords[studyIndex].pluralForm}
                     </p>
                   )}
 
@@ -1745,13 +1670,11 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                     className="speak-button"
                     disabled={!speechSupported}
                     onClick={() => speakWord(studyWords[studyIndex])}
-                  >
-                    🔊 Прослушать
-                  </button>
+                  >{t("🔊 Прослушать")}</button>
 
                   {showTranslation ? (
                     <div className="study-answer">
-                      <h4>{displayTranslation(studyWords[studyIndex])}</h4>
+                      <h4>{displayTranslation(studyWords[studyIndex], t("Перевод отсутствует"))}</h4>
 
                       {studyWords[studyIndex].notes && (
                         <p>{studyWords[studyIndex].notes}</p>
@@ -1762,15 +1685,13 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         .map((example) => (
                           <div key={example.id} className="study-example">
                             <p>{example.german}</p>
-                            <p>{displayTranslation(example)}</p>
+                            <p>{displayTranslation(example, t("Перевод отсутствует"))}</p>
                             <button
                               type="button"
                               className="small-button secondary-button"
                               disabled={!speechSupported}
                               onClick={() => speakExample(example)}
-                            >
-                              🔊 Слушать пример
-                            </button>
+                            >{t("🔊 Слушать пример")}</button>
                           </div>
                         ))}
                     </div>
@@ -1780,27 +1701,21 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         type="button"
                         className="study-reveal-button"
                         onClick={revealTranslation}
-                      >
-                        Показать перевод
-                      </button>
+                      >{t("Показать перевод")}</button>
 
                       <button
                         type="button"
                         className="study-unknown-button"
                         onClick={() => answerStudyCard(false)}
                         disabled={studySaving}
-                      >
-                        Не знаю
-                      </button>
+                      >{t("Не знаю")}</button>
 
                       <button
                         type="button"
                         className="study-known-button"
                         onClick={() => answerStudyCard(true)}
                         disabled={studySaving}
-                      >
-                        Знаю слово
-                      </button>
+                      >{t("Знаю слово")}</button>
                     </div>
                   )}
 
@@ -1811,24 +1726,19 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         className="study-unknown-button"
                         onClick={() => answerStudyCard(false)}
                         disabled={studySaving}
-                      >
-                        Не знаю — повторить позже
-                      </button>
+                      >{t("Не знаю — повторить позже")}</button>
 
                       <button
                         type="button"
                         className="study-known-button"
                         onClick={() => answerStudyCard(true)}
                         disabled={studySaving}
-                      >
-                        Знаю слово
-                      </button>
+                      >{t("Знаю слово")}</button>
                     </div>
                   )}
                 </div>
 
-                <p className="study-session-stats">
-                  Знаю: {knownWordIds.length} · Повторить:{" "}
+                <p className="study-session-stats">{t("Знаю:")}{" "}{knownWordIds.length}{" "}{t("· Повторить:")}{" "}
                   {unknownWordIds.length}
                 </p>
               </section>
@@ -1836,14 +1746,14 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
             {studyFinished && (
               <section className="study-results">
-                <p className="eyebrow">ТРЕНИРОВКА ЗАВЕРШЕНА</p>
-                <h3>Отличная работа!</h3>
+                <p className="eyebrow">{t("ТРЕНИРОВКА ЗАВЕРШЕНА")}</p>
+                <h3>{t("Отличная работа!")}</h3>
                 {studySaving && (
-                  <p role="status">Сохраняем результаты…</p>
+                  <p role="status">{t("Сохраняем результаты…")}</p>
                 )}
 
                 {studySaved && (
-                  <p role="status">✓ Результаты сохранены</p>
+                  <p role="status">{t("✓ Результаты сохранены")}</p>
                 )}
 
                 {!studySaving && !studySaved && (
@@ -1873,7 +1783,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                       } catch (error) {
                         setStatus(
                           error instanceof Error
-                            ? `Не удалось сохранить: ${error.message}`
+                            ? `Не удалось сохранить: ${safeErrorMessage(error)}`
                             : "Не удалось сохранить результаты.",
                         );
                       } finally {
@@ -1881,20 +1791,18 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                       }
                     }}
                     disabled={studySaving}
-                  >
-                    Повторить сохранение
-                  </button>
+                  >{t("Повторить сохранение")}</button>
                 )}
 
                 <div className="study-results-grid">
                   <div>
                     <strong>{knownWordIds.length}</strong>
-                    <span>Знаю</span>
+                    <span>{t("Знаю")}</span>
                   </div>
 
                   <div>
                     <strong>{unknownWordIds.length}</strong>
-                    <span>Повторить</span>
+                    <span>{t("Повторить")}</span>
                   </div>
 
                   <div>
@@ -1908,7 +1816,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         : 0}
                       %
                     </strong>
-                    <span>Знаю без подсказки</span>
+                    <span>{t("Знаю без подсказки")}</span>
                   </div>
                 </div>
 
@@ -1926,9 +1834,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
                       startStudyWithWords(wordsToRepeat);
                     }}
-                  >
-                    Повторить сложные
-                  </button>
+                  >{t("Повторить сложные")}</button>
 
                   <button
                     type="button"
@@ -1942,8 +1848,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                       }
                     }}
                     disabled={unknownWordIds.length === 0}
-                  >
-                    Повторить ошибки ({unknownWordIds.length})
+                  >{t("Повторить ошибки ({count})", { count: unknownWordIds.length })}
                   </button>
 
                   <button
@@ -1953,9 +1858,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                       setStudyFinished(false);
                       setShowTranslation(false);
                     }}
-                  >
-                    Вернуться к словарю
-                  </button>
+                  >{t("Вернуться к словарю")}</button>
 
                   {/* <button
                   type="button"
@@ -1986,16 +1889,14 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                 </div>
 
                 <div className="daily-goal">
-                  <h3>Цель на сегодня</h3>
-                  <p>
-                    Изучено слов в этой тренировке:{" "}
-                    <strong>{studyWords.length}</strong> из 10
-                  </p>
+                  <h3>{t("Цель на сегодня")}</h3>
+                  <p>{t("Изучено слов в этой тренировке:")}{" "}
+                    <strong>{studyWords.length}</strong>{" "}{t("из 10")}</p>
 
                   <div
                     className="daily-goal-track"
                     role="progressbar"
-                    aria-label="Прогресс тренировки"
+                    aria-label={t("Прогресс тренировки")}
                     aria-valuemin={0}
                     aria-valuemax={10}
                     aria-valuenow={Math.min(studyWords.length, 10)}
@@ -2010,8 +1911,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
                   <p>
                     {studyWords.length >= 10
-                      ? "Цель достигнута!"
-                      : `До цели осталось ${10 - studyWords.length} слов`}
+                      ? t("Цель достигнута!")
+                      : t("До цели осталось: {count}", { count: count(10 - studyWords.length) })}
                   </p>
                 </div>
               </section>
@@ -2020,8 +1921,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
             {filteredWords.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-icon">Aa</div>
-                <h4>Ничего не найдено</h4>
-                <p>Измени запрос или сбрось фильтры.</p>
+                <h4>{t("Ничего не найдено")}</h4>
+                <p>{t("Измени запрос или сбрось фильтры.")}</p>
               </div>
             ) : (
               <div className="word-list">
@@ -2069,39 +1970,38 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                             }`}
                             onClick={() => speakWord(word)}
                             disabled={!speechSupported}
-                            aria-label={`Прослушать слово ${word.german}`}
-                            title="Прослушать слово с артиклем"
+                            aria-label={t("Прослушать слово {0}", { 0: word.german })}
+                            title={t("Прослушать слово с артиклем")}
                           >
                             {speakingExampleId === `word-${word.id}`
-                              ? "■ Стоп"
+                              ? t("■ Стоп")
                               : "🔊"}
                           </button>
                         </div>
-                        <p>{displayTranslation(word)}</p>
+                        <p>{displayTranslation(word, t("Перевод отсутствует"))}</p>
 
                         {word.pluralForm && (
                           <p className="word-extra">
-                            <strong>Мн. число:</strong> {word.pluralForm}
+                            <strong>{t("Мн. число:")}</strong> {word.pluralForm}
                           </p>
                         )}
 
                         {word.notes && (
                           <p className="word-extra">
-                            <strong>Заметки:</strong> {word.notes}
+                            <strong>{t("Заметки:")}</strong> {word.notes}
                           </p>
                         )}
 
                         <div className="word-meta">
-                          <span>{publicationLabel(word.publicationStatus)}</span>
+                          <span>{t(publicationLabel(word.publicationStatus))}</span>
                           {word.level && <span>{word.level}</span>}
                           {word.lessonNumber != null && (
-                            <span>Урок {word.lessonNumber}</span>
+                            <span>{t("Урок")}{" "}{word.lessonNumber}</span>
                           )}
                         </div>
 
                         <section className="examples-section">
-                          <h4 className="examples-title">
-                            Примеры употребления <span>{examples.length}</span>
+                          <h4 className="examples-title">{t("Примеры употребления")}{" "}<span>{examples.length}</span>
                           </h4>
 
                           {examples.length > 0 && (
@@ -2131,22 +2031,22 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                                           }
                                           aria-label={
                                             isSpeaking
-                                              ? "Остановить озвучивание"
-                                              : "Прослушать немецкое предложение"
+                                              ? t("Остановить озвучивание")
+                                              : t("Прослушать немецкое предложение")
                                           }
                                           title={
                                             !speechSupported
-                                              ? "Озвучивание не поддерживается браузером"
+                                              ? t("Озвучивание не поддерживается браузером")
                                               : isSpeaking
-                                                ? "Остановить"
-                                                : "Прослушать"
+                                                ? t("Остановить")
+                                                : t("Прослушать")
                                           }
                                         >
-                                          {isSpeaking ? "■ Стоп" : "🔊 Слушать"}
+                                          {isSpeaking ? t("■ Стоп") : t("🔊 Слушать")}
                                         </button>
                                       </div>
 
-                                      <p>{displayTranslation(example)}</p>
+                                      <p>{displayTranslation(example, t("Перевод отсутствует"))}</p>
                                     </div>
 
                                     {editable && (
@@ -2160,9 +2060,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                                         onClick={() =>
                                           beginEditExample(word.id, example)
                                         }
-                                      >
-                                        Изменить
-                                      </button>
+                                      >{t("Изменить")}</button>
 
                                       <button
                                         type="button"
@@ -2173,9 +2071,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                                         onClick={() =>
                                           void deleteExample(word.id, example)
                                         }
-                                      >
-                                        Удалить
-                                      </button>
+                                      >{t("Удалить")}</button>
                                     </div>
 )}
                                   </div>
@@ -2191,9 +2087,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                               void saveExample(word.id, event)
                             }
                           >
-                            <label>
-                              Предложение на немецком
-                              <textarea
+                            <label>{t("Предложение на немецком")}{" "}<textarea
                                 rows={2}
                                 required
                                 value={exampleInput.german}
@@ -2204,7 +2098,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                                     event.target.value,
                                   )
                                 }
-                                placeholder="Например: Ich esse einen Apfel."
+                                placeholder={t("Например: Ich esse einen Apfel.")}
                               />
                             </label>
 
@@ -2219,10 +2113,10 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                                 disabled={exampleBusyWordId === word.id || busy}
                               >
                                 {exampleBusyWordId === word.id
-                                  ? "Сохраняем…"
+                                  ? t("Сохраняем…")
                                   : editingThisExample
-                                    ? "Сохранить пример"
-                                    : "Добавить пример"}
+                                    ? t("Сохранить пример")
+                                    : t("Добавить пример")}
                               </button>
 
                               {editingThisExample && (
@@ -2231,9 +2125,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                                   className="small-button secondary-button"
                                   onClick={() => cancelExampleEdit(word.id)}
                                   disabled={exampleBusyWordId === word.id}
-                                >
-                                  Отмена
-                                </button>
+                                >{t("Отмена")}</button>
                               )}
                             </div>
                           </form>
@@ -2244,27 +2136,23 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                       <div className="word-actions">
                         {editable && <button type="button" className="small-button secondary-button"
                           disabled={busy || studyMode || studySaving || (studyFinished && !studySaved) || exampleBusyWordId !== null}
-                          aria-label={`Переводы: ${word.german}`} onClick={() => openTranslations(word)}>Переводы</button>}
+                          aria-label={t("Переводы: {0}", { 0: word.german })} onClick={() => openTranslations(word)}>{t("Переводы")}</button>}
                         {editable && (
 <button
                           type="button"
                           className="small-button"
                           disabled={busy}
                           onClick={() => startEditing(word)}
-                        >
-                          Изменить
-                        </button>
+                        >{t("Изменить")}</button>
 )}
 
                         <button
                           type="button"
                           className="small-button delete-button"
                           disabled={busy || studyMode || studySaving || (studyFinished && !studySaved)}
-                          title={studyMode || (studyFinished && !studySaved) ? "Сначала завершите и сохраните тренировку" : "Убрать из личного словаря"}
+                          title={studyMode || (studyFinished && !studySaved) ? t("Сначала завершите и сохраните тренировку") : t("Убрать из личного словаря")}
                           onClick={() => void deleteWord(word)}
-                        >
-                          Убрать из словаря
-                        </button>
+                        >{t("Убрать из словаря")}</button>
                       </div>
                     </article>
                   );
@@ -2275,7 +2163,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
         </section>
       )}
 
-      <footer>Учись небольшими шагами. Повторяй регулярно.</footer>
+      <footer>{t("Учись небольшими шагами. Повторяй регулярно.")}</footer>
       </div>
       {translationTarget && <WordTranslationsEditor key={translationTarget.id} word={translationTarget}
         initialLanguage={user.translationLanguage} onClose={() => setTranslationTarget(null)} onSaved={syncAfterTranslation} />}

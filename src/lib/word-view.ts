@@ -4,8 +4,8 @@ export function canEditWord(word: EditableWord, user: { id: string; role: "USER"
   return user.role === "ADMIN" || (word.createdByUserId === user.id && word.publicationStatus !== "PUBLISHED");
 }
 
-export function displayTranslation(word: { selectedTranslation?: { text: string | null } }): string {
-  return word.selectedTranslation?.text ?? "Перевод отсутствует";
+export function displayTranslation(word: { selectedTranslation?: { text: string | null } }, missing = "Перевод отсутствует"): string {
+  return word.selectedTranslation?.text ?? missing;
 }
 
 export function publicationLabel(status: EditableWord["publicationStatus"]): string {

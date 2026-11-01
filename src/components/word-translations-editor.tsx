@@ -1,4 +1,6 @@
 "use client";
+import { safeErrorMessage } from "@/lib/i18n";
+import { useI18n } from "./ui-language-provider";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
@@ -6,11 +8,12 @@ import { normalizeTranslation, TranslationError, WordTranslationsClient, type Sa
 import styles from "./word-translations-editor.module.css";
 
 const client = new WordTranslationsClient(apiFetch);
-const message = (error: unknown) => error instanceof Error ? error.message : "Не удалось выполнить запрос. Повторите попытку.";
+const message = (error: unknown) => error instanceof Error ? safeErrorMessage(error) : "Не удалось выполнить запрос. Повторите попытку.";
 
 export function WordTranslationsEditor({ word, initialLanguage, onClose, onSaved }: {
   word: { id: string; german: string }; initialLanguage: string; onClose: () => void; onSaved: (translation: SavedTranslation) => Promise<void>;
 }) {
+  const { t, errorText } = useI18n();
   const dialog = useRef<HTMLDialogElement>(null);
   const active = useRef(true);
   const savingRef = useRef(false);
@@ -80,35 +83,35 @@ export function WordTranslationsEditor({ word, initialLanguage, onClose, onSaved
   return <dialog ref={dialog} className={styles.dialog} aria-labelledby="translations-heading" onCancel={(event) => {
     event.preventDefault(); if (!savingRef.current) onClose();
   }}>
-    <div className={styles.header}><div><p className="eyebrow">ПЕРЕВОДЫ КАРТОЧКИ</p><h2 id="translations-heading">{word.german}</h2></div>
-      <button type="button" className={styles.close} disabled={saving} onClick={onClose}>{dirty ? "Закрыть без сохранения" : "Закрыть"}</button>
+    <div className={styles.header}><div><p className="eyebrow">{t("ПЕРЕВОДЫ КАРТОЧКИ")}</p><h2 id="translations-heading">{word.german}</h2></div>
+      <button type="button" className={styles.close} disabled={saving} onClick={onClose}>{dirty ? t("Закрыть без сохранения") : t("Закрыть")}</button>
     </div>
-    <p className={styles.hint}>Перевод входит в общую карточку. Изменение отклонённой карточки снова отправит её на проверку.</p>
+    <p className={styles.hint}>{t("Перевод входит в общую карточку. Изменение отклонённой карточки снова отправит её на проверку.")}</p>
     <form onSubmit={(event) => void save(event)} aria-busy={saving}>
-      <label htmlFor="word-translation-language">Язык перевода карточки</label>
+      <label htmlFor="word-translation-language">{t("Язык перевода карточки")}</label>
       <select id="word-translation-language" value={language} disabled={saving || dirty || !languages.length} onChange={(event) => setLanguage(event.target.value)}>
         {!supported && <option value={language}>{language}</option>}
         {languages.map((item) => <option key={item.code} value={item.code}>{item.label}</option>)}
       </select>
-      {catalogError && <p className={styles.error} role="alert">{catalogError} <button type="button" disabled={saving} onClick={() => setCatalogAttempt((value) => value + 1)}>Повторить загрузку языков</button></p>}
-      {dirty && <p className={styles.hint}>Сохраните перевод или отмените изменения перед выбором другого языка.</p>}
-      {!loaded && !error && <p role="status">Загружаем перевод…</p>}
-      {loaded && original === null && <p className={styles.hint}>Перевода на этом языке пока нет.</p>}
-      <label htmlFor="word-translation-text">Текст перевода</label>
+      {catalogError && <p className={styles.error} role="alert">{errorText(catalogError)} <button type="button" disabled={saving} onClick={() => setCatalogAttempt((value) => value + 1)}>{t("Повторить загрузку языков")}</button></p>}
+      {dirty && <p className={styles.hint}>{t("Сохраните перевод или отмените изменения перед выбором другого языка.")}</p>}
+      {!loaded && !error && <p role="status">{t("Загружаем перевод…")}</p>}
+      {loaded && original === null && <p className={styles.hint}>{t("Перевода на этом языке пока нет.")}</p>}
+      <label htmlFor="word-translation-text">{t("Текст перевода")}</label>
       <textarea id="word-translation-text" rows={5} value={text} maxLength={2000} disabled={!loaded || saving || blocked}
         onChange={(event) => { setText(event.target.value); setNotice(""); }} aria-describedby="word-translation-limit" />
-      <p id="word-translation-limit" className={length > 1000 ? styles.error : styles.hint}>{length} / 1000 символов</p>
-      {language === "ru" && <p className={styles.hint}>Русский перевод обновится и в основной форме слова.</p>}
-      {error && <p className={styles.error} role="alert">{error}</p>}
-      {blocked && <p className={styles.error}>Доступ к редактированию изменился. Закройте окно и обновите карточку.</p>}
-      {notice && <p className={styles.notice} role="status">{notice}</p>}
+      <p id="word-translation-limit" className={length > 1000 ? styles.error : styles.hint}>{length}{" "}{t("/ 1000 символов")}</p>
+      {language === "ru" && <p className={styles.hint}>{t("Русский перевод обновится и в основной форме слова.")}</p>}
+      {error && <p className={styles.error} role="alert">{errorText(error)}</p>}
+      {blocked && <p className={styles.error}>{t("Доступ к редактированию изменился. Закройте окно и обновите карточку.")}</p>}
+      {notice && <p className={styles.notice} role="status">{t(notice)}</p>}
       <div className={styles.actions}>
-        <button type="submit" className={styles.primary} disabled={!loaded || !supported || !dirty || saving || blocked || !length || length > 1000}>{saving ? "Сохраняем…" : "Сохранить перевод"}</button>
-        {dirty && <button type="button" disabled={saving} onClick={() => { setText(original ?? ""); setError(""); }}>Отменить изменения</button>}
-        {!dirty && <button type="button" disabled={saving || blocked} onClick={() => setAttempt((value) => value + 1)}>Перечитать перевод</button>}
-        {dirty && error && !blocked && <button type="button" disabled={saving} onClick={() => setAttempt((value) => value + 1)}>Перечитать, отменив изменения</button>}
+        <button type="submit" className={styles.primary} disabled={!loaded || !supported || !dirty || saving || blocked || !length || length > 1000}>{saving ? t("Сохраняем…") : t("Сохранить перевод")}</button>
+        {dirty && <button type="button" disabled={saving} onClick={() => { setText(original ?? ""); setError(""); }}>{t("Отменить изменения")}</button>}
+        {!dirty && <button type="button" disabled={saving || blocked} onClick={() => setAttempt((value) => value + 1)}>{t("Перечитать перевод")}</button>}
+        {dirty && error && !blocked && <button type="button" disabled={saving} onClick={() => setAttempt((value) => value + 1)}>{t("Перечитать, отменив изменения")}</button>}
       </div>
-      <p className={styles.hint}>Это язык редактируемого перевода. Язык показа ваших учебных карточек остаётся прежним.</p>
+      <p className={styles.hint}>{t("Это язык редактируемого перевода. Язык показа ваших учебных карточек остаётся прежним.")}</p>
     </form>
   </dialog>;
 }

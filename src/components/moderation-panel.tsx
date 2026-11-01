@@ -1,4 +1,6 @@
 "use client";
+import { safeErrorMessage } from "@/lib/i18n";
+import { useI18n } from "./ui-language-provider";
 
 import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
@@ -11,12 +13,13 @@ const statuses: PublicationStatus[] = ["PENDING_REVIEW", "PUBLISHED", "REJECTED"
 const actionLabels: Record<PublicationStatus, string> = {
   PUBLISHED: "Опубликовать", REJECTED: "Отклонить", PENDING_REVIEW: "Вернуть на проверку",
 };
-const message = (error: unknown) => error instanceof Error ? error.message : "Не удалось выполнить запрос. Повторите попытку.";
+const message = (error: unknown) => error instanceof Error ? safeErrorMessage(error) : "Не удалось выполнить запрос. Повторите попытку.";
 
 export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange, translationVersion, onEditTranslations }: {
   decisionsLocked: boolean; onDecision: () => Promise<void>; onBusyChange: (busy: boolean) => void;
   translationVersion: number; onEditTranslations: (word: { id: string; german: string }) => void;
 }) {
+  const { t, errorText } = useI18n();
   const [filter, setFilter] = useState<PublicationStatus>("PENDING_REVIEW");
   const [listAttempt, setListAttempt] = useState(0);
   const [words, setWords] = useState<ModerationWord[]>([]);
@@ -68,7 +71,7 @@ export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange, tra
     try {
       const updated = await client.changeStatus(detail, confirmation);
       setDetail(updated); setConfirmation(null);
-      setNotice(`«${updated.german}»: ${publicationLabel(updated.publicationStatus)}. Решение сохранено.`);
+      setNotice("Решение сохранено.");
       setListAttempt((value) => value + 1);
       await onDecision();
     } catch (error) {
@@ -78,58 +81,58 @@ export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange, tra
   }
 
   return <section className={styles.panel} aria-labelledby="moderation-heading">
-    <div className={styles.heading}><div><p className="eyebrow">АДМИНИСТРАТОР</p><h3 id="moderation-heading">Модерация карточек</h3></div>
-      <div className={styles.filters}><label htmlFor="moderation-filter">Статус карточек</label>
+    <div className={styles.heading}><div><p className="eyebrow">{t("АДМИНИСТРАТОР")}</p><h3 id="moderation-heading">{t("Модерация карточек")}</h3></div>
+      <div className={styles.filters}><label htmlFor="moderation-filter">{t("Статус карточек")}</label>
         <select id="moderation-filter" value={filter} disabled={saving} onChange={(event) => {
           setFilter(event.target.value as PublicationStatus); setSelectedId(null); setDetail(null); setDetailLoading(false);
           setDetailError(""); setDecisionError(""); setConfirmation(null); setNotice("");
-        }}>{statuses.map((status) => <option key={status} value={status}>{publicationLabel(status)}</option>)}</select>
-        <button type="button" disabled={saving || loading} onClick={() => setListAttempt((value) => value + 1)}>Обновить список</button>
+        }}>{statuses.map((status) => <option key={status} value={status}>{t(publicationLabel(status))}</option>)}</select>
+        <button type="button" disabled={saving || loading} onClick={() => setListAttempt((value) => value + 1)}>{t("Обновить список")}</button>
       </div>
     </div>
-    <p className={styles.hint}>Откройте карточку, проверьте все переводы и примеры, затем выберите решение.</p>
-    {decisionsLocked && <p role="status" className={styles.warning}>Для решения завершите тренировку и сохраните результаты.</p>}
-    {notice && <p role="status" className={styles.notice}>{notice}</p>}
+    <p className={styles.hint}>{t("Откройте карточку, проверьте все переводы и примеры, затем выберите решение.")}</p>
+    {decisionsLocked && <p role="status" className={styles.warning}>{t("Для решения завершите тренировку и сохраните результаты.")}</p>}
+    {notice && <p role="status" className={styles.notice}>{t(notice)}</p>}
     <div className={styles.layout}>
-      <div aria-label="Список карточек на модерации">
-        {loading ? <p role="status">Загружаем список…</p> : listError ? <p role="alert" className={styles.error}>{listError}</p> : !words.length ? <p>Карточек с этим статусом нет.</p> : <ul className={styles.queue}>
+      <div aria-label={t("Список карточек на модерации")}>
+        {loading ? <p role="status">{t("Загружаем список…")}</p> : listError ? <p role="alert" className={styles.error}>{errorText(listError)}</p> : !words.length ? <p>{t("Карточек с этим статусом нет.")}</p> : <ul className={styles.queue}>
           {words.map((word) => <li key={word.id}><button type="button" disabled={saving} aria-pressed={selectedId === word.id} onClick={() => openCard(word.id)}>
             <strong>{word.article !== "none" && `${word.article} `}{word.german}</strong>
-            <span>{publicationLabel(word.publicationStatus)} · {word.level ?? "Без уровня"}</span>
+            <span>{t(publicationLabel(word.publicationStatus))} · {word.level ?? t("Без уровня")}</span>
           </button></li>)}
         </ul>}
       </div>
-      <section className={styles.review} aria-label="Проверка карточки" aria-busy={detailLoading || saving}>
-        {!selectedId ? <p className={styles.hint}>Выберите карточку в списке.</p> : <>
-          <button type="button" className={styles.reload} disabled={detailLoading || saving} onClick={() => openCard(selectedId)}>Открыть актуальную карточку</button>
-          {detailLoading ? <p role="status">Загружаем карточку…</p> : detailError ? <p className={styles.error} role="alert">{detailError}</p> : detail && <>
-            <p className={styles.status}>{publicationLabel(detail.publicationStatus)}</p>
+      <section className={styles.review} aria-label={t("Проверка карточки")} aria-busy={detailLoading || saving}>
+        {!selectedId ? <p className={styles.hint}>{t("Выберите карточку в списке.")}</p> : <>
+          <button type="button" className={styles.reload} disabled={detailLoading || saving} onClick={() => openCard(selectedId)}>{t("Открыть актуальную карточку")}</button>
+          {detailLoading ? <p role="status">{t("Загружаем карточку…")}</p> : detailError ? <p className={styles.error} role="alert">{errorText(detailError)}</p> : detail && <>
+            <p className={styles.status}>{t(publicationLabel(detail.publicationStatus))}</p>
             <h4>{detail.article !== "none" && `${detail.article} `}{detail.german}</h4>
             <dl className={styles.facts}>
-              <div><dt>Число</dt><dd>{{ singular: "Единственное", plural: "Множественное", not_applicable: "Не применимо" }[detail.grammaticalNumber]}</dd></div>
-              <div><dt>Мн. форма</dt><dd>{detail.pluralForm || "Не указана"}</dd></div>
-              <div><dt>Уровень / урок</dt><dd>{detail.level ?? "—"} / {detail.lessonNumber ?? "—"}</dd></div>
+              <div><dt>{t("Число")}</dt><dd>{{ singular: t("Единственное"), plural: t("Множественное"), not_applicable: t("Не применимо") }[detail.grammaticalNumber]}</dd></div>
+              <div><dt>{t("Мн. форма")}</dt><dd>{detail.pluralForm || t("Не указана")}</dd></div>
+              <div><dt>{t("Уровень / урок")}</dt><dd>{detail.level ?? "—"} / {detail.lessonNumber ?? "—"}</dd></div>
             </dl>
             {detail.notes && <p className={styles.notes}>{detail.notes}</p>}
-            <h5>Переводы карточки</h5>
-            {!detail.translations.length ? <p>Переводов пока нет.</p> : <dl className={styles.translations}>{detail.translations.map((row) => <div key={row.language}><dt>{row.language.toUpperCase()}</dt><dd>{row.text}</dd></div>)}</dl>}
+            <h5>{t("Переводы карточки")}</h5>
+            {!detail.translations.length ? <p>{t("Переводов пока нет.")}</p> : <dl className={styles.translations}>{detail.translations.map((row) => <div key={row.language}><dt>{row.language.toUpperCase()}</dt><dd>{row.text}</dd></div>)}</dl>}
             <button type="button" disabled={saving || decisionsLocked} onClick={() => {
               setConfirmation(null); onEditTranslations(detail);
-            }}>Редактировать переводы</button>
-            <h5>Примеры употребления</h5>
-            {!detail.examples.length ? <p className={styles.hint}>Примеров пока нет.</p> : <>{detail.examples.map((example) => <blockquote key={example.id}><p>{example.german}</p>{example.translations.length ? example.translations.map((entry) => <p className={styles.hint} key={entry.language}>{entry.language}: {entry.text}</p>) : <p className={styles.hint}>Переводов пока нет.</p>}</blockquote>)}</>}
-            {decisionError && <div className={styles.warning} role="alert"><p>{decisionError}</p><p>Перед следующим решением откройте актуальную карточку и проверьте её ещё раз.</p>
-              {duplicateId && <button type="button" disabled={saving} onClick={() => openCard(duplicateId)}>Посмотреть существующую карточку</button>}
+            }}>{t("Редактировать переводы")}</button>
+            <h5>{t("Примеры употребления")}</h5>
+            {!detail.examples.length ? <p className={styles.hint}>{t("Примеров пока нет.")}</p> : <>{detail.examples.map((example) => <blockquote key={example.id}><p>{example.german}</p>{example.translations.length ? example.translations.map((entry) => <p className={styles.hint} key={entry.language}>{entry.language}: {entry.text}</p>) : <p className={styles.hint}>{t("Переводов пока нет.")}</p>}</blockquote>)}</>}
+            {decisionError && <div className={styles.warning} role="alert"><p>{errorText(decisionError)}</p><p>{t("Перед следующим решением откройте актуальную карточку и проверьте её ещё раз.")}</p>
+              {duplicateId && <button type="button" disabled={saving} onClick={() => openCard(duplicateId)}>{t("Посмотреть существующую карточку")}</button>}
             </div>}
             <div className={styles.actions}>{statuses.filter((status) => status !== detail.publicationStatus).map((status) => <button type="button" key={status}
               disabled={saving || blocked || decisionsLocked} className={status === "PUBLISHED" ? styles.primary : undefined} onClick={() => setConfirmation(status)}>
-              {status === "REJECTED" && detail.publicationStatus === "PUBLISHED" ? "Снять с публикации" : actionLabels[status]}
+              {status === "REJECTED" && detail.publicationStatus === "PUBLISHED" ? t("Снять с публикации") : t(actionLabels[status])}
             </button>)}</div>
-            {confirmation && <section className={styles.confirmation} aria-label="Подтверждение решения">
-              <p><strong>{actionLabels[confirmation]} «{detail.german}»?</strong></p>
-              <p className={styles.hint}>{confirmation === "PUBLISHED" ? "Карточка станет доступна в общей библиотеке." : "Карточка останется у автора. Другие пользователи увидят её снова после публикации; их прогресс сохранится."}</p>
-              <div className={styles.actions}><button type="button" className={styles.primary} disabled={saving || decisionsLocked} onClick={() => void decide()}>{saving ? "Сохраняем…" : "Подтвердить решение"}</button>
-                <button type="button" disabled={saving} onClick={() => setConfirmation(null)}>Отмена</button></div>
+            {confirmation && <section className={styles.confirmation} aria-label={t("Подтверждение решения")}>
+              <p><strong>{t(actionLabels[confirmation])} «{detail.german}»?</strong></p>
+              <p className={styles.hint}>{confirmation === "PUBLISHED" ? t("Карточка станет доступна в общей библиотеке.") : t("Карточка останется у автора. Другие пользователи увидят её снова после публикации; их прогресс сохранится.")}</p>
+              <div className={styles.actions}><button type="button" className={styles.primary} disabled={saving || decisionsLocked} onClick={() => void decide()}>{saving ? t("Сохраняем…") : t("Подтвердить решение")}</button>
+                <button type="button" disabled={saving} onClick={() => setConfirmation(null)}>{t("Отмена")}</button></div>
             </section>}
           </>}
         </>}

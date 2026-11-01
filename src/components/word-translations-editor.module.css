@@ -1,0 +1,17 @@
+.dialog { color: var(--ink); background: white; border: 1px solid var(--line); border-radius: 24px; padding: 28px; width: min(620px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); overflow: auto; }
+.dialog::backdrop { background: rgb(17 36 26 / 45%); }
+.header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.header h2 { font-size: 30px; overflow-wrap: anywhere; margin: 0 0 16px; }
+.hint { color: #58685e; font-size: 13px; line-height: 1.6; }
+.dialog label { display: block; margin: 16px 0 8px; font-size: 14px; font-weight: 600; }
+.dialog select, .dialog textarea { width: 100%; color: var(--ink); background: white; border: 1px solid #cbd6cd; border-radius: 12px; padding: 12px; }
+.dialog textarea { resize: vertical; }
+.dialog button { padding: 10px 14px; color: var(--ink); background: #f6f8f4; border: 1px solid #cbd6cd; border-radius: 12px; cursor: pointer; font-size: 13px; }
+.dialog button:disabled { opacity: .55; cursor: not-allowed; }
+.dialog .primary { background: #237a58; border-color: #237a58; color: white; }
+.dialog button:focus-visible, .dialog textarea:focus-visible, .dialog select:focus-visible { outline: 3px solid #82b999; outline-offset: 3px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 16px; }
+.error { font-size: 13px; line-height: 1.6; color: #922d25; }
+.notice { background: #e3f3e9; padding: 14px; border-radius: 12px; font-size: 14px; line-height: 1.6; }
+.close { flex-shrink: 0; max-width: 150px; }
+@media (max-width: 500px) { .dialog { padding: 20px; } .header { flex-wrap: wrap; } }

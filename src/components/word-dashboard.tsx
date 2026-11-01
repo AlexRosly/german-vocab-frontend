@@ -7,6 +7,8 @@ import { canEditWord, displayTranslation, publicationLabel } from "@/lib/word-vi
 import { LibraryPanel } from "./library-panel";
 import { TranslationLanguagePicker } from "./translation-language-picker";
 import { ModerationPanel } from "./moderation-panel";
+import { WordTranslationsEditor } from "./word-translations-editor";
+import type { SavedTranslation } from "@/lib/word-translations-client";
 
 type Article = "der" | "das" | "die" | "none";
 type GrammaticalNumber = "singular" | "plural" | "not_applicable";
@@ -129,6 +131,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const [languageChanging, setLanguageChanging] = useState(false);
   const [libraryBusy, setLibraryBusy] = useState(false);
   const [moderationBusy, setModerationBusy] = useState(false);
+  const [translationTarget, setTranslationTarget] = useState<{ id: string; german: string } | null>(null);
+  const [translationVersion, setTranslationVersion] = useState(0);
   const [dictionaryLoading, setDictionaryLoading] = useState(true);
 
   const [activeTab, setActiveTab] = useState<"dictionary" | "progress" | "library" | "moderation">(
@@ -898,12 +902,24 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   });
 
   const languageLocked = studyMode || studySaving || (studyFinished && !studySaved) ||
-    busy || libraryBusy || moderationBusy || dictionaryLoading || dueLoading || newWordsLoading || progressLoading || exampleBusyWordId !== null;
+    busy || libraryBusy || moderationBusy || translationTarget !== null || dictionaryLoading || dueLoading || newWordsLoading || progressLoading || exampleBusyWordId !== null;
 
-  async function syncAfterModeration() {
+  async function syncAfterCardChange() {
     setStudyWords([]); setStudyFinished(false); setStudySaved(false);
     setKnownWordIds([]); setUnknownWordIds([]); studyRequestKey.current = null;
     await Promise.all([loadWords(), loadStudyProgress(), loadDueWords()]);
+  }
+
+  function openTranslations(word: { id: string; german: string }) {
+    if (studyMode || studySaving || (studyFinished && !studySaved) || busy || moderationBusy || exampleBusyWordId !== null) return;
+    stopSpeech();
+    setTranslationTarget({ id: word.id, german: word.german });
+  }
+
+  async function syncAfterTranslation(saved: SavedTranslation) {
+    if (saved.language === "ru" && editingId === saved.wordId) setTranslation(saved.text);
+    setTranslationVersion((value) => value + 1);
+    await syncAfterCardChange();
   }
 
   async function changeTranslationLanguage(language: string) {
@@ -999,7 +1015,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
       {activeTab === "moderation" && user.role === "ADMIN" && <ModerationPanel
         decisionsLocked={studyMode || studySaving || (studyFinished && !studySaved)}
-        onDecision={syncAfterModeration} onBusyChange={setModerationBusy} />}
+        onDecision={syncAfterCardChange} onBusyChange={setModerationBusy}
+        translationVersion={translationVersion} onEditTranslations={openTranslations} />}
 
       {
         activeTab === "progress" ? (
@@ -2250,6 +2267,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                       </div>
 
                       <div className="word-actions">
+                        {editable && <button type="button" className="small-button secondary-button"
+                          disabled={busy || studyMode || studySaving || (studyFinished && !studySaved) || exampleBusyWordId !== null}
+                          aria-label={`Переводы: ${word.german}`} onClick={() => openTranslations(word)}>Переводы</button>}
                         {editable && (
 <button
                           type="button"
@@ -2282,6 +2302,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
       <footer>Учись небольшими шагами. Повторяй регулярно.</footer>
       </div>
+      {translationTarget && <WordTranslationsEditor key={translationTarget.id} word={translationTarget}
+        initialLanguage={user.translationLanguage} onClose={() => setTranslationTarget(null)} onSaved={syncAfterTranslation} />}
     </main>
   );
 }

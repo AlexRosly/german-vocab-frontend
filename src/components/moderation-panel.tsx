@@ -13,8 +13,9 @@ const actionLabels: Record<PublicationStatus, string> = {
 };
 const message = (error: unknown) => error instanceof Error ? error.message : "Не удалось выполнить запрос. Повторите попытку.";
 
-export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange }: {
+export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange, translationVersion, onEditTranslations }: {
   decisionsLocked: boolean; onDecision: () => Promise<void>; onBusyChange: (busy: boolean) => void;
+  translationVersion: number; onEditTranslations: (word: { id: string; german: string }) => void;
 }) {
   const [filter, setFilter] = useState<PublicationStatus>("PENDING_REVIEW");
   const [listAttempt, setListAttempt] = useState(0);
@@ -41,7 +42,7 @@ export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange }: {
       .catch((error: unknown) => { if (!controller.signal.aborted) setListError(message(error)); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [filter, listAttempt]);
+  }, [filter, listAttempt, translationVersion]);
 
   useEffect(() => {
     if (!selectedId) return;
@@ -52,7 +53,7 @@ export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange }: {
       .catch((error: unknown) => { if (!controller.signal.aborted) setDetailError(message(error)); })
       .finally(() => { if (!controller.signal.aborted) setDetailLoading(false); });
     return () => controller.abort();
-  }, [selectedId, detailAttempt]);
+  }, [selectedId, detailAttempt, translationVersion]);
 
   useEffect(() => () => onBusyChange(false), [onBusyChange]);
 
@@ -112,6 +113,9 @@ export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange }: {
             {detail.notes && <p className={styles.notes}>{detail.notes}</p>}
             <h5>Переводы карточки</h5>
             {!detail.translations.length ? <p>Переводов пока нет.</p> : <dl className={styles.translations}>{detail.translations.map((row) => <div key={row.language}><dt>{row.language.toUpperCase()}</dt><dd>{row.text}</dd></div>)}</dl>}
+            <button type="button" disabled={saving || decisionsLocked} onClick={() => {
+              setConfirmation(null); onEditTranslations(detail);
+            }}>Редактировать переводы</button>
             <h5>Примеры употребления</h5>
             {!detail.examples.length ? <p className={styles.hint}>Примеров пока нет.</p> : <><p className={styles.hint}>Переводы примеров — на русском.</p>{detail.examples.map((example) => <blockquote key={example.id}><p>{example.german}</p><p className={styles.hint}>{example.translation}</p></blockquote>)}</>}
             {decisionError && <div className={styles.warning} role="alert"><p>{decisionError}</p><p>Перед следующим решением откройте актуальную карточку и проверьте её ещё раз.</p>

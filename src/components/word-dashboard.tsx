@@ -6,6 +6,7 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { apiClient, apiFetch, fetchDueWords, fetchNewWords } from "@/lib/api";
 import type { AuthUser } from "@/lib/api-client";
 import { canEditWord, displayTranslation, publicationLabel } from "@/lib/word-view";
+import { StudyHistoryPanel } from "./study-history-panel";
 import { LibraryPanel } from "./library-panel";
 import { TranslationLanguagePicker } from "./translation-language-picker";
 import { ModerationPanel } from "./moderation-panel";
@@ -136,9 +137,10 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const [moderationBusy, setModerationBusy] = useState(false);
   const [translationTarget, setTranslationTarget] = useState<{ id: string; german: string } | null>(null);
   const [translationVersion, setTranslationVersion] = useState(0);
+  const [historyVersion, setHistoryVersion] = useState(0);
   const [dictionaryLoading, setDictionaryLoading] = useState(true);
 
-  const [activeTab, setActiveTab] = useState<"dictionary" | "progress" | "library" | "moderation">(
+  const [activeTab, setActiveTab] = useState<"dictionary" | "progress" | "history" | "library" | "moderation">(
     "dictionary",
   );
 
@@ -745,6 +747,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
       setStudySaved(true);
       setStatus("Тренировка завершена. Результаты сохранены.");
+      setHistoryVersion((value) => value + 1);
 
       // Обновляем количество слов, которым требуется повторение.
       void loadDueWords();
@@ -992,12 +995,16 @@ export function WordDashboard({ user }: { user: AuthUser }) {
           }}
           disabled={libraryBusy || moderationBusy}
         >{t("Прогресс")}</button>
+        <button type="button" className={activeTab === "history" ? "dashboard-tab active" : "dashboard-tab"}
+          disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("history")}>{t("История")}</button>
         <button type="button" className={activeTab === "library" ? "dashboard-tab active" : "dashboard-tab"}
           disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("library")}>{t("Библиотека")}</button>
         {user.role === "ADMIN" && <button type="button"
           className={activeTab === "moderation" ? "dashboard-tab active" : "dashboard-tab"}
           disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("moderation")}>{t("Модерация")}</button>}
       </nav>
+
+      {activeTab === "history" && <StudyHistoryPanel userId={user.id} language={user.translationLanguage} version={historyVersion} />}
 
       {activeTab === "library" && <LibraryPanel language={user.translationLanguage}
         onDictionaryChange={loadWords} onBusyChange={setLibraryBusy} />}
@@ -1780,6 +1787,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         await saveStudySession(sessionWords);
                         setStudySaved(true);
                         setStatus("Результаты тренировки сохранены.");
+                        setHistoryVersion((value) => value + 1);
                       } catch (error) {
                         setStatus(
                           error instanceof Error

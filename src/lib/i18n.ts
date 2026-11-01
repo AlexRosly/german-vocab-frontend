@@ -1979,6 +1979,151 @@ export const MESSAGES = {
     "de": "Zur Startseite",
     "en": "Back to home",
     "uk": "Повернутися на головну"
+  },
+  "История": {
+    "de": "Verlauf",
+    "en": "History",
+    "uk": "Історія"
+  },
+  "История тренировок": {
+    "de": "Trainingsverlauf",
+    "en": "Study history",
+    "uk": "Історія тренувань"
+  },
+  "ТВОЁ ОБУЧЕНИЕ": {
+    "de": "DEIN LERNEN",
+    "en": "YOUR LEARNING",
+    "uk": "ТВОЄ НАВЧАННЯ"
+  },
+  "Обновить историю": {
+    "de": "Verlauf aktualisieren",
+    "en": "Refresh history",
+    "uk": "Оновити історію"
+  },
+  "Здесь сохранённые тренировки вашего аккаунта. Откройте запись, чтобы посмотреть ответы по словам.": {
+    "de": "Hier findest du die gespeicherten Trainings deines Kontos. Öffne einen Eintrag, um die Antworten zu sehen.",
+    "en": "Your account’s saved study sessions appear here. Open an entry to see your word answers.",
+    "uk": "Тут збережені тренування твого акаунта. Відкрий запис, щоб переглянути відповіді за словами."
+  },
+  "Загружаем историю…": {
+    "de": "Verlauf wird geladen…",
+    "en": "Loading history…",
+    "uk": "Завантаження історії…"
+  },
+  "Пока нет сохранённых тренировок": {
+    "de": "Noch keine gespeicherten Trainings",
+    "en": "No saved study sessions yet",
+    "uk": "Збережених тренувань поки немає"
+  },
+  "Пройдите тренировку и сохраните результаты — запись появится здесь.": {
+    "de": "Beende ein Training und speichere die Ergebnisse. Der Eintrag erscheint dann hier.",
+    "en": "Complete a session and save your results to see it here.",
+    "uk": "Пройди тренування та збережи результати — запис з’явиться тут."
+  },
+  "Загружено тренировок: {count}": {
+    "de": "Geladene Trainings: {count}",
+    "en": "Sessions loaded: {count}",
+    "uk": "Завантажено тренувань: {count}"
+  },
+  "Показать слова": {
+    "de": "Wörter anzeigen",
+    "en": "Show words",
+    "uk": "Показати слова"
+  },
+  "Скрыть слова": {
+    "de": "Wörter ausblenden",
+    "en": "Hide words",
+    "uk": "Сховати слова"
+  },
+  "Всего слов": {
+    "de": "Wörter insgesamt",
+    "en": "Total words",
+    "uk": "Усього слів"
+  },
+  "Нужно повторить": {
+    "de": "Wiederholen",
+    "en": "Needs review",
+    "uk": "Потрібно повторити"
+  },
+  "Загрузить ещё": {
+    "de": "Mehr laden",
+    "en": "Load more",
+    "uk": "Завантажити ще"
+  },
+  "Не удалось загрузить историю тренировок": {
+    "de": "Trainingsverlauf konnte nicht geladen werden",
+    "en": "Could not load study history",
+    "uk": "Не вдалося завантажити історію тренувань"
+  },
+  "Не удалось загрузить тренировку": {
+    "de": "Training konnte nicht geladen werden",
+    "en": "Could not load the session",
+    "uk": "Не вдалося завантажити тренування"
+  },
+  "Загружаем тренировку…": {
+    "de": "Training wird geladen…",
+    "en": "Loading session…",
+    "uk": "Завантаження тренування…"
+  },
+  "Ответы по словам": {
+    "de": "Antworten zu den Wörtern",
+    "en": "Word answers",
+    "uk": "Відповіді за словами"
+  },
+  "Ответы сохранены во время тренировки. Формы и переводы слов показаны в текущем виде.": {
+    "de": "Die Antworten wurden beim Training gespeichert. Wortformen und Übersetzungen zeigen den aktuellen Stand.",
+    "en": "Answers were saved with the session. Word forms and translations show their current versions.",
+    "uk": "Відповіді збережено під час тренування. Форми й переклади слів показано в поточному вигляді."
+  },
+  "Часть карточек сейчас недоступна. Итоговые счётчики тренировки сохранены.": {
+    "de": "Einige Karten sind derzeit nicht verfügbar. Die ursprünglichen Trainingszahlen bleiben erhalten.",
+    "en": "Some cards are currently unavailable. The original session totals are preserved.",
+    "uk": "Частина карток зараз недоступна. Підсумкові лічильники тренування збережено."
+  },
+  "Детали карточек сейчас недоступны.": {
+    "de": "Kartendetails sind derzeit nicht verfügbar.",
+    "en": "Card details are currently unavailable.",
+    "uk": "Деталі карток зараз недоступні."
+  },
+  "Фильтр ответов": {
+    "de": "Antwortfilter",
+    "en": "Answer filter",
+    "uk": "Фільтр відповідей"
+  },
+  "Все ответы": {
+    "de": "Alle Antworten",
+    "en": "All answers",
+    "uk": "Усі відповіді"
+  },
+  "Нет ответов в этой категории.": {
+    "de": "Keine Antworten in dieser Kategorie.",
+    "en": "No answers in this category.",
+    "uk": "Немає відповідей у цій категорії."
+  },
+  "Некорректный запрос истории": {
+    "de": "Ungültige Verlaufsanfrage",
+    "en": "Invalid history request",
+    "uk": "Некоректний запит історії"
+  },
+  "Некорректный ответ истории тренировок": {
+    "de": "Ungültige Antwort zum Trainingsverlauf",
+    "en": "Invalid study history response",
+    "uk": "Некоректна відповідь історії тренувань"
+  },
+  "Некорректный курсор истории": {
+    "de": "Ungültige Verlaufsposition. Lade den Verlauf neu.",
+    "en": "Invalid history position. Refresh the history.",
+    "uk": "Некоректна позиція історії. Онови історію."
+  },
+  "Некорректный размер страницы истории": {
+    "de": "Ungültige Seitengröße im Verlauf",
+    "en": "Invalid history page size",
+    "uk": "Некоректний розмір сторінки історії"
+  },
+  "Некорректный идентификатор тренировки": {
+    "de": "Ungültige Trainingskennung",
+    "en": "Invalid session identifier",
+    "uk": "Некоректний ідентифікатор тренування"
   }
 } as const;
 

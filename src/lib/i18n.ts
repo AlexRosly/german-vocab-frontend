@@ -1,5 +1,6 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Показать ещё 30 карточек": { "de": "30 weitere Karten anzeigen", "en": "Show 30 more cards", "uk": "Показати ще 30 карток" },
   "Связанные слова": {"de": "Verwandte Wörter", "en": "Related words", "uk": "Пов’язані слова"},
   "Скрыть связанные слова": {"de": "Verwandte Wörter ausblenden", "en": "Hide related words", "uk": "Сховати пов’язані слова"},
   "Загружаем связанные слова…": {"de": "Verwandte Wörter werden geladen…", "en": "Loading related words…", "uk": "Завантажуємо пов’язані слова…"},

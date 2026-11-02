@@ -39,6 +39,7 @@ type Word = {
   lessonNumber: number | null;
   pluralForm?: string | null;
   notes?: string | null;
+  examples?: WordExample[];
 };
 
 type WordProgressItem = {
@@ -126,11 +127,14 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     null,
   );
 
+  const [visibleWordCount, setVisibleWordCount] = useState(30);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterLevel, setFilterLevel] = useState("all");
   const [filterLesson, setFilterLesson] = useState("all");
   const [filterArticle, setFilterArticle] = useState("all");
   const [sortOrder, setSortOrder] = useState("recent");
+
+  useEffect(() => { setVisibleWordCount(30); }, [searchQuery, filterLevel, filterLesson, filterArticle, sortOrder]);
 
   const [studyMode, setStudyMode] = useState(false);
   const [studyIndex, setStudyIndex] = useState(0);
@@ -199,17 +203,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       const loadedWords: Word[] = await response.json();
       setWords(loadedWords);
 
-      const examples = await Promise.all(
-        loadedWords.map(async (word) => {
-          try {
-            return [word.id, await fetchExamples(word.id)] as const;
-          } catch {
-            return [word.id, []] as const;
-          }
-        }),
-      );
-
-      setExamplesByWord(Object.fromEntries(examples));
+      setExamplesByWord(Object.fromEntries(loadedWords.map(word => [word.id, word.examples ?? []])));
       void refreshNewWordsCount();
       setStatus("Словарь обновлён");
     } catch {
@@ -1629,7 +1623,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                     </label>
                   </div>
 
-                  <p className="hint">{t("Показано {shown} из {total}", { shown: filteredWords.length, total: words.length })}</p>
+                  <p className="hint">{t("Показано {shown} из {total}", { shown: Math.min(visibleWordCount, filteredWords.length), total: filteredWords.length })}</p>
 
                   {(searchQuery ||
                     filterLevel !== "all" ||
@@ -1939,7 +1933,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
               </div>
             ) : (
               <div className="word-list">
-                {filteredWords.map((word) => {
+                {filteredWords.slice(0, visibleWordCount).map((word) => {
                   const examples = examplesByWord[word.id] ?? [];
                   const exampleInput = exampleInputs[word.id] ?? emptyExample(user.translationLanguage);
 
@@ -2173,6 +2167,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                     </article>
                   );
                 })}
+                {visibleWordCount < filteredWords.length && <button type="button" className="small-button secondary-button" onClick={() => setVisibleWordCount(value => value + 30)}>{t("Показать ещё 30 карточек")}</button>}
               </div>
             )}
           </section>

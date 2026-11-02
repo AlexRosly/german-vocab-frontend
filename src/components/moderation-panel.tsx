@@ -1,4 +1,5 @@
 "use client";
+import { RelatedWords } from "./related-words";
 import { safeErrorMessage } from "@/lib/i18n";
 import { useI18n } from "./ui-language-provider";
 
@@ -15,9 +16,9 @@ const actionLabels: Record<PublicationStatus, string> = {
 };
 const message = (error: unknown) => error instanceof Error ? safeErrorMessage(error) : "Не удалось выполнить запрос. Повторите попытку.";
 
-export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange, translationVersion, onEditTranslations }: {
+export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange, translationVersion, onEditTranslations, translationLanguage }: {
   decisionsLocked: boolean; onDecision: () => Promise<void>; onBusyChange: (busy: boolean) => void;
-  translationVersion: number; onEditTranslations: (word: { id: string; german: string }) => void;
+  translationLanguage: string; translationVersion: number; onEditTranslations: (word: { id: string; german: string }) => void;
 }) {
   const { t, errorText } = useI18n();
   const [filter, setFilter] = useState<PublicationStatus>("PENDING_REVIEW");
@@ -114,6 +115,7 @@ export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange, tra
               <div><dt>{t("Уровень / урок")}</dt><dd>{detail.level ?? "—"} / {detail.lessonNumber ?? "—"}</dd></div>
             </dl>
             {detail.notes && <p className={styles.notes}>{detail.notes}</p>}
+            <RelatedWords key={detail.id} wordId={detail.id} language={translationLanguage} />
             <h5>{t("Переводы карточки")}</h5>
             {!detail.translations.length ? <p>{t("Переводов пока нет.")}</p> : <dl className={styles.translations}>{detail.translations.map((row) => <div key={row.language}><dt>{row.language.toUpperCase()}</dt><dd>{row.text}</dd></div>)}</dl>}
             <button type="button" disabled={saving || decisionsLocked} onClick={() => {

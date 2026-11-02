@@ -6,6 +6,7 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { apiClient, apiFetch, fetchDueWords, fetchNewWords } from "@/lib/api";
 import type { AuthUser } from "@/lib/api-client";
 import { canEditWord, displayTranslation, publicationLabel } from "@/lib/word-view";
+import { RelatedWords } from "./related-words";
 import { PersonalNote } from "./personal-note";
 import { AccountSessionsPanel } from "./account-sessions-panel";
 import { DailyGoalCard, StudySettingsPanel } from "./study-settings-panel";
@@ -1038,7 +1039,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       {activeTab === "moderation" && user.role === "ADMIN" && <ModerationPanel
         decisionsLocked={studyMode || studySaving || (studyFinished && !studySaved)}
         onDecision={syncAfterCardChange} onBusyChange={setModerationBusy}
-        translationVersion={translationVersion} onEditTranslations={openTranslations} />}
+        translationLanguage={user.translationLanguage} translationVersion={translationVersion} onEditTranslations={openTranslations} />}
 
       {
         activeTab === "progress" ? (
@@ -2145,6 +2146,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                           </form>
 )}
                         </section>
+                        <RelatedWords wordId={word.id} language={user.translationLanguage} />
                       </div>
 
                       <div className="word-actions">

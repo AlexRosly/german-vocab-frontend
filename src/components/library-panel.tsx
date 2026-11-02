@@ -5,6 +5,7 @@ import type { WordExample } from "@/lib/card-draft";
 
 import { FormEvent, useEffect, useState } from "react";
 import { apiFetch, type StudyWord } from "@/lib/api";
+import { RelatedWords } from "./related-words";
 import { displayTranslation } from "@/lib/word-view";
 import styles from "./library-panel.module.css";
 
@@ -93,6 +94,7 @@ export function LibraryPanel({ language, onDictionaryChange, onBusyChange }: {
         {word.pluralForm && <p className={styles.hint}>{t("Мн. число:")}{" "}{word.pluralForm}</p>}
         {word.notes && <p className={styles.hint}>{word.notes}</p>}
         <LibraryExamples wordId={word.id} />
+        <RelatedWords wordId={word.id} language={language} />
         <button type="button" disabled={addingId !== null || membership.has(word.id)} onClick={() => void add(word)}
           aria-label={`${membership.has(word.id) ? t("Уже в словаре") : t("Добавить в мой словарь")}: ${word.german}`}>
           {addingId === word.id ? t("Добавляем…") : membership.has(word.id) ? t("Уже в словаре ✓") : t("+ В мой словарь")}

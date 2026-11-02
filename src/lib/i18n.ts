@@ -1,5 +1,14 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Связанные слова": {"de": "Verwandte Wörter", "en": "Related words", "uk": "Пов’язані слова"},
+  "Скрыть связанные слова": {"de": "Verwandte Wörter ausblenden", "en": "Hide related words", "uk": "Сховати пов’язані слова"},
+  "Загружаем связанные слова…": {"de": "Verwandte Wörter werden geladen…", "en": "Loading related words…", "uk": "Завантажуємо пов’язані слова…"},
+  "Связанных слов пока нет.": {"de": "Noch keine verwandten Wörter.", "en": "No related words yet.", "uk": "Пов’язаних слів поки немає."},
+  "Не удалось загрузить связанные слова": {"de": "Verwandte Wörter konnten nicht geladen werden", "en": "Could not load related words", "uk": "Не вдалося завантажити пов’язані слова"},
+  "Связанные выражения могут различаться по смыслу и употреблению.": {"de": "Verwandte Ausdrücke können sich in Bedeutung und Verwendung unterscheiden.", "en": "Related expressions may differ in meaning and usage.", "uk": "Пов’язані вислови можуть відрізнятися за значенням і вживанням."},
+  "Карточка слова": {"de": "Wortkarte", "en": "Word card", "uk": "Картка слова"},
+  "Назад к предыдущей карточке": {"de": "Zurück zur vorherigen Karte", "en": "Back to the previous card", "uk": "Назад до попередньої картки"},
+
   "Личная заметка": {
     "de": "Persönliche Notiz",
     "en": "Personal note",

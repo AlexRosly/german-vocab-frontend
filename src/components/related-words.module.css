@@ -1,0 +1,14 @@
+.section { margin: .8rem 0; }
+.toggle { background: transparent; color: #17654b; border: 0; padding: .4rem 0; text-decoration: underline; text-underline-offset: .2em; }
+.hint { color: #64736d; white-space: pre-wrap; overflow-wrap: anywhere; }
+.list { list-style: none; padding: 0; display: grid; gap: .55rem; }
+.list button { width: 100%; text-align: left; border: 1px solid #c9ded4; border-radius: 12px; padding: .8rem; background: #f1f8f4; color: #173d31; overflow-wrap: anywhere; }
+.list strong, .list span { display: block; }
+.list span { margin-top: .25rem; font-size: .9rem; font-weight: 400; }
+.dialog { width: min(720px, calc(100vw - 24px)); max-height: 88dvh; box-sizing: border-box; overflow-y: auto; border: 1px solid #d5e2da; border-radius: 22px; padding: clamp(16px, 4vw, 30px); color: #173d31; }
+.dialog::backdrop { background: #102c2466; }
+.header { display: flex; align-items: flex-start; gap: 16px; justify-content: space-between; }
+.header h2 { margin-top: 0; overflow-wrap: anywhere; }
+.header button { flex-shrink: 0; }
+.translation { font-size: 1.15rem; }
+.dialog blockquote { margin: 1rem 0; padding-left: 1rem; border-left: 3px solid #c9ded4; }

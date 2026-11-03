@@ -1,9 +1,24 @@
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
 .actions button { min-height: 44px; padding: 8px 12px; border: 1px solid #cbd6cd; border-radius: 10px; background: #f6f8f4; color: var(--ink); }
 .actions button[aria-pressed="true"] { background: #fff3cf; border-color: #e4c76c; }
+.card { display: grid; grid-template-columns: 5px minmax(0, 1fr); gap: 12px; }
 .card > :nth-child(2) { min-width: 0; }
+.cardHeading { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px 12px; margin-bottom: 10px; min-width: 0; }
+.cardHeading > :first-child { flex: 1 1 160px; min-width: 0; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; max-width: 100%; }
+.toolbar.toolbar button { min-height: 36px; padding: 8px 10px; margin: 0; white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
 @media (max-width: 750px) {
-  .card { display: grid; grid-template-columns: 5px minmax(0, 1fr); gap: 12px; }
-  .card > :first-child { grid-row: 1 / span 2; }
-  .card > :last-child { grid-column: 2; display: flex; flex-wrap: wrap; gap: 8px; }
+  .toolbar { width: 100%; }
+  .toolbar.toolbar button { min-height: 44px; font-size: 13px; }
+}
+
+.navigation { flex-wrap: wrap; }
+.navigation button { flex: 0 1 auto; min-height: 44px; max-width: 100%; overflow-wrap: anywhere; }
+@media (max-width: 900px) {
+  .contentGrid { grid-template-columns: minmax(0, 1fr); }
+  .toolbar.toolbar button { min-height: 44px; }
+}
+
+@media (max-width: 420px) {
+  .filters > div { grid-template-columns: minmax(0, 1fr); }
 }

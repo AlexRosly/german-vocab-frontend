@@ -1017,7 +1017,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
           <span className="summary-caption">{noun(words.length, "card")}</span>
         </div>
       </section>
-      <nav className="dashboard-tabs" aria-label={t("Разделы приложения")}>
+      <nav className={`dashboard-tabs ${organizationStyles.navigation}`} aria-label={t("Разделы приложения")}>
         <button
           type="button"
           className={
@@ -1407,7 +1407,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       }
 
       {activeTab === "dictionary" && (
-        <section className="content-grid">
+        <section className={`content-grid ${organizationStyles.contentGrid}`}>
           <section className="panel form-panel">
             <div className="section-heading">
               <div>
@@ -1575,7 +1575,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                 </div>
 
                 {dueError && <p role="alert">{errorText(dueError)}</p>}
-                <div className="word-filters">
+                <div className={`word-filters ${organizationStyles.filters}`}>
                   <label>{t("Раздел словаря")} <select value={dictionaryView} onChange={event => setDictionaryView(event.target.value as DictionaryView)} disabled={busy}>
                     <option value="active">{t("Активные слова")}</option><option value="favorites">{t("Избранное")}</option><option value="archive">{t("Архив")}</option><option value="all">{t("Все слова")}</option>
                   </select></label>
@@ -1991,6 +1991,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                             : ""}
                         {word.german}
                       </h4> */}
+                        <div className={organizationStyles.cardHeading}>
                         <div className="word-title-row">
                           <h4>
                             {word.grammaticalNumber === "plural"
@@ -2017,6 +2018,28 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                               ? t("■ Стоп")
                               : "🔊"}
                           </button>
+                        </div>
+                      <div className={organizationStyles.toolbar}>
+                        {editable && <button type="button" className="small-button secondary-button"
+                          disabled={busy || studyMode || studySaving || (studyFinished && !studySaved) || exampleBusyWordId !== null}
+                          aria-label={t("Переводы: {0}", { 0: word.german })} onClick={() => openTranslations(word)}>{t("Переводы")}</button>}
+                        {editable && (
+<button
+                          type="button"
+                          className="small-button"
+                          disabled={busy}
+                          onClick={() => startEditing(word)}
+                        >{t("Изменить")}</button>
+)}
+
+                        <button
+                          type="button"
+                          className="small-button delete-button"
+                          disabled={busy || studyMode || studySaving || (studyFinished && !studySaved)}
+                          title={studyMode || (studyFinished && !studySaved) ? t("Сначала завершите и сохраните тренировку") : t("Убрать из личного словаря")}
+                          onClick={() => void deleteWord(word)}
+                        >{t("Убрать из словаря")}</button>
+                      </div>
                         </div>
                         <p dir="auto">{displayTranslation(word, t("Перевод отсутствует"))}</p>
                         {word.selectedTranslation.source === "personal" && <small>{t("Ваш личный перевод")}</small>}
@@ -2188,27 +2211,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         <RelatedWords wordId={word.id} language={user.translationLanguage} />
                       </div>
 
-                      <div className="word-actions">
-                        {editable && <button type="button" className="small-button secondary-button"
-                          disabled={busy || studyMode || studySaving || (studyFinished && !studySaved) || exampleBusyWordId !== null}
-                          aria-label={t("Переводы: {0}", { 0: word.german })} onClick={() => openTranslations(word)}>{t("Переводы")}</button>}
-                        {editable && (
-<button
-                          type="button"
-                          className="small-button"
-                          disabled={busy}
-                          onClick={() => startEditing(word)}
-                        >{t("Изменить")}</button>
-)}
 
-                        <button
-                          type="button"
-                          className="small-button delete-button"
-                          disabled={busy || studyMode || studySaving || (studyFinished && !studySaved)}
-                          title={studyMode || (studyFinished && !studySaved) ? t("Сначала завершите и сохраните тренировку") : t("Убрать из личного словаря")}
-                          onClick={() => void deleteWord(word)}
-                        >{t("Убрать из словаря")}</button>
-                      </div>
                     </article>
                   );
                 })}

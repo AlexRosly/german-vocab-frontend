@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test:client": "node --experimental-strip-types --test test/api-client.test.mjs test/word-view.test.mjs test/moderation-client.test.mjs test/moderation-queue.test.mjs test/word-translations-client.test.mjs test/deployment-config.test.mjs test/card-draft.test.mjs test/i18n.test.mjs test/preferences.test.mjs test/study-history-client.test.mjs test/study-settings-client.test.mjs test/account-sessions-client.test.mjs test/logout-all.test.mjs test/personal-notes-client.test.mjs test/personal-translations-client.test.mjs test/word-relations-client.test.mjs test/relation-candidates.test.mjs"
+    "test:client": "node --experimental-strip-types --test test/api-client.test.mjs test/word-view.test.mjs test/moderation-client.test.mjs test/moderation-queue.test.mjs test/word-translations-client.test.mjs test/deployment-config.test.mjs test/card-draft.test.mjs test/i18n.test.mjs test/preferences.test.mjs test/study-history-client.test.mjs test/study-settings-client.test.mjs test/account-sessions-client.test.mjs test/logout-all.test.mjs test/personal-notes-client.test.mjs test/personal-translations-client.test.mjs test/dictionary-entry-client.test.mjs test/word-relations-client.test.mjs test/relation-candidates.test.mjs"
   },
   "dependencies": {
     "next": "^15.5.0",

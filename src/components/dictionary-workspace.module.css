@@ -1,0 +1,48 @@
+.choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 0 0 24px; }
+.choices button { display: grid; gap: 8px; padding: 22px; min-height: 112px; text-align: left; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 18px; }
+.choices button[aria-pressed="true"] { border-color: #217c5b; background: #edf7f1; box-shadow: inset 0 0 0 1px #217c5b; }
+.choices strong { font-size: 20px; }
+.choices span { font-size: 14px; font-weight: 400; line-height: 1.5; color: var(--muted); }
+.workspace.workspace { display: block; }
+.formPanel { max-width: 940px; margin: 0 auto; }
+.formPanel form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.formPanel form > :not(label) { grid-column: 1 / -1; }
+.formPanel label { min-width: 0; }
+.formPanel textarea { width: 100%; box-sizing: border-box; }
+.formPanel fieldset { min-width: 0; margin: 0; }
+.formPanel form > button { justify-self: start; min-width: 220px; }
+.trainingHeader { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; }
+.filters { border: 1px solid var(--line); border-radius: 16px; padding: 20px; margin: 0 0 20px; min-width: 0; }
+.filters legend, .relations legend { font-weight: 700; padding: 0 8px; }
+.filters > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.filters p { margin: 12px 0; }
+.filters select, .filters input { width: 100%; min-width: 0; box-sizing: border-box; }
+.trainingActions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 20px 0 28px; }
+.trainingActions > div { padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: #f6f9f5; display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
+.trainingActions h4, .trainingActions p { margin: 0; }
+.trainingActions button { min-height: 48px; white-space: normal; }
+.trainingActions label { margin: 0; }
+.trainingActions select { min-height: 44px; width: 100%; }
+.hint { color: var(--muted); font-size: 13px; line-height: 1.6; }
+.relations { padding: 20px; border: 1px solid var(--line); border-radius: 16px; }
+.relationList { list-style: none; padding: 0; display: grid; gap: 10px; }
+.relationList li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px; background: #f4f8f3; border-radius: 12px; }
+.relationList span { min-width: 0; overflow-wrap: anywhere; }
+.relationList button { min-height: 44px; padding: 8px 12px; }
+@media (max-width: 900px) { .trainingActions { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 600px) {
+  .choices { gap: 10px; }
+  .choices button { padding: 15px; min-height: 100px; }
+  .choices strong { font-size: 17px; }
+  .choices span { font-size: 12px; }
+  .formPanel form { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .formPanel form > button { width: 100%; min-width: 0; }
+  .filters { padding: 14px; }
+  .filters > div { grid-template-columns: minmax(0, 1fr); }
+  .relations { padding: 14px; }
+}
+
+.filterRow { display: contents; }
+
+.headerActions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.headerActions button { min-height: 44px; padding: 10px 14px; }

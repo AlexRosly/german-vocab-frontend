@@ -1,5 +1,19 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Тренировка": {"de": "Übung", "en": "Training", "uk": "Тренування"},
+  "Действия со словарём": {"de": "Wörterbuchaktionen", "en": "Dictionary actions", "uk": "Дії зі словником"},
+  "Слово, переводы, примеры и связи — в одной форме.": {"de": "Wort, Übersetzungen, Beispiele und Verknüpfungen in einem Formular.", "en": "Word, translations, examples and relations in one form.", "uk": "Слово, переклади, приклади та зв’язки — в одній формі."},
+  "Весь словарь, новые слова или повторение по выбранным фильтрам.": {"de": "Ganzes Wörterbuch, neue Wörter oder Wiederholungen nach deinen Filtern.", "en": "The whole dictionary, new words or reviews using your filters.", "uk": "Увесь словник, нові слова або повторення за вибраними фільтрами."},
+  "Фильтры словаря и тренировки": {"de": "Filter für Wörterbuch und Übungen", "en": "Dictionary and training filters", "uk": "Фільтри словника та тренування"},
+  "Фильтры применяются ко всем трём вариантам тренировки. Архивные слова не участвуют.": {"de": "Die Filter gelten für alle drei Übungsarten. Archivierte Wörter sind ausgeschlossen.", "en": "Filters apply to all three training options. Archived words are excluded.", "uk": "Фільтри діють для всіх трьох варіантів тренування. Архівні слова не беруть участі."},
+  "Весь выбранный словарь": {"de": "Alle ausgewählten Wörter", "en": "All selected words", "uk": "Увесь вибраний словник"},
+  "По выбранным фильтрам: {0}": {"de": "Nach deinen Filtern: {0}", "en": "Matching your filters: {0}", "uk": "За вибраними фільтрами: {0}"},
+  "Ещё не изучались: {0}": {"de": "Noch nicht gelernt: {0}", "en": "Not studied yet: {0}", "uk": "Ще не вивчалися: {0}"},
+  "Повторение по расписанию: {0}": {"de": "Fällige Wiederholungen: {0}", "en": "Scheduled reviews: {0}", "uk": "Повторення за розкладом: {0}"},
+  "Длинная тренировка будет записана в историю несколькими занятиями.": {"de": "Eine lange Übung wird im Verlauf als mehrere Lerneinheiten gespeichert.", "en": "A long training run will appear as several sessions in your history.", "uk": "Довге тренування буде записано в історію кількома заняттями."},
+  "Карточки по выбранным фильтрам": {"de": "Karten nach deinen Filtern", "en": "Cards matching your filters", "uk": "Картки за вибраними фільтрами"},
+  "Выберите до 20 существующих карточек. Связи сохранятся вместе с новым словом и будут видны с учётом модерации.": {"de": "Wähle bis zu 20 vorhandene Karten. Die Verknüpfungen werden mit dem neuen Wort gespeichert und entsprechend der Moderation sichtbar.", "en": "Select up to 20 existing cards. Relations are saved with the new word and respect moderation visibility.", "uk": "Виберіть до 20 наявних карток. Зв’язки збережуться разом із новим словом і відображатимуться з урахуванням модерації."},
+
   "Активных слов в словаре:": {"de":"Aktive Wörter im Wörterbuch:","en":"Active dictionary words:","uk":"Активних слів у словнику:"},
   "Раздел словаря": {"de": "Wörterbuchbereich", "en": "Dictionary section", "uk": "Розділ словника"},
   "Активные слова": {"de": "Aktive Wörter", "en": "Active words", "uk": "Активні слова"},

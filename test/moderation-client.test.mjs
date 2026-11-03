@@ -21,6 +21,13 @@ test("moderation lists use only the requested status and pass cancellation throu
   assert.equal((await client.list("REJECTED", signal))[0].id, "word-a");
 });
 
+test("a queue with duplicate IDs or a different publication status is rejected", async () => {
+  for (const data of [[card(),card()], [card({publicationStatus:"PUBLISHED"})]]) {
+    const client=new ModerationClient(async()=>Response.json(data));
+    await assert.rejects(client.list("PENDING_REVIEW"),error=>error.status===502);
+  }
+});
+
 test("review details retain all translations, examples and the exact revision", async () => {
   const client = new ModerationClient(async (path) => {
     assert.equal(path, "/moderation/words/word-a"); return Response.json(card());

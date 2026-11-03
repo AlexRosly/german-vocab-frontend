@@ -35,3 +35,34 @@
 .warning p:last-child, .confirmation p:last-child { margin-bottom: 0; }
 .error { color: #922d25; font-size: 14px; line-height: 1.6; }
 @media (max-width: 750px) { .panel { padding: 18px; } .layout { grid-template-columns: 1fr; } .review { padding: 18px; } }
+
+.search { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 14px; margin: 20px 0 0; }
+.search label { display: grid; gap: 8px; font-size: 13px; margin: 0; min-width: 0; }
+.search label:first-child { flex: 1 1 260px; }
+.search input, .search select { width: 100%; box-sizing: border-box; border: 1px solid #cbd6cd; border-radius: 10px; padding: 10px; color: var(--ink); background: white; }
+.search input:focus-visible { outline: 3px solid #82b999; outline-offset: 3px; }
+.paging { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 16px; font-size: 13px; }
+
+.layout { display: block; }
+.queue { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.dialog { width: min(920px, calc(100vw - 24px)); max-height: 92vh; max-height: 92dvh; box-sizing: border-box; padding: 0; border: 1px solid var(--line); border-radius: 20px; overflow: hidden; color: var(--ink); background: var(--panel); }
+.dialog[open] { display: flex; flex-direction: column; }
+.dialog::backdrop { background: #16372b88; }
+.dialogHeader { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 22px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+.dialogHeader h3 { font-size: 19px; margin: 0; }
+.dialogBody { overflow: auto; overscroll-behavior: contain; min-height: 0; }
+.dialog .review { border: 0; border-radius: 0; }
+.relationEditor { margin: 16px 0; padding: 16px; border: 1px solid #b7d5c2; border-radius: 12px; background: #f5faf6; }
+.relationEditor input { width: 100%; box-sizing: border-box; margin-top: 8px; }
+.relationList { padding: 0; list-style: none; display: grid; gap: 10px; }
+.relationList li { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding: 8px 0; }
+.relationList span { min-width: 0; overflow-wrap: anywhere; }
+.relationList button { flex-shrink: 0; }
+@media (max-width: 750px) {
+ .queue { grid-template-columns: 1fr; }
+ .dialog { width: calc(100vw - 12px); max-height: 96vh; max-height: 96dvh; border-radius: 14px; }
+ .dialogHeader { padding: 12px; }
+ .dialog .review { padding: 14px; }
+ .facts > div, .translations > div { grid-template-columns: 65px minmax(0, 1fr); gap: 8px; }
+ .relationList li { flex-wrap: wrap; }
+}

@@ -26,3 +26,13 @@ test("aborted and network failures are left for an explicit retry", async () => 
   const failure = new DOMException("Canceled", "AbortError");
   await assert.rejects(new WordRelationsClient(async () => { throw failure; }).list("b"), error => error === failure);
 });
+
+test("relation writes use idempotent methods and never retry an uncertain response",async()=>{
+ const calls=[];const client=new WordRelationsClient(async(path,init)=>{calls.push({path,method:init.method});return response(init.method==="PUT"?{linked:true}:{deleted:true});});
+ await client.set("source","target",true);await client.set("source","target",false);
+ assert.deepEqual(calls,[{path:"/words/source/relations/target",method:"PUT"},{path:"/words/source/relations/target",method:"DELETE"}]);
+ let count=0;const failed=new WordRelationsClient(async()=>{count++;return new Response("",{status:500});});
+ await assert.rejects(failed.set("source","target",true));assert.equal(count,1);
+ await assert.rejects(new WordRelationsClient(async()=>response({})).set("source","target",true));
+ await assert.rejects(client.set("source","source",true));await assert.rejects(client.set("..","target",true));
+});

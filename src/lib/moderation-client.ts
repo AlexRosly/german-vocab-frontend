@@ -66,7 +66,7 @@ export class ModerationClient {
   async list(status: PublicationStatus, signal?: AbortSignal): Promise<ModerationWord[]> {
     validStatus(status);
     const data = await read(await this.request(`/moderation/words?status=${status}`, { signal }));
-    if (!Array.isArray(data) || !data.every(isWord)) throw new ModerationError(502, "Некорректный список модерации");
+    if (!Array.isArray(data) || !data.every(isWord) || data.some(word => word.publicationStatus !== status) || new Set(data.map(word => word.id)).size !== data.length) throw new ModerationError(502, "Некорректный список модерации");
     return data;
   }
 

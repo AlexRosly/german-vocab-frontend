@@ -26,6 +26,14 @@ export class WordRelationsClient {
     if (!Array.isArray(data) || !data.every(card) || data.some(row => row.id === id) || new Set(data.map(row => row.id)).size !== data.length) throw new Error("Не удалось загрузить связанные слова");
     return data;
   }
+  async set(id: string, relatedId: string, linked: boolean): Promise<void> {
+    const valid = (value: string) => /^[A-Za-z0-9][A-Za-z0-9._-]{0,190}$/.test(value);
+    if (!valid(id) || !valid(relatedId) || id === relatedId) throw Object.assign(new Error("Не удалось сохранить связь слов"), { status: 400 });
+    const response = await this.fetcher(`/words/${encodeURIComponent(id)}/relations/${encodeURIComponent(relatedId)}`, { method: linked ? "PUT" : "DELETE", cache: "no-store" });
+    if (!response.ok) throw Object.assign(new Error("Не удалось сохранить связь слов"), { status: response.status });
+    const data = await response.json().catch(() => null);
+    if (!data || (linked ? data.linked !== true : data.deleted !== true)) throw Object.assign(new Error("Не удалось подтвердить изменение связи. Обновите список связей."), { status: 502 });
+  }
   async detail(id: string, signal?: AbortSignal): Promise<{ word: RelatedCard; examples: RelatedExample[] }> {
     const [word, examples] = await Promise.all([this.read(`/words/${encodeURIComponent(id)}`, signal), this.read(`/words/${encodeURIComponent(id)}/examples`, signal)]);
     if (!card(word) || word.id !== id || !Array.isArray(examples) || !examples.every(row => row && typeof row.id === "string" && typeof row.german === "string" && validTranslation(row.selectedTranslation))) throw new Error("Не удалось загрузить связанные слова");

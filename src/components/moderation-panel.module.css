@@ -29,10 +29,10 @@
 .review blockquote { border-left: 3px solid #b7d5c2; margin: 16px 0; padding-left: 14px; }
 .review blockquote p { margin-bottom: 6px; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
-.notice, .warning, .confirmation { border-radius: 12px; padding: 16px; margin-top: 20px; font-size: 14px; line-height: 1.6; }
+.notice, .warning { border-radius: 12px; padding: 16px; margin-top: 20px; font-size: 14px; line-height: 1.6; }
 .notice { background: #e3f3e9; }
-.warning, .confirmation { background: #fff5e2; border: 1px solid #e8dabd; }
-.warning p:last-child, .confirmation p:last-child { margin-bottom: 0; }
+.warning { background: #fff5e2; border: 1px solid #e8dabd; }
+.warning p:last-child { margin-bottom: 0; }
 .error { color: #922d25; font-size: 14px; line-height: 1.6; }
 @media (max-width: 750px) { .panel { padding: 18px; } .layout { grid-template-columns: 1fr; } .review { padding: 18px; } }
 
@@ -66,3 +66,9 @@
  .facts > div, .translations > div { grid-template-columns: 65px minmax(0, 1fr); gap: 8px; }
  .relationList li { flex-wrap: wrap; }
 }
+
+.decisionDialog { width: min(560px, calc(100vw - 24px)); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); padding: 24px; overflow: auto; overflow-wrap: anywhere; }
+.decisionDialog h4 { font-size: 22px; line-height: 1.4; margin: 0; }
+.decisionDialog .actions { flex-direction: column; align-items: stretch; }
+.decisionDialog button { min-height: 44px; }
+@media (max-width: 750px) { .decisionDialog { padding: 20px; } }

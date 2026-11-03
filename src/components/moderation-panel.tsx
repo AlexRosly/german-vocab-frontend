@@ -1,4 +1,5 @@
 "use client";
+import { ModerationConfirmation } from "./moderation-confirmation";
 import { ModerationDialog } from "./moderation-dialog";
 import { WordRelationsEditor } from "./word-relations-editor";
 import { RelatedWords } from "./related-words";
@@ -190,16 +191,15 @@ export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange, tra
               {duplicateId && <button type="button" disabled={saving} onClick={() => openCard(duplicateId)}>{t("Посмотреть существующую карточку")}</button>}
             </div>}
             <div className={styles.actions}>{statuses.filter((status) => status !== detail.publicationStatus).map((status) => <button type="button" key={status}
-              disabled={saving || blocked || decisionsLocked || relationsOpen} className={status === "PUBLISHED" ? styles.primary : undefined} onClick={() => setConfirmation(status)}>
+              disabled={saving || blocked || decisionsLocked || relationsOpen} className={status === "PUBLISHED" ? styles.primary : undefined} aria-haspopup="dialog" onClick={() => setConfirmation(status)}>
               {status === "REJECTED" && detail.publicationStatus === "PUBLISHED" ? t("Снять с публикации") : t(actionLabels[status])}
             </button>)}</div>
-            {confirmation && <section className={styles.confirmation} aria-label={t("Подтверждение решения")}>
-              <p><strong>{t(actionLabels[confirmation])} «{detail.german}»?</strong></p>
-              <p className={styles.hint}>{confirmation === "PUBLISHED" ? t("Карточка станет доступна в общей библиотеке.") : t("Карточка останется у автора. Другие пользователи увидят её снова после публикации; их прогресс сохранится.")}</p>
-              <div className={styles.actions}><button type="button" className={styles.primary} disabled={saving || decisionsLocked} onClick={() => void decide()}>{saving ? t("Сохраняем…") : t("Подтвердить решение")}</button>
-                {nextId && <button type="button" disabled={saving || decisionsLocked || navigationLocked} onClick={() => void decide(true)}>{t("Подтвердить и открыть следующую")}</button>}
-                <button type="button" disabled={saving} onClick={() => setConfirmation(null)}>{t("Отмена")}</button></div>
-            </section>}
+            {confirmation && <ModerationConfirmation title={<>{t(actionLabels[confirmation])} «{detail.german}»?</>}
+              description={confirmation === "PUBLISHED" ? t("Карточка станет доступна в общей библиотеке.") : t("Карточка останется у автора. Другие пользователи увидят её снова после публикации; их прогресс сохранится.")}
+              locked={saving} onCancel={() => { if (!savingRef.current) setConfirmation(null); }}>
+              <button type="button" className={styles.primary} disabled={saving || decisionsLocked} onClick={() => void decide()}>{saving ? t("Сохраняем…") : t("Подтвердить решение")}</button>
+              {nextId && <button type="button" disabled={saving || decisionsLocked || navigationLocked} onClick={() => void decide(true)}>{t("Подтвердить и открыть следующую")}</button>}
+            </ModerationConfirmation>}
           </>}
         </>
       </section>

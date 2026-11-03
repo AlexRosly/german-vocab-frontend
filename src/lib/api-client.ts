@@ -1,3 +1,6 @@
+const INTERFACE_LANGUAGE_CODES = ["ru", "de", "en", "uk"];
+export const TRANSLATION_LANGUAGE_CODES = ["ru", "de", "en", "uk", "pl", "tr", "ar", "fr", "es", "it", "pt"];
+
 export type AuthUser = {
   id: string;
   email: string | null;
@@ -86,7 +89,7 @@ export class ApiClient {
   }
 
   private updateLanguage(field: "interfaceLanguage" | "translationLanguage", language: string): Promise<void> {
-    if (!["ru", "de", "en", "uk"].includes(language)) return Promise.reject(new ApiError(400, "Проверьте введённые данные."));
+    if (!(field === "interfaceLanguage" ? INTERFACE_LANGUAGE_CODES : TRANSLATION_LANGUAGE_CODES).includes(language)) return Promise.reject(new ApiError(400, "Проверьте введённые данные."));
     const generation = this.generation;
     const work = this.preferencesQueue.then(async () => {
       this.checkGeneration(generation);
@@ -97,8 +100,8 @@ export class ApiClient {
       const value: unknown = await response.json();
       this.checkGeneration(generation);
       if (!value || typeof value !== "object" || !("interfaceLanguage" in value) || !("translationLanguage" in value) ||
-        typeof value.interfaceLanguage !== "string" || !["ru", "de", "en", "uk"].includes(value.interfaceLanguage) ||
-        typeof value.translationLanguage !== "string" || !["ru", "de", "en", "uk"].includes(value.translationLanguage) || value[field] !== language) {
+        typeof value.interfaceLanguage !== "string" || !INTERFACE_LANGUAGE_CODES.includes(value.interfaceLanguage) ||
+        typeof value.translationLanguage !== "string" || !TRANSLATION_LANGUAGE_CODES.includes(value.translationLanguage) || value[field] !== language) {
         throw new ApiError(502, "Некорректный ответ языковых настроек");
       }
       if (!this.snapshot.user) throw new SessionChangedError();

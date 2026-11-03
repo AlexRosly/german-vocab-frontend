@@ -4,7 +4,7 @@
 .header h2 { font-size: 30px; overflow-wrap: anywhere; margin: 0 0 16px; }
 .hint { color: #58685e; font-size: 13px; line-height: 1.6; }
 .dialog label { display: block; margin: 16px 0 8px; font-size: 14px; font-weight: 600; }
-.dialog select, .dialog textarea { width: 100%; color: var(--ink); background: white; border: 1px solid #cbd6cd; border-radius: 12px; padding: 12px; }
+.dialog select, .dialog textarea { box-sizing: border-box; width: 100%; color: var(--ink); background: white; border: 1px solid #cbd6cd; border-radius: 12px; padding: 12px; }
 .dialog textarea { resize: vertical; }
 .dialog button { padding: 10px 14px; color: var(--ink); background: #f6f8f4; border: 1px solid #cbd6cd; border-radius: 12px; cursor: pointer; font-size: 13px; }
 .dialog button:disabled { opacity: .55; cursor: not-allowed; }

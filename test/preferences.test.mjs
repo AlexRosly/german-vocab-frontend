@@ -69,3 +69,18 @@ test("a refresh begun before a UI language save cannot revert it", async () => {
   await nextTick(); await client.updateInterfaceLanguage("de"); gate.resolve(Response.json({ accessToken: "b".repeat(43), user: user() }));
   await request; assert.deepEqual(client.getSnapshot().user, { ...user(), interfaceLanguage: "de" });
 });
+
+test("expanded card languages stay independent of the four interface locales", async () => {
+  const calls=[];
+  const client=new ApiClient({baseUrl:"https://api.test",fetch:async(url,init)=>{
+    if(url.endsWith("/auth/login"))return auth();
+    const body=JSON.parse(init.body);calls.push(body);
+    return Response.json({interfaceLanguage:"ru",translationLanguage:body.translationLanguage});
+  }});
+  await client.signIn("a@example.test","password");
+  for(const language of ["pl","tr","ar","fr","es","it","pt"]) {
+    await client.updateTranslationLanguage(language); assert.equal(client.getSnapshot().user.translationLanguage,language);
+    await assert.rejects(client.updateInterfaceLanguage(language),ApiError);
+  }
+  assert.equal(calls.length,7);assert.equal(client.getSnapshot().user.interfaceLanguage,"ru");
+});

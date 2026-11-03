@@ -7,6 +7,7 @@ import { apiClient, apiFetch, fetchDueWords, fetchNewWords } from "@/lib/api";
 import type { AuthUser } from "@/lib/api-client";
 import { canEditWord, displayTranslation, publicationLabel } from "@/lib/word-view";
 import { RelatedWords } from "./related-words";
+import { PersonalTranslationsEditor } from "./personal-translations-editor";
 import { PersonalNote } from "./personal-note";
 import { AccountSessionsPanel } from "./account-sessions-panel";
 import { DailyGoalCard, StudySettingsPanel } from "./study-settings-panel";
@@ -32,7 +33,7 @@ type Word = {
   grammaticalNumber: GrammaticalNumber;
   translation: string;
   translations: TranslationEntry[];
-  selectedTranslation: { language: string; text: string | null };
+  selectedTranslation: { language: string; text: string | null; source?: "personal" };
   publicationStatus: "PENDING_REVIEW" | "PUBLISHED" | "REJECTED";
   createdByUserId: string | null;
   level: string | null;
@@ -147,6 +148,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const [languageChanging, setLanguageChanging] = useState(false);
   const [libraryBusy, setLibraryBusy] = useState(false);
   const [moderationBusy, setModerationBusy] = useState(false);
+  const [personalTranslationTarget, setPersonalTranslationTarget] = useState<Word | null>(null);
   const [translationTarget, setTranslationTarget] = useState<{ id: string; german: string } | null>(null);
   const [translationVersion, setTranslationVersion] = useState(0);
   const [settingsVersion, setSettingsVersion] = useState(0);
@@ -921,7 +923,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   });
 
   const languageLocked = studyMode || studySaving || (studyFinished && !studySaved) ||
-    busy || libraryBusy || moderationBusy || translationTarget !== null || dictionaryLoading || dueLoading || newWordsLoading || progressLoading || exampleBusyWordId !== null;
+    busy || libraryBusy || moderationBusy || personalTranslationTarget !== null || translationTarget !== null || dictionaryLoading || dueLoading || newWordsLoading || progressLoading || exampleBusyWordId !== null;
 
   async function syncAfterCardChange() {
     setStudyWords([]); setStudyFinished(false); setStudySaved(false);
@@ -1298,7 +1300,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                                   {t(getWordStatus(item))}
                                 </span>
 
-                                <p>{displayTranslation(item.word, t("Перевод отсутствует"))}</p>
+                                <p dir="auto">{displayTranslation(item.word, t("Перевод отсутствует"))}</p>
 
                                 <div className="word-meta">
                                   <span>{t("Знаю:")}{" "}{item.knownCount}</span>
@@ -1706,7 +1708,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
                   {showTranslation ? (
                     <div className="study-answer">
-                      <h4>{displayTranslation(studyWords[studyIndex], t("Перевод отсутствует"))}</h4>
+                      <h4 dir="auto">{displayTranslation(studyWords[studyIndex], t("Перевод отсутствует"))}</h4>
 
                       {studyWords[studyIndex].notes && (
                         <p>{studyWords[studyIndex].notes}</p>
@@ -1985,7 +1987,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                               : "🔊"}
                           </button>
                         </div>
-                        <p>{displayTranslation(word, t("Перевод отсутствует"))}</p>
+                        <p dir="auto">{displayTranslation(word, t("Перевод отсутствует"))}</p>
+                        {word.selectedTranslation.source === "personal" && <small>{t("Ваш личный перевод")}</small>}
+                        <button type="button" disabled={busy || libraryBusy || moderationBusy || translationTarget !== null || studyMode || studySaving || (studyFinished && !studySaved)} onClick={() => { stopSpeech(); setPersonalTranslationTarget(word); }}>{t("Мой перевод")}</button>
 
                         {word.pluralForm && (
                           <p className="word-extra">
@@ -2176,6 +2180,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
       <footer>{t("Учись небольшими шагами. Повторяй регулярно.")}</footer>
       </div>
+      {personalTranslationTarget && <PersonalTranslationsEditor key={`${user.id}-${personalTranslationTarget.id}-${user.translationLanguage}`} word={words.find(word => word.id === personalTranslationTarget.id) ?? personalTranslationTarget}
+        language={user.translationLanguage} onClose={() => { setPersonalTranslationTarget(null); void loadWords(); }} onSaved={async () => { setHistoryVersion(value => value + 1); await syncAfterCardChange(); }} />}
       {translationTarget && <WordTranslationsEditor key={translationTarget.id} word={translationTarget}
         initialLanguage={user.translationLanguage} onClose={() => setTranslationTarget(null)} onSaved={syncAfterTranslation} />}
     </main>

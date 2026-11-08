@@ -1,4 +1,7 @@
 "use client";
+import practiceStyles from "./practice-card.module.css";
+import { PracticeCard } from "./practice-card";
+import { practiceWords, type PracticeMode } from "@/lib/practice-modes";
 import workspaceStyles from "./dictionary-workspace.module.css";
 import { DraftRelatedWords } from "./draft-related-words";
 import type { RelatedCard } from "@/lib/word-relations-client";
@@ -156,6 +159,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
   useEffect(() => { setVisibleWordCount(30); }, [searchQuery, filterLevel, filterLesson, filterArticle, sortOrder, dictionaryView]);
 
+  const [practiceMode, setPracticeMode] = useState<PracticeMode>("forward");
+  const [sessionPracticeMode, setSessionPracticeMode] = useState<PracticeMode>("forward");
+  const answerLock = useRef(false);
   const [studyMode, setStudyMode] = useState(false);
   const [studyIndex, setStudyIndex] = useState(0);
   const [showTranslation, setShowTranslation] = useState(false);
@@ -625,7 +631,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
   function startStudyWithWords(wordsToStudy: Word[]) {
     if (studySaving || busy || dictionarySettingsBlocked) return;
-    wordsToStudy = activeTrainingWords(wordsToStudy);
+    wordsToStudy = practiceWords(activeTrainingWords(wordsToStudy), practiceMode);
     if (wordsToStudy.length === 0) {
       setStatus("Нет слов для тренировки.");
       return;
@@ -633,6 +639,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
     stopSpeech();
     studyRequestKey.current = crypto.randomUUID();
+    setSessionPracticeMode(practiceMode);
     setStudyWords(wordsToStudy);
     setStudyIndex(0);
     setShowTranslation(false);
@@ -705,7 +712,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   async function answerStudyCard(knewWord: boolean) {
     const currentWord = studyWords[studyIndex];
 
-    if (!currentWord || studySaving) return;
+    if (!currentWord || studySaving || answerLock.current) return;
+    answerLock.current = true;
+    stopSpeech();
 
     const nextKnownWordIds = knewWord
       ? knownWordIds.includes(currentWord.id)
@@ -826,7 +835,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       return 0;
     });
 
-  const filteredTrainingWords = activeTrainingWords(filteredWords);
+  const filteredTrainingWords = practiceWords(activeTrainingWords(filteredWords), practiceMode);
   const filteredNewWords = eligibleTrainingWords(filteredTrainingWords, newPool);
   const filteredDueWords = eligibleTrainingWords(filteredTrainingWords, duePool);
   const trainingLocked = studyMode || studySaving || busy || dictionaryLoading || dictionarySettingsBlocked || newWordsLoading || dueLoading || (studyFinished && !studySaved);
@@ -837,6 +846,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   useEffect(() => {
     if (studyMode) studyHeading.current?.focus();
   }, [studyMode]);
+  useEffect(() => { answerLock.current = false; }, [studyIndex, studyMode, studyWords]);
 
   const loadStudyProgress = useCallback(async () => {
     const request = ++progressRequest.current;
@@ -1619,6 +1629,18 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                     >{t("Сбросить поиск и фильтры")}</button>
                   )}
                 </fieldset>
+            <fieldset className={practiceStyles.modes} disabled={trainingLocked}>
+              <legend>{t("Режим тренировки")}</legend>
+              <div className={practiceStyles.options}>
+                {([
+                  ["forward", "Немецкий → перевод"], ["reverse", "Перевод → немецкий"], ["article", "Артикли der/die/das"],
+                ] as const).map(([mode, label]) => <label key={mode} className={practiceStyles.option}>
+                  <input type="radio" name="practice-mode" value={mode} checked={practiceMode === mode} onChange={() => setPracticeMode(mode)} /><span>{t(label)}</span>
+                </label>)}
+              </div>
+              <p className={practiceStyles.hint}>{t(practiceMode === "reverse" ? "В этом режиме участвуют слова с переводом на выбранном языке." : practiceMode === "article" ? "В этом режиме участвуют существительные с der, die или das в единственном числе." : "Вспомните перевод немецкого слова и оцените свой ответ.")}</p>
+              <p className={practiceStyles.hint}>{t("Ответы всех режимов влияют на общий прогресс слова.")}</p>
+            </fieldset>
             <p className={workspaceStyles.hint}>{t("Фильтры применяются ко всем трём вариантам тренировки. Архивные слова не участвуют.")}</p>
             <div className={workspaceStyles.trainingActions}>
               <div><h4>{t("Весь выбранный словарь")}</h4><p className={workspaceStyles.hint}>{t("По выбранным фильтрам: {0}", { 0: count(filteredTrainingWords.length) })}</p>
@@ -1672,99 +1694,10 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                   />
                 </div>
 
-                <div
-                  className={`study-card ${colorClass(studyWords[studyIndex])}`}
-                >
-                  <p className="eyebrow">
-                    {studyWords[studyIndex].level ?? t("Немецкий")}
-                  </p>
-
-                  <h3>
-                    {studyWords[studyIndex].grammaticalNumber === "plural"
-                      ? "die "
-                      : studyWords[studyIndex].article !== "none"
-                        ? `${studyWords[studyIndex].article} `
-                        : ""}
-                    {studyWords[studyIndex].german}
-                  </h3>
-
-                  {studyWords[studyIndex].pluralForm && (
-                    <p>{t("Множественное число:")}{" "}{studyWords[studyIndex].pluralForm}
-                    </p>
-                  )}
-
-                  <button
-                    type="button"
-                    className="speak-button"
-                    disabled={!speechSupported}
-                    onClick={() => speakWord(studyWords[studyIndex])}
-                  >{t("🔊 Прослушать")}</button>
-
-                  {showTranslation ? (
-                    <div className="study-answer">
-                      <h4 dir="auto">{displayTranslation(studyWords[studyIndex], t("Перевод отсутствует"))}</h4>
-
-                      {studyWords[studyIndex].notes && (
-                        <p>{studyWords[studyIndex].notes}</p>
-                      )}
-
-                      {(examplesByWord[studyWords[studyIndex].id] ?? [])
-                        .slice(0, 2)
-                        .map((example) => (
-                          <div key={example.id} className="study-example">
-                            <p>{example.german}</p>
-                            <p>{displayTranslation(example, t("Перевод отсутствует"))}</p>
-                            <button
-                              type="button"
-                              className="small-button secondary-button"
-                              disabled={!speechSupported}
-                              onClick={() => speakExample(example)}
-                            >{t("🔊 Слушать пример")}</button>
-                          </div>
-                        ))}
-                    </div>
-                  ) : (
-                    <div className="study-card-actions">
-                      <button
-                        type="button"
-                        className="study-reveal-button"
-                        onClick={revealTranslation}
-                      >{t("Показать перевод")}</button>
-
-                      <button
-                        type="button"
-                        className="study-unknown-button"
-                        onClick={() => answerStudyCard(false)}
-                        disabled={studySaving}
-                      >{t("Не знаю")}</button>
-
-                      <button
-                        type="button"
-                        className="study-known-button"
-                        onClick={() => answerStudyCard(true)}
-                        disabled={studySaving}
-                      >{t("Знаю слово")}</button>
-                    </div>
-                  )}
-
-                  {showTranslation && (
-                    <div className="study-actions">
-                      <button
-                        type="button"
-                        className="study-unknown-button"
-                        onClick={() => answerStudyCard(false)}
-                        disabled={studySaving}
-                      >{t("Не знаю — повторить позже")}</button>
-
-                      <button
-                        type="button"
-                        className="study-known-button"
-                        onClick={() => answerStudyCard(true)}
-                        disabled={studySaving}
-                      >{t("Знаю слово")}</button>
-                    </div>
-                  )}
-                </div>
+                <PracticeCard key={`${sessionPracticeMode}:${studyWords[studyIndex].id}`} word={studyWords[studyIndex]} mode={sessionPracticeMode}
+                  examples={examplesByWord[studyWords[studyIndex].id] ?? []} revealed={showTranslation} onReveal={revealTranslation}
+                  onAnswer={known => { void answerStudyCard(known); }} saving={studySaving} speechSupported={speechSupported}
+                  onSpeak={() => speakWord(studyWords[studyIndex])} onSpeakExample={speakExample} last={studyIndex === studyWords.length - 1} />
 
                 <p className="study-session-stats">{t("Знаю:")}{" "}{knownWordIds.length}{" "}{t("· Повторить:")}{" "}
                   {unknownWordIds.length}

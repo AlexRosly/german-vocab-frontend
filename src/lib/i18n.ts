@@ -1,5 +1,21 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Режим тренировки": {"de": "Übungsmodus", "en": "Training mode", "uk": "Режим тренування"},
+  "Немецкий → перевод": {"de": "Deutsch → Übersetzung", "en": "German → translation", "uk": "Німецька → переклад"},
+  "Перевод → немецкий": {"de": "Übersetzung → Deutsch", "en": "Translation → German", "uk": "Переклад → німецька"},
+  "Артикли der/die/das": {"de": "Artikel der/die/das", "en": "Articles der/die/das", "uk": "Артиклі der/die/das"},
+  "Выберите артикль": {"de": "Wähle den Artikel", "en": "Choose the article", "uk": "Виберіть артикль"},
+  "В этом режиме участвуют слова с переводом на выбранном языке.": {"de": "In diesem Modus werden Wörter mit einer Übersetzung in der ausgewählten Sprache geübt.", "en": "This mode includes words with a translation in your selected language.", "uk": "У цьому режимі беруть участь слова з перекладом вибраною мовою."},
+  "В этом режиме участвуют существительные с der, die или das в единственном числе.": {"de": "In diesem Modus werden Nomen mit der, die oder das im Singular geübt.", "en": "This mode includes singular nouns with der, die or das.", "uk": "У цьому режимі беруть участь іменники з der, die або das в однині."},
+  "Вспомните перевод немецкого слова и оцените свой ответ.": {"de": "Erinnere dich an die Übersetzung des deutschen Wortes und bewerte deine Antwort.", "en": "Recall the translation of the German word and assess your answer.", "uk": "Згадайте переклад німецького слова й оцініть свою відповідь."},
+  "Ответы всех режимов влияют на общий прогресс слова.": {"de": "Antworten aus allen Modi beeinflussen den gemeinsamen Lernfortschritt des Wortes.", "en": "Answers in all modes affect the word’s shared progress.", "uk": "Відповіді в усіх режимах впливають на спільний прогрес слова."},
+  "Показать немецкое слово": {"de": "Deutsches Wort anzeigen", "en": "Show the German word", "uk": "Показати німецьке слово"},
+  "Не вспомнил": {"de": "Nicht gewusst", "en": "Did not recall", "uk": "Не згадав"},
+  "Вспомнил": {"de": "Gewusst", "en": "Recalled", "uk": "Згадав"},
+  "Верно!": {"de": "Richtig!", "en": "Correct!", "uk": "Правильно!"},
+  "Правильный артикль: {0}": {"de": "Richtiger Artikel: {0}", "en": "Correct article: {0}", "uk": "Правильний артикль: {0}"},
+  "Завершить тренировку": {"de": "Übung abschließen", "en": "Finish training", "uk": "Завершити тренування"},
+
   "Тренировка": {"de": "Übung", "en": "Training", "uk": "Тренування"},
   "Действия со словарём": {"de": "Wörterbuchaktionen", "en": "Dictionary actions", "uk": "Дії зі словником"},
   "Слово, переводы, примеры и связи — в одной форме.": {"de": "Wort, Übersetzungen, Beispiele und Verknüpfungen in einem Formular.", "en": "Word, translations, examples and relations in one form.", "uk": "Слово, переклади, приклади та зв’язки — в одній формі."},

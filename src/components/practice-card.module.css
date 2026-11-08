@@ -1,0 +1,23 @@
+.card { overflow-wrap: anywhere; }
+.modes { min-width: 0; border: 1px solid var(--line); border-radius: 16px; padding: 18px; margin: 20px 0; }
+.modes legend { font-weight: 700; padding: 0 8px; }
+.options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.option { display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 12px; border: 1px solid #cbd6cd; border-radius: 12px; background: #f7faf6; cursor: pointer; }
+.option:has(input:checked) { background: #e8f4ed; border-color: #217c5b; }
+.option input { width: 18px; min-height: 18px; height: 18px; margin: 0; flex-shrink: 0; accent-color: #217c5b; }
+.option span { font-size: 14px; line-height: 1.5; }
+.hint { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 12px 0 0; }
+.articleChoices { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin: 24px 0; }
+.articleChoices button { min-width: 82px; min-height: 52px; font-size: 20px; padding: 12px 22px; background: #f4f6f2; color: #182b24; border: 1px solid #a6b7ad; border-radius: 12px; }
+.articleChoices button.correct { background: #d8efdf; border-color: #268053; color: #164d2e; opacity: 1; }
+.articleChoices button.incorrect { background: #ffe2dd; border-color: #bf5145; color: #7e251d; opacity: 1; }
+.success, .error { font-weight: 700; line-height: 1.6; }
+.success { color: #206a40; }
+.error { color: #9d3027; }
+.next { min-height: 48px; margin-top: 20px; }
+@media (max-width: 760px) { .options { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 420px) {
+  .modes { padding: 14px; }
+  .articleChoices { gap: 8px; }
+  .articleChoices button { min-width: 62px; padding: 10px 16px; }
+}

@@ -1,4 +1,5 @@
 "use client";
+import { SourceBookEditor } from "./source-book-editor";
 import { ModerationConfirmation } from "./moderation-confirmation";
 import { ModerationDialog } from "./moderation-dialog";
 import { WordRelationsEditor } from "./word-relations-editor";
@@ -174,8 +175,10 @@ export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange, tra
             <dl className={styles.facts}>
               <div><dt>{t("Число")}</dt><dd>{{ singular: t("Единственное"), plural: t("Множественное"), not_applicable: t("Не применимо") }[detail.grammaticalNumber]}</dd></div>
               <div><dt>{t("Мн. форма")}</dt><dd>{detail.pluralForm || t("Не указана")}</dd></div>
+              <div><dt>{t("Книга-источник")}</dt><dd>{detail.sourceBook ?? "—"}</dd></div>
               <div><dt>{t("Уровень / урок")}</dt><dd>{detail.level ?? "—"} / {detail.lessonNumber ?? "—"}</dd></div>
             </dl>
+            <SourceBookEditor key={`${detail.id}-${detail.revision}`} wordId={detail.id} sourceBook={detail.sourceBook} disabled={saving || decisionsLocked || relationsOpen} onBusyChange={setRelationsBusy} onSaved={() => { setDetailAttempt(value => value + 1); setListAttempt(value => value + 1); }} />
             {detail.notes && <p className={styles.notes}>{detail.notes}</p>}
             <RelatedWords key={detail.id + ":" + relationsVersion} wordId={detail.id} language={translationLanguage} />
             <button type="button" disabled={saving || relationsBusy || decisionsLocked} onClick={() => { setConfirmation(null); setRelationsOpen(value => !value); }}>{relationsOpen ? t("Закрыть редактор связей") : t("Редактировать связи")}</button>

@@ -1,0 +1,10 @@
+.panel { margin: 0.8rem 0; min-width: 0; }
+.editor { margin-top: 0.75rem; padding: 1rem; background: #f7faf7; border: 1px solid #d8e4dc; border-radius: 14px; }
+.fields { border: 0; margin: 0; padding: 0; display: grid; gap: 0.7rem; min-width: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: flex-end; }
+.row label { flex: 1 1 200px; min-width: 0; }
+.row button { flex: 0 0 auto; }
+.editor input { width: 100%; min-width: 0; }
+.editor button { min-height: 44px; }
+.editor form { display: grid; gap: 0.7rem; }
+@media (max-width: 420px) { .editor { padding: 0.75rem; } .row label { flex-basis: 100%; } }

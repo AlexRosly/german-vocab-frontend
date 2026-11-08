@@ -29,6 +29,8 @@ export type StudyWord = {
   selectedTranslation: { language: string; text: string | null };
   publicationStatus: "PENDING_REVIEW" | "PUBLISHED" | "REJECTED";
   createdByUserId: string | null;
+  sourceBook?: string | null;
+  personalBooks?: string[];
   level: string | null;
   lessonNumber: number | null;
   pluralForm?: string | null;

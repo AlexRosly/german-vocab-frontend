@@ -5,6 +5,7 @@ import type { WordExample } from "@/lib/card-draft";
 
 import { FormEvent, useEffect, useState } from "react";
 import { apiFetch, type StudyWord } from "@/lib/api";
+import { bookFilterOptions, matchesBook } from "@/lib/word-books";
 import { RelatedWords } from "./related-words";
 import { displayTranslation } from "@/lib/word-view";
 import styles from "./library-panel.module.css";
@@ -22,6 +23,7 @@ export function LibraryPanel({ language, onDictionaryChange, onBusyChange }: {
 }) {
   const { t, errorText } = useI18n();
   const [input, setInput] = useState("");
+  const [book, setBook] = useState("");
   const [search, setSearch] = useState({ query: "", attempt: 0 });
   const [words, setWords] = useState<StudyWord[]>([]);
   const [membership, setMembership] = useState<Set<string>>(new Set());
@@ -72,9 +74,10 @@ export function LibraryPanel({ language, onDictionaryChange, onBusyChange }: {
     setSearch((current) => ({ query: input.trim(), attempt: current.attempt + 1 }));
   }
 
+  const books = bookFilterOptions(words, book), visible = words.filter(word => matchesBook(word, book));
   return <section className={styles.panel} aria-labelledby="library-heading">
     <div className={styles.heading}><div><p className="eyebrow">{t("ОБЩАЯ БИБЛИОТЕКА")}</p><h3 id="library-heading">{t("Готовые слова для вашего словаря")}</h3></div>
-      {!loading && !error && <span className={styles.count}>{words.length}{" "}{t("найдено")}</span>}
+      {!loading && !error && <span className={styles.count}>{visible.length}{" "}{t("найдено")}</span>}
     </div>
     <p className={styles.hint}>{t("Здесь только опубликованные карточки. Добавьте слово в свой словарь, чтобы изучать его со своим прогрессом.")}</p>
     <form className={styles.search} onSubmit={submit} role="search" aria-label={t("Поиск в библиотеке")}>
@@ -82,14 +85,16 @@ export function LibraryPanel({ language, onDictionaryChange, onBusyChange }: {
       <input id="library-search" value={input} maxLength={100} placeholder={t("Например, Baum")} disabled={addingId !== null} onChange={(event) => setInput(event.target.value)} />
       <button type="submit" disabled={addingId !== null}>{t("Найти")}</button>
     </form>
+    <label>{t("Книга")}<select value={book} disabled={addingId !== null} onChange={event => setBook(event.target.value)}><option value="">{t("Все книги")}</option><option value="none">{t("Без книги")}</option>{books.map(option => <option key={option.key} value={option.key}>{option.title}</option>)}</select></label>
     {notice && <p className={styles.notice} role="status">{t(notice)}</p>}
     {error && <p className={styles.error} role="alert">{errorText(error)} <button type="button" disabled={addingId !== null} onClick={() => setSearch((current) => ({ ...current, attempt: current.attempt + 1 }))}>{t("Обновить библиотеку")}</button></p>}
-    {loading ? <p role="status">{t("Загружаем библиотеку…")}</p> : !error && !words.length ? <p>{t("Слова не найдены. Попробуйте другой запрос.")}</p> : <div className={styles.grid}>
-      {words.map((word) => <article className={styles.card} key={word.id}>
+    {loading ? <p role="status">{t("Загружаем библиотеку…")}</p> : !error && !visible.length ? <p>{t("Слова не найдены. Попробуйте другой запрос.")}</p> : <div className={styles.grid}>
+      {visible.map((word) => <article className={styles.card} key={word.id}>
         <p className={styles.meta}>{t("Опубликовано ·")}{" "}{word.level ?? t("Уровень не указан")}{word.lessonNumber !== null ? t(" · Урок {0}", { 0: word.lessonNumber }) : ""}</p>
         <h4 className={word.grammaticalNumber === "plural" ? "article-orange" : word.article === "der" ? "article-blue" : word.article === "die" ? "article-red" : word.article === "das" ? "article-green" : "article-neutral"}>
           {word.article !== "none" && `${word.article} `}{word.german}
         </h4>
+        {word.sourceBook && <p className={styles.hint}>{t("Книга-источник")}: {word.sourceBook}</p>}
         <p>{displayTranslation(word, t("Перевод отсутствует"))}</p>
         {word.pluralForm && <p className={styles.hint}>{t("Мн. число:")}{" "}{word.pluralForm}</p>}
         {word.notes && <p className={styles.hint}>{word.notes}</p>}

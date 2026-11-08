@@ -1,4 +1,6 @@
 "use client";
+import { PersonalBooks } from "./personal-books";
+import { bookOptions, bookFilterOptions, matchesBook, normalizeBook } from "@/lib/word-books";
 import { GoogleAccountPanel } from "./google-account-panel";
 import practiceStyles from "./practice-card.module.css";
 import { PracticeCard } from "./practice-card";
@@ -49,6 +51,8 @@ type Word = {
   selectedTranslation: { language: string; text: string | null; source?: "personal" };
   publicationStatus: "PENDING_REVIEW" | "PUBLISHED" | "REJECTED";
   createdByUserId: string | null;
+  sourceBook?: string | null;
+  personalBooks?: string[];
   level: string | null;
   lessonNumber: number | null;
   pluralForm?: string | null;
@@ -133,6 +137,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const [formLanguage, setFormLanguage] = useState(user.translationLanguage);
   const [newExamples, setNewExamples] = useState<ExampleDraft[]>([emptyExample(user.translationLanguage)]);
   const [level, setLevel] = useState("A1");
+  const [sourceBook, setSourceBook] = useState("");
   const [lessonNumber, setLessonNumber] = useState("1");
   const [pluralForm, setPluralForm] = useState("");
   const [notes, setNotes] = useState("");
@@ -150,6 +155,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const [visibleWordCount, setVisibleWordCount] = useState(30);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterLevel, setFilterLevel] = useState("all");
+  const [filterBook, setFilterBook] = useState("");
   const [filterLesson, setFilterLesson] = useState("all");
   const [filterArticle, setFilterArticle] = useState("all");
   const [sortOrder, setSortOrder] = useState("recent");
@@ -158,7 +164,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const dictionaryWrite = useRef(false);
   const [dictionarySettingsErrorId, setDictionarySettingsErrorId] = useState<string | null>(null);
 
-  useEffect(() => { setVisibleWordCount(30); }, [searchQuery, filterLevel, filterLesson, filterArticle, sortOrder, dictionaryView]);
+  useEffect(() => { setVisibleWordCount(30); }, [searchQuery, filterBook, filterLevel, filterLesson, filterArticle, sortOrder, dictionaryView]);
 
   const [practiceMode, setPracticeMode] = useState<PracticeMode>("forward");
   const [sessionPracticeMode, setSessionPracticeMode] = useState<PracticeMode>("forward");
@@ -365,6 +371,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     setFormLanguage(user.translationLanguage);
     setNewExamples([emptyExample(user.translationLanguage)]);
     setLevel("A1");
+    setSourceBook("");
     setLessonNumber("1");
     setPluralForm("");
     setNotes("");
@@ -380,6 +387,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     setTranslationValues(translationDraft(word.translations));
     setFormLanguage(user.translationLanguage);
     setLevel(word.level ?? "A1");
+    setSourceBook(word.sourceBook ?? "");
     setLessonNumber(word.lessonNumber == null ? "" : String(word.lessonNumber));
     setPluralForm(word.pluralForm ?? "");
     setNotes(word.notes ?? "");
@@ -400,6 +408,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
         translations: translationPatch(translationValues),
         ...(!editingId ? { examples: initialExamples(newExamples), relatedWordIds: relatedDraft.map(card => card.id) } : {}),
         level,
+        sourceBook: normalizeBook(sourceBook) || null,
         lessonNumber: lessonNumber ? Number(lessonNumber) : null,
         pluralForm: pluralForm.trim() || null,
         notes: notes.trim() || null,
@@ -780,6 +789,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
 
+  const books = bookOptions(words);
+  const bookSuggestions = [...new Set([...books.map(book => book.title), "B1+ Brückenkurs", "A1 Treffpunkt", "A1.1 Schritte plus"])];
   const filteredWords = words
     .filter((word) => {
       if (!matchesDictionaryView(word, dictionaryView)) return false;
@@ -790,6 +801,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
         word.selectedTranslation?.text ?? "",
         word.pluralForm ?? "",
         word.notes ?? "",
+        word.sourceBook ?? "",
+        ...(word.personalBooks ?? []),
         ...examples.flatMap((example) => [example.german, example.selectedTranslation.text ?? ""]),
       ]
         .join(" ")
@@ -813,7 +826,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
             : word.article === filterArticle &&
               word.grammaticalNumber !== "plural");
 
-      return matchesQuery && matchesLevel && matchesLesson && matchesArticle;
+      return matchesQuery && matchesBook(word, filterBook) && matchesLevel && matchesLesson && matchesArticle;
     })
     .sort((a, b) => {
       if (sortOrder === "az") {
@@ -1471,6 +1484,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
               {!editingId && <InitialExamples drafts={newExamples} onChange={setNewExamples} language={formLanguage} disabled={busy} />}
 
+              <label>{t("Книга-источник")}<input list="source-book-options" maxLength={120} value={sourceBook} onChange={event => setSourceBook(event.target.value)} placeholder="B1+ Brückenkurs" /></label>
+              <datalist id="source-book-options">{bookSuggestions.map(title => <option key={title} value={title} />)}</datalist>
+              <p className="hint">{t("Источник виден в общей карточке. Свои другие книги можно привязать после сохранения.")}</p>
               <div className="form-row">
                 <label>{t("Уровень")}{" "}<select
                     value={level}
@@ -1541,6 +1557,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                     />
                   </label>
 
+                  <label>{t("Книга")}<select value={filterBook} onChange={event => setFilterBook(event.target.value)}>
+                    <option value="">{t("Все книги")}</option><option value="none">{t("Без книги")}</option>{bookFilterOptions(words, filterBook).map(book => <option key={book.key} value={book.key}>{book.title}</option>)}
+                  </select></label>
                   <div className={workspaceStyles.filterRow}>
                     <label>{t("Уровень")}{" "}<select
                         value={filterLevel}
@@ -1613,6 +1632,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                   <p className="hint">{t("Показано {shown} из {total}", { shown: Math.min(visibleWordCount, filteredWords.length), total: filteredWords.length })}</p>
 
                   {(searchQuery ||
+                    filterBook !== "" ||
                     filterLevel !== "all" ||
                     filterLesson !== "all" ||
                     filterArticle !== "all" ||
@@ -1623,6 +1643,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                       onClick={() => {
                         setSearchQuery("");
                         setFilterLevel("all");
+                        setFilterBook("");
                         setFilterLesson("all");
                         setFilterArticle("all");
                         setSortOrder("recent"); setDictionaryView("active");
@@ -1956,6 +1977,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
                         <div className="word-meta">
                           <span>{t(publicationLabel(word.publicationStatus))}</span>
+                          {word.sourceBook && <span>{t("Книга-источник")}: {word.sourceBook}</span>}
+                          {(word.personalBooks ?? []).map(title => <span key={title}>{t("Моя книга")}: {title}</span>)}
                           {word.level && <span>{word.level}</span>}
                           {word.lessonNumber != null && (
                             <span>{t("Урок")}{" "}{word.lessonNumber}</span>
@@ -1972,6 +1995,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                             onClick={() => void changeDictionaryEntry(word, { isArchived: !word.dictionaryEntry?.isArchived })}>{word.dictionaryEntry?.isArchived ? t("Вернуть из архива") : t("В архив")}</button>
                         </div>
                         {dictionarySettingsBlocked && dictionarySettingsErrorId === word.id && <div role="alert"><p>{errorText(status)}</p><button type="button" className="small-button secondary-button" disabled={busy || dictionaryLoading} onClick={() => void syncAfterCardChange()}>{t("Обновить словарь")}</button></div>}
+                        <PersonalBooks wordId={word.id} userId={user.id} suggestions={bookSuggestions} disabled={busy || trainingLocked} onSaved={titles => setWords(current => current.map(card => card.id === word.id ? { ...card, personalBooks: titles } : card))} />
                         <PersonalNote wordId={word.id} userId={user.id} disabled={busy} />
 
                         <section className="examples-section">

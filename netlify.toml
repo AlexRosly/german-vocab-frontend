@@ -5,6 +5,13 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# Proxy API requests from Netlify to VPS backend
+[[redirects]]
+  from = "/api/*"
+  to = "https://ypbooking.chost.com.ua/api/:splat"
+  status = 200
+  force = true
+
 # Netlify detects Next.js and supplies its current OpenNext adapter automatically.
 # Configure NEXT_PUBLIC_API_URL=/api/v1 and API_PROXY_ORIGIN in Netlify UI.
 # Do not add a SPA /* -> /index.html redirect or expose DATABASE_URL here.

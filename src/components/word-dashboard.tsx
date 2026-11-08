@@ -790,7 +790,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
 
   const books = bookOptions(words);
-  const bookSuggestions = [...new Set([...books.map(book => book.title), "B1+ Brückenkurs", "A1 Treffpunkt", "A1.1 Schritte plus"])];
+  const bookSuggestions = [...new Set([...books.map(book => book.title), "B1+ Brückenkurs", "A1 Treffpunkt", "A1.1 Schritte plus", "A1.2 Schritte plus", "A2.1 Schritte plus", "A2.2 Schritte plus", "B1.1 Schritte plus"])];
   const filteredWords = words
     .filter((word) => {
       if (!matchesDictionaryView(word, dictionaryView)) return false;

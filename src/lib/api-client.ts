@@ -80,6 +80,72 @@ export class ApiClient {
     return this.authenticate("/auth/register", email, password);
   }
 
+  async googleConfig(signal?: AbortSignal): Promise<{ enabled: boolean; clientId?: string }> {
+    const response = await this.raw("/auth/google/config", { method: "GET", signal });
+    if (!response.ok) throw await this.errorFrom(response);
+    const data = await response.json();
+    if (!data || typeof data.enabled !== "boolean" || (data.enabled && (typeof data.clientId !== "string" || !/^[A-Za-z0-9._-]+\.apps\.googleusercontent\.com$/.test(data.clientId)))) throw new ApiError(502, "Не удалось загрузить Google-вход");
+    return data.enabled ? { enabled: true, clientId: data.clientId } : { enabled: false };
+  }
+
+  async googleChallenge(purpose: "login" | "link", signal?: AbortSignal): Promise<{ clientId: string; nonce: string; expiresAt: string }> {
+    const generation = this.generation;
+    const response = purpose === "link" ? await this.googleAccountRequest("/auth/google/link-challenge", undefined, signal)
+      : await this.enqueueAuth(async () => { this.checkGeneration(generation); return this.raw("/auth/google/challenge", { method: "POST", signal }); });
+    this.checkGeneration(generation);
+    if (!response.ok) throw await this.errorFrom(response);
+    const data = await response.json();
+    this.checkGeneration(generation);
+    if (!data || typeof data.clientId !== "string" || !/^[A-Za-z0-9._-]+\.apps\.googleusercontent\.com$/.test(data.clientId) ||
+      typeof data.nonce !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(data.nonce) || typeof data.expiresAt !== "string" || !Number.isFinite(Date.parse(data.expiresAt)) || Date.parse(data.expiresAt) <= Date.now()) throw new ApiError(502, "Не удалось подготовить вход через Google");
+    return { clientId: data.clientId, nonce: data.nonce, expiresAt: data.expiresAt };
+  }
+
+  signInWithGoogle(credential: string): Promise<AuthUser> {
+    if (!this.validGoogleCredential(credential)) return Promise.reject(new ApiError(400, "Не удалось проверить вход через Google"));
+    return this.authenticateBody("/auth/google", { credential });
+  }
+
+  async linkGoogle(credential: string, password: string): Promise<void> {
+    const generation = this.generation;
+    if (!this.validGoogleCredential(credential) || [...password].length < 12 || new TextEncoder().encode(password).length > 72) throw new ApiError(400, "Проверьте введённые данные.");
+    const response = await this.googleAccountRequest("/auth/google/link", { credential, password });
+    if (!response.ok) throw await this.errorFrom(response);
+    const data = await response.json();
+    this.checkGeneration(generation);
+    if (data?.connected !== true) throw new ApiError(502, "Не удалось подтвердить подключение Google. Обновите настройки.");
+  }
+
+  private validGoogleCredential(value: string): boolean {
+    return typeof value === "string" && value.length <= 10000 && /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value);
+  }
+
+  private googleAccountRequest(path: string, body?: Record<string, string>, signal?: AbortSignal): Promise<Response> {
+    const owner = this.snapshot.user?.id, generation = this.generation;
+    if (!owner) return Promise.reject(new SessionChangedError());
+    return this.enqueueAuth(async () => {
+      this.checkGeneration(generation);
+      const send = () => this.authorized(path, { method: "POST", signal, headers: { "Content-Type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) }, this.accessToken ?? "");
+      let response = await send();
+      if (response.status === 401) {
+        const preferencesVersion = this.preferencesVersion;
+        const refreshed = await this.raw("/auth/refresh", { method: "POST" });
+        this.checkGeneration(generation);
+        if (!refreshed.ok) {
+          if (refreshed.status === 401) { this.invalidateSession(); this.onAuthMutation?.(); }
+          throw await this.errorFrom(refreshed);
+        }
+        const auth = await this.readAuth(refreshed); this.checkGeneration(generation);
+        if (auth.user.id !== owner) { this.invalidateSession(); this.onAuthMutation?.(); throw new SessionChangedError(); }
+        if (preferencesVersion !== this.preferencesVersion && this.snapshot.user?.id === owner) auth.user = { ...auth.user, interfaceLanguage: this.snapshot.user.interfaceLanguage, translationLanguage: this.snapshot.user.translationLanguage };
+        this.acceptAuth(auth); response = await send();
+      }
+      this.checkGeneration(generation);
+      if (response.status === 401) { this.invalidateSession(); this.onAuthMutation?.(); throw await this.errorFrom(response); }
+      return response;
+    });
+  }
+
   updateTranslationLanguage(language: string): Promise<void> {
     return this.updateLanguage("translationLanguage", language);
   }
@@ -190,7 +256,11 @@ export class ApiClient {
     return response;
   }
 
-  private async authenticate(path: string, email: string, password: string): Promise<AuthUser> {
+  private authenticate(path: string, email: string, password: string): Promise<AuthUser> {
+    return this.authenticateBody(path, { email: email.trim(), password });
+  }
+
+  private async authenticateBody(path: string, body: Record<string, string>): Promise<AuthUser> {
     const generation = ++this.generation;
     this.accessToken = null;
     this.publish(null);
@@ -198,7 +268,7 @@ export class ApiClient {
       this.checkGeneration(generation);
       const response = await this.raw(path, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password }),
+        body: JSON.stringify(body),
       });
       if (!response.ok) throw await this.errorFrom(response);
       this.onAuthMutation?.();

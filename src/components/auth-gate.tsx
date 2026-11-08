@@ -1,4 +1,5 @@
 "use client";
+import { GoogleSignIn } from "./google-sign-in";
 import { safeErrorMessage } from "@/lib/i18n";
 import { useI18n } from "./ui-language-provider";
 
@@ -86,6 +87,7 @@ function AuthForm() {
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [pending, setPending] = useState(false);
+  const [googlePending, setGooglePending] = useState(false);
   const [error, setError] = useState("");
   const registering = mode === "register";
 
@@ -113,26 +115,27 @@ function AuthForm() {
         <p className={styles.eyebrow}>WORTKARTEN</p>
         <h1 id="auth-heading">{registering ? t("Создать аккаунт") : t("Войти в свой словарь")}</h1>
         <p className={styles.description}>{t("Немецкие слова, примеры и повторения — в твоём темпе.")}</p>
-        <form onSubmit={(event) => void submit(event)} className={styles.form} aria-busy={pending}>
+        <form onSubmit={(event) => void submit(event)} className={styles.form} aria-busy={pending || googlePending}>
           <label htmlFor="auth-email">{t("Email")}</label>
           <input id="auth-email" name="email" type="email" autoComplete="email" required maxLength={254}
-            value={email} disabled={pending} onChange={(event) => setEmail(event.target.value)} />
+            value={email} disabled={pending || googlePending} onChange={(event) => setEmail(event.target.value)} />
           <label htmlFor="auth-password">{t("Пароль")}</label>
           <input id="auth-password" name="password" type="password" autoComplete={registering ? "new-password" : "current-password"}
-            required minLength={12} maxLength={72} value={password} disabled={pending}
+            required minLength={12} maxLength={72} value={password} disabled={pending || googlePending}
             aria-describedby="auth-password-help" onChange={(event) => setPassword(event.target.value)} />
           <p id="auth-password-help" className={styles.hint}>{t("Не менее 12 символов")}</p>
           {registering && <>
             <label htmlFor="auth-confirmation">{t("Повтори пароль")}</label>
             <input id="auth-confirmation" name="confirmation" type="password" autoComplete="new-password" required
-              minLength={12} maxLength={72} value={confirmation} disabled={pending} onChange={(event) => setConfirmation(event.target.value)} />
+              minLength={12} maxLength={72} value={confirmation} disabled={pending || googlePending} onChange={(event) => setConfirmation(event.target.value)} />
           </>}
           {error && <p className={styles.error} role="alert">{errorText(error)}</p>}
-          <button type="submit" className={styles.primary} disabled={pending}>
+          <button type="submit" className={styles.primary} disabled={pending || googlePending}>
             {pending ? t("Подождите…") : registering ? t("Зарегистрироваться") : t("Войти")}
           </button>
         </form>
-        <button type="button" className={styles.switchMode} disabled={pending} onClick={() => {
+        <GoogleSignIn purpose="login" disabled={pending} onBusy={setGooglePending} onCredential={async credential => { await apiClient.signInWithGoogle(credential); }} />
+        <button type="button" className={styles.switchMode} disabled={pending || googlePending} onClick={() => {
           setMode(registering ? "login" : "register"); setError(""); setPassword(""); setConfirmation("");
         }}>
           {registering ? t("Уже есть аккаунт? Войти") : t("Нет аккаунта? Зарегистрироваться")}

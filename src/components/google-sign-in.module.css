@@ -1,0 +1,13 @@
+.widget { margin: 20px 0; min-width: 0; }
+.widget > div:first-child { max-width: 100%; min-height: 44px; overflow: hidden; }
+.widget p { font-size: 13px; line-height: 1.6; }
+.widget button { min-height: 44px; white-space: normal; }
+.blocked { pointer-events: none; opacity: .55; }
+.panel { padding: 24px; background: #fff; border: 1px solid var(--line); border-radius: 20px; margin-bottom: 20px; }
+.panel h3 { margin-top: 0; }
+.panel p { font-size: 14px; line-height: 1.6; }
+.panel input { box-sizing: border-box; width: 100%; max-width: 460px; min-height: 44px; }
+.panel button { min-height: 44px; max-width: 100%; white-space: normal; }
+.panel label { display: block; margin-bottom: 10px; }
+.panel .widget { max-width: 460px; }
+@media (max-width: 480px) { .panel { padding: 18px; } }

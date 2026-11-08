@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  async headers() {
+    return [{ source: "/", headers: [{ key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" }] }];
+  },
   async rewrites() {
     const configuredOrigin = process.env.API_PROXY_ORIGIN;
     if (!configuredOrigin) return [];

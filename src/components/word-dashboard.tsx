@@ -1,4 +1,5 @@
 "use client";
+import { GoogleAccountPanel } from "./google-account-panel";
 import practiceStyles from "./practice-card.module.css";
 import { PracticeCard } from "./practice-card";
 import { practiceWords, type PracticeMode } from "@/lib/practice-modes";
@@ -1043,7 +1044,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
           disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("settings")}>{t("Настройки")}</button>
       </nav>
 
-      {activeTab === "settings" && <><StudySettingsPanel key={user.id} userId={user.id} onSaved={() => setSettingsVersion((value) => value + 1)} /><AccountSessionsPanel key={`sessions-${user.id}`} userId={user.id} /></>}
+      {activeTab === "settings" && <><GoogleAccountPanel key={`google-${user.id}`} userId={user.id} /><StudySettingsPanel key={user.id} userId={user.id} onSaved={() => setSettingsVersion((value) => value + 1)} /><AccountSessionsPanel key={`sessions-${user.id}`} userId={user.id} /></>}
 
       {activeTab === "history" && <StudyHistoryPanel userId={user.id} language={user.translationLanguage} version={historyVersion} />}
 

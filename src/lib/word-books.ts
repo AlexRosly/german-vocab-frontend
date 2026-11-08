@@ -51,3 +51,13 @@ export class PersonalBooksClient {
     return result;
   }
 }
+
+export type LibraryWord = BookWord & { lessonNumber: number | null };
+export function filterLibraryWords<T extends LibraryWord>(words: readonly T[], book: string, lesson: string): T[] {
+  return words.filter(word => matchesBook(word, book) && (!lesson || (lesson === "none" ? word.lessonNumber === null : String(word.lessonNumber) === lesson)));
+}
+export function libraryLessons(words: readonly LibraryWord[], book: string, selected: string): number[] {
+  const lessons = new Set(words.filter(word => matchesBook(word, book)).flatMap(word => word.lessonNumber === null ? [] : [word.lessonNumber]));
+  if (/^[1-9][0-9]*$/.test(selected)) lessons.add(Number(selected));
+  return [...lessons].sort((a, b) => a - b);
+}

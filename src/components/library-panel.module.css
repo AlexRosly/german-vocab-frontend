@@ -22,3 +22,12 @@
 .preferences select { width: auto; min-width: 145px; }
 .preferences .error { flex-basis: 100%; margin: 0; }
 @media (max-width: 600px) { .panel { padding: 18px; } .heading { align-items: start; } .search { grid-template-columns: 1fr; } .preferences .hint { flex-basis: 100%; } }
+
+.filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+.filters label { display: grid; gap: 8px; font-size: 13px; font-weight: 600; min-width: 0; }
+.filters select { width: 100%; min-width: 0; border: 1px solid #cbd6cd; border-radius: 12px; padding: 11px 14px; background: white; color: var(--ink); }
+.filters select:focus-visible { outline: 3px solid #82b999; outline-offset: 3px; }
+.bulk { margin: 16px 0 22px; }
+.bulk button { background: var(--green); color: white; }
+.bulk .hint { margin: 10px 0 0; }
+@media (max-width: 600px) { .filters { grid-template-columns: 1fr; } .bulk button { width: 100%; } }

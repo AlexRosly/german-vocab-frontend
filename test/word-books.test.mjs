@@ -51,3 +51,20 @@ test('an emptied selected book remains represented rather than displaying an unf
   assert.equal(matchesBook({sourceBook:'B1+ Brückenkurs'},selected),false);
   assert.deepEqual(bookFilterOptions([],''),[]);
 });
+
+test("library filters combine book and lesson and retain empty lessons without changing the source", async () => {
+ const { filterLibraryWords, libraryLessons } = await import("../src/lib/word-books.ts");
+ const words = [
+  { id: "a", sourceBook: "A1 Treffpunkt", lessonNumber: 15 },
+  { id: "b", sourceBook: "A1 Treffpunkt", lessonNumber: 16 },
+  { id: "c", sourceBook: "B1+ Brückenkurs", lessonNumber: 15 },
+  { id: "d", sourceBook: null, lessonNumber: null },
+ ];
+ const before = structuredClone(words);
+ assert.deepEqual(filterLibraryWords(words, "book:a1 treffpunkt", "15").map(w => w.id), ["a"]);
+ assert.deepEqual(filterLibraryWords(words, "", "15").map(w => w.id), ["a", "c"]);
+ assert.deepEqual(filterLibraryWords(words, "none", "none").map(w => w.id), ["d"]);
+ assert.deepEqual(filterLibraryWords(words, "book:a1 treffpunkt", "99"), []);
+ assert.deepEqual(libraryLessons(words, "book:a1 treffpunkt", "99"), [15, 16, 99]);
+ assert.deepEqual(words, before);
+});

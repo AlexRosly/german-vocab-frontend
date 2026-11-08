@@ -1,5 +1,13 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Нажмите «Найти», чтобы применить поиск перед массовым добавлением.": {"de": "Klicke auf „Suchen“, um die Suche vor dem Hinzufügen anzuwenden.", "en": "Click Search to apply your search before adding all matching words.", "uk": "Натисніть «Знайти», щоб застосувати пошук перед масовим додаванням."},
+  "Добавить все найденные ({0})": {"de": "Alle gefundenen hinzufügen ({0})", "en": "Add all matching words ({0})", "uk": "Додати всі знайдені ({0})"},
+  "Новых: {0}. Уже в словаре: {1}. Прогресс и архив сохраняются.": {"de": "Neu: {0}. Bereits im Wörterbuch: {1}. Fortschritt und Archiv bleiben erhalten.", "en": "New: {0}. Already in your dictionary: {1}. Progress and archived words are preserved.", "uk": "Нових: {0}. Уже у словнику: {1}. Прогрес і архів зберігаються."},
+  "Добавлено: {0}. Уже в словаре: {1}. Недоступно: {2}.": {"de": "Hinzugefügt: {0}. Bereits im Wörterbuch: {1}. Nicht verfügbar: {2}.", "en": "Added: {0}. Already in your dictionary: {1}. Unavailable: {2}.", "uk": "Додано: {0}. Уже у словнику: {1}. Недоступно: {2}."},
+  "За один раз можно добавить до 2000 слов. Уточните книгу, урок или поиск.": {"de": "Bis zu 2000 Wörter pro Vorgang. Grenze Buch, Lektion oder Suche ein.", "en": "Add up to 2000 words at a time. Narrow the book, lesson or search.", "uk": "За один раз можна додати до 2000 слів. Уточніть книгу, урок або пошук."},
+  "Не удалось добавить слова. Обновите библиотеку и повторите попытку.": {"de": "Die Wörter konnten nicht hinzugefügt werden. Aktualisiere die Bibliothek und versuche es erneut.", "en": "Could not add the words. Refresh the library and try again.", "uk": "Не вдалося додати слова. Оновіть бібліотеку та спробуйте ще раз."},
+  "Без урока": {"de": "Ohne Lektion", "en": "No lesson", "uk": "Без уроку"},
+
   "Убрать": {"de": "Entfernen", "en": "Remove", "uk": "Прибрати"},
   "Книга": {"de": "Buch", "en": "Book", "uk": "Книга"},
   "Все книги": {"de": "Alle Bücher", "en": "All books", "uk": "Усі книги"},

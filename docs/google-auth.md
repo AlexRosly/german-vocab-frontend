@@ -9,6 +9,10 @@ GOOGLE_AUTH_ENABLED не равен true или Client ID не настроен,
 в Настройках показано, что функция пока не настроена. Client ID не вшит в сборку
 frontend, Client Secret не используется. Выкладывать backend до frontend.
 
+При поэтапной выкладке старый backend может отвечать 404 на Google config: клиент
+считает функцию пока недоступной и оставляет обычный вход. 401/403/5xx при чтении
+конфигурации остаются видимыми ошибками с повторной попыткой; сессию они не сбрасывают.
+
 Frontend загружает официальный https://accounts.google.com/gsi/client, получает
 одноразовый nonce backend и передаёт callback credential через существующий
 apiClient. Окно Google отменяется самим пользователем; email-форма остаётся
@@ -32,7 +36,7 @@ refresh cookie. В Google Cloud Authorized JavaScript origins нужен точ�
 frontend: сейчас https://german-vocab-frontend.onrender.com, после переноса —
 также новый Netlify origin. Redirect URI/Client Secret для GIS popup не нужны.
 
-Проверки: 142 client-теста, ESLint и production build прошли. В локальном браузере
+Проверки: 143 client-теста, ESLint и production build прошли. В локальном браузере
 с mock API проверены настоящая GIS-кнопка, обычный email-вход рядом с ней, форма
 привязки, сообщение о недоступности сервиса с сохранением входа и выход. При 320 px
 кнопка помещается без горизонтального скролла. Подпись Google ID token в серверных

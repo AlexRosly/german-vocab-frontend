@@ -18,6 +18,16 @@ test('Google configuration and login challenge are public, cookie-bound and do n
   assert.equal(calls[1].url,baseUrl+'/auth/google/challenge');assert.equal(calls[1].init.credentials,'include');assert.equal(calls[1].init.signal,abort.signal);
   assert.equal(locks,1);assert.equal(client.getSnapshot().user,null);
 });
+test('an older backend without Google leaves ordinary login available; service failures remain visible',async()=>{
+  for(const status of [404,401,403,500,503]){
+    const client=new ApiClient({baseUrl,fetch:async url=>url.endsWith('/auth/login')?auth():new Response('not JSON',{status})});
+    await client.signIn('a@example.test','long password');
+    if(status===404) assert.deepEqual(await client.googleConfig(),{enabled:false});
+    else await assert.rejects(client.googleConfig(),failure=>failure.status===status);
+    assert.equal(client.getSnapshot().user.id,'user-a');
+  }
+});
+
 test('Google sign-in uses only the credential and the existing in-memory session handling',async()=>{
   const calls=[];const client=new ApiClient({baseUrl,fetch:async(url,init)=>{calls.push({url,init});return url.endsWith('/auth/google')?auth():Response.json([])}});
   await client.signInWithGoogle('a.b.c'); await client.request('/words/mine');

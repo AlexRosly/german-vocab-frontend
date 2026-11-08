@@ -82,6 +82,8 @@ export class ApiClient {
 
   async googleConfig(signal?: AbortSignal): Promise<{ enabled: boolean; clientId?: string }> {
     const response = await this.raw("/auth/google/config", { method: "GET", signal });
+    // During a rolling deployment the existing backend may not expose Google yet.
+    if (response.status === 404) return { enabled: false };
     if (!response.ok) throw await this.errorFrom(response);
     const data = await response.json();
     if (!data || typeof data.enabled !== "boolean" || (data.enabled && (typeof data.clientId !== "string" || !/^[A-Za-z0-9._-]+\.apps\.googleusercontent\.com$/.test(data.clientId)))) throw new ApiError(502, "Не удалось загрузить Google-вход");

@@ -1,0 +1,10 @@
+[build]
+  command = "node scripts/check-netlify-env.mjs && npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Netlify detects Next.js and supplies its current OpenNext adapter automatically.
+# Configure NEXT_PUBLIC_API_URL=/api/v1 and API_PROXY_ORIGIN in Netlify UI.
+# Do not add a SPA /* -> /index.html redirect or expose DATABASE_URL here.

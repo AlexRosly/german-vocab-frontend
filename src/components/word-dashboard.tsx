@@ -1,4 +1,6 @@
 "use client";
+import { CorrectionsClient } from "@/lib/corrections-client";
+import { CorrectionsPanel, ProposeCorrection } from "./corrections";
 import { PersonalBooks } from "./personal-books";
 import { bookOptions, bookFilterOptions, matchesBook, normalizeBook } from "@/lib/word-books";
 import { GoogleAccountPanel } from "./google-account-panel";
@@ -178,6 +180,14 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const [studySaving, setStudySaving] = useState(false);
   const [studySaved, setStudySaved] = useState(false);
   const [languageChanging, setLanguageChanging] = useState(false);
+  const [correctionsEnabled, setCorrectionsEnabled] = useState(false);
+  const [correctionsBusy, setCorrectionsBusy] = useState(false);
+  const [moderationTarget, setModerationTarget] = useState<string | undefined>();
+  useEffect(() => {
+    const abort = new AbortController(); setCorrectionsEnabled(false);
+    void new CorrectionsClient(apiFetch).enabled(abort.signal).then(enabled => { if (!abort.signal.aborted) setCorrectionsEnabled(enabled); }).catch(() => {});
+    return () => abort.abort();
+  }, [user.id]);
   const [libraryBusy, setLibraryBusy] = useState(false);
   const [moderationBusy, setModerationBusy] = useState(false);
   const [personalTranslationTarget, setPersonalTranslationTarget] = useState<Word | null>(null);
@@ -188,7 +198,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const [historyVersion, setHistoryVersion] = useState(0);
   const [dictionaryLoading, setDictionaryLoading] = useState(true);
 
-  const [activeTab, setActiveTab] = useState<"dictionary" | "progress" | "history" | "settings" | "library" | "moderation">(
+  const [activeTab, setActiveTab] = useState<"dictionary" | "progress" | "history" | "settings" | "library" | "moderation" | "corrections">(
     "dictionary",
   );
 
@@ -377,7 +387,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     setNotes("");
   }
 
-  function startEditing(word: Word) {
+  function startEditing(word: Omit<Word, "examples">) {
     setFormNotice(""); setFormError("");
     setDictionaryArea("add");
     setEditingId(word.id);
@@ -955,7 +965,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   });
 
   const languageLocked = studyMode || studySaving || (studyFinished && !studySaved) ||
-    busy || libraryBusy || moderationBusy || personalTranslationTarget !== null || translationTarget !== null || dictionaryLoading || dueLoading || newWordsLoading || progressLoading || exampleBusyWordId !== null;
+    busy || libraryBusy || moderationBusy || correctionsBusy || personalTranslationTarget !== null || translationTarget !== null || dictionaryLoading || dueLoading || newWordsLoading || progressLoading || exampleBusyWordId !== null;
 
   async function syncAfterCardChange() {
     setStudyWords([]); setStudyFinished(false); setStudySaved(false);
@@ -1032,7 +1042,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
               : "dashboard-tab"
           }
           onClick={() => setActiveTab("dictionary")}
-          disabled={libraryBusy || moderationBusy}
+          disabled={libraryBusy || moderationBusy || correctionsBusy}
         >{t("Словарь")}</button>
 
         <button
@@ -1044,27 +1054,32 @@ export function WordDashboard({ user }: { user: AuthUser }) {
             setActiveTab("progress");
             void loadStudyProgress();
           }}
-          disabled={libraryBusy || moderationBusy}
+          disabled={libraryBusy || moderationBusy || correctionsBusy}
         >{t("Прогресс")}</button>
         <button type="button" className={activeTab === "history" ? "dashboard-tab active" : "dashboard-tab"}
-          disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("history")}>{t("История")}</button>
+          disabled={libraryBusy || moderationBusy || correctionsBusy} onClick={() => setActiveTab("history")}>{t("История")}</button>
         <button type="button" className={activeTab === "library" ? "dashboard-tab active" : "dashboard-tab"}
-          disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("library")}>{t("Библиотека")}</button>
+          disabled={libraryBusy || moderationBusy || correctionsBusy} onClick={() => setActiveTab("library")}>{t("Библиотека")}</button>
         {user.role === "ADMIN" && <button type="button"
           className={activeTab === "moderation" ? "dashboard-tab active" : "dashboard-tab"}
-          disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("moderation")}>{t("Модерация")}</button>}
+          disabled={libraryBusy || moderationBusy || correctionsBusy} onClick={() => setActiveTab("moderation")}>{t("Модерация")}</button>}
+        {correctionsEnabled && <button type="button" className={activeTab === "corrections" ? "dashboard-tab active" : "dashboard-tab"}
+          disabled={libraryBusy || moderationBusy || correctionsBusy} onClick={() => setActiveTab("corrections")}>{t("Исправления")}</button>}
         <button type="button" className={activeTab === "settings" ? "dashboard-tab active" : "dashboard-tab"}
-          disabled={libraryBusy || moderationBusy} onClick={() => setActiveTab("settings")}>{t("Настройки")}</button>
+          disabled={libraryBusy || moderationBusy || correctionsBusy} onClick={() => setActiveTab("settings")}>{t("Настройки")}</button>
       </nav>
 
       {activeTab === "settings" && <><GoogleAccountPanel key={`google-${user.id}`} userId={user.id} /><StudySettingsPanel key={user.id} userId={user.id} onSaved={() => setSettingsVersion((value) => value + 1)} /><AccountSessionsPanel key={`sessions-${user.id}`} userId={user.id} /></>}
 
       {activeTab === "history" && <StudyHistoryPanel userId={user.id} language={user.translationLanguage} version={historyVersion} />}
 
-      {activeTab === "library" && <LibraryPanel language={user.translationLanguage}
+      {activeTab === "corrections" && correctionsEnabled && <CorrectionsPanel key={user.id} isAdmin={user.role === "ADMIN"} onBusyChange={setCorrectionsBusy} onOpenCard={wordId => { setModerationTarget(wordId); setActiveTab("moderation"); }} />}
+
+      {activeTab === "library" && <LibraryPanel language={user.translationLanguage} correctionsEnabled={correctionsEnabled}
         onDictionaryChange={async () => { await Promise.all([loadWords(), loadDueWords(), loadStudyProgress()]); }} onBusyChange={setLibraryBusy} />}
 
-      {activeTab === "moderation" && user.role === "ADMIN" && <ModerationPanel
+      {activeTab === "moderation" && user.role === "ADMIN" && <ModerationPanel initialWordId={moderationTarget}
+        onEditWord={card => { setActiveTab("dictionary"); startEditing({ ...card, selectedTranslation: { language: user.translationLanguage, text: card.translations.find(entry => entry.language === user.translationLanguage)?.text ?? null } }); }}
         decisionsLocked={studyMode || studySaving || (studyFinished && !studySaved)}
         onDecision={syncAfterCardChange} onBusyChange={setModerationBusy}
         translationLanguage={user.translationLanguage} translationVersion={translationVersion} onEditTranslations={openTranslations} />}
@@ -1997,6 +2012,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         {dictionarySettingsBlocked && dictionarySettingsErrorId === word.id && <div role="alert"><p>{errorText(status)}</p><button type="button" className="small-button secondary-button" disabled={busy || dictionaryLoading} onClick={() => void syncAfterCardChange()}>{t("Обновить словарь")}</button></div>}
                         <PersonalBooks wordId={word.id} userId={user.id} suggestions={bookSuggestions} disabled={busy || trainingLocked} onSaved={titles => setWords(current => current.map(card => card.id === word.id ? { ...card, personalBooks: titles } : card))} />
                         <PersonalNote wordId={word.id} userId={user.id} disabled={busy} />
+                        {correctionsEnabled && word.publicationStatus === "PUBLISHED" && <ProposeCorrection wordId={word.id} german={word.german} disabled={busy || trainingLocked} onBusyChange={setCorrectionsBusy} />}
 
                         <section className="examples-section">
                           <h4 className="examples-title">{t("Примеры употребления")}{" "}<span>{examples.length}</span>

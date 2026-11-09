@@ -1,4 +1,5 @@
 "use client";
+import { ProposeCorrection } from "./corrections";
 import { safeErrorMessage } from "@/lib/i18n";
 import { useI18n } from "./ui-language-provider";
 import type { WordExample } from "@/lib/card-draft";
@@ -18,8 +19,8 @@ async function readResponse<T>(response: Response): Promise<T> {
   return response.json();
 }
 
-export function LibraryPanel({ language, onDictionaryChange, onBusyChange }: {
-  language: string; onDictionaryChange: () => Promise<void>; onBusyChange: (busy: boolean) => void;
+export function LibraryPanel({ language, onDictionaryChange, onBusyChange, correctionsEnabled = false }: {
+  correctionsEnabled?: boolean; language: string; onDictionaryChange: () => Promise<void>; onBusyChange: (busy: boolean) => void;
 }) {
   const { t, errorText } = useI18n();
   const [input, setInput] = useState("");
@@ -136,6 +137,7 @@ export function LibraryPanel({ language, onDictionaryChange, onBusyChange }: {
         {word.notes && <p className={styles.hint}>{word.notes}</p>}
         <LibraryExamples wordId={word.id} />
         <RelatedWords wordId={word.id} language={language} />
+        {correctionsEnabled && <ProposeCorrection wordId={word.id} german={word.german} disabled={addingId !== null} onBusyChange={onBusyChange} />}
         <button type="button" disabled={addingId !== null || membership.has(word.id)} onClick={() => void add(word)}
           aria-label={`${membership.has(word.id) ? t("Уже в словаре") : t("Добавить в мой словарь")}: ${word.german}`}>
           {addingId === word.id ? t("Добавляем…") : membership.has(word.id) ? t("Уже в словаре ✓") : t("+ В мой словарь")}

@@ -21,8 +21,8 @@ const actionLabels: Record<PublicationStatus, string> = {
 };
 const message = (error: unknown) => error instanceof Error ? safeErrorMessage(error) : "Не удалось выполнить запрос. Повторите попытку.";
 
-export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange, translationVersion, onEditTranslations, translationLanguage }: {
-  decisionsLocked: boolean; onDecision: () => Promise<void>; onBusyChange: (busy: boolean) => void;
+export function ModerationPanel({ initialWordId, onEditWord, decisionsLocked, onDecision, onBusyChange, translationVersion, onEditTranslations, translationLanguage }: {
+  initialWordId?: string; onEditWord?: (word: ReviewCard) => void; decisionsLocked: boolean; onDecision: () => Promise<void>; onBusyChange: (busy: boolean) => void;
   translationLanguage: string; translationVersion: number; onEditTranslations: (word: { id: string; german: string }) => void;
 }) {
   const { t, errorText } = useI18n();
@@ -32,7 +32,7 @@ export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange, tra
   const invalidateRelations = useCallback(() => setRelationsVersion(value => value + 1), []);
   const queueButtons = useRef(new Map<string, HTMLButtonElement>());
   const searchInput = useRef<HTMLInputElement>(null);
-  const [filter, setFilter] = useState<PublicationStatus>("PENDING_REVIEW");
+  const [filter, setFilter] = useState<PublicationStatus>(initialWordId ? "PUBLISHED" : "PENDING_REVIEW");
   const [search, setSearch] = useState("");
   const [lesson, setLesson] = useState("all");
   const [page, setPage] = useState(0);
@@ -40,7 +40,7 @@ export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange, tra
   const [words, setWords] = useState<ModerationWord[]>([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(initialWordId ?? null);
   const [detailAttempt, setDetailAttempt] = useState(0);
   const [detail, setDetail] = useState<ReviewCard | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -178,6 +178,7 @@ export function ModerationPanel({ decisionsLocked, onDecision, onBusyChange, tra
               <div><dt>{t("Книга-источник")}</dt><dd>{detail.sourceBook ?? "—"}</dd></div>
               <div><dt>{t("Уровень / урок")}</dt><dd>{detail.level ?? "—"} / {detail.lessonNumber ?? "—"}</dd></div>
             </dl>
+            {onEditWord && <button type="button" disabled={saving || decisionsLocked || relationsOpen} onClick={() => onEditWord(detail)}>{t("Изменить слово")}</button>}
             <SourceBookEditor key={`${detail.id}-${detail.revision}`} wordId={detail.id} sourceBook={detail.sourceBook} disabled={saving || decisionsLocked || relationsOpen} onBusyChange={setRelationsBusy} onSaved={() => { setDetailAttempt(value => value + 1); setListAttempt(value => value + 1); }} />
             {detail.notes && <p className={styles.notes}>{detail.notes}</p>}
             <RelatedWords key={detail.id + ":" + relationsVersion} wordId={detail.id} language={translationLanguage} />

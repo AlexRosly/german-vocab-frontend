@@ -1,0 +1,4 @@
+.footer { max-width: 1180px; margin: 0 auto; padding: 20px clamp(16px, 4vw, 28px) 32px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid #dce5db; color: #52645a; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.footer p { margin: 0; }
+.footer a { color: #175438; padding: 8px 0; font-weight: 600; }
+.footer a:focus-visible { outline: 3px solid #237a58; outline-offset: 4px; }

@@ -1,9 +1,10 @@
-export type BookWord = { sourceBook?: string | null; personalBooks?: readonly string[] };
+export type BookSource = { sourceBook: string; lessonNumbers: readonly number[] };
+export type BookWord = { sourceBook?: string | null; lessonNumber?: number | null; bookSources?: readonly BookSource[]; personalBooks?: readonly string[] };
 export const normalizeBook = (title: string) => title.normalize("NFC").trim().replace(/\s+/gu, " ");
 const bookKey = (title: string) => normalizeBook(title).toLocaleLowerCase("de");
 export function bookOptions(words: readonly BookWord[]) {
   const titles = new Map<string, string>();
-  for (const word of words) for (const title of [word.sourceBook, ...(word.personalBooks ?? [])]) {
+  for (const word of words) for (const title of [word.sourceBook, ...(word.bookSources ?? []).map(source => source.sourceBook), ...(word.personalBooks ?? [])]) {
     if (title?.trim() && !titles.has(bookKey(title))) titles.set(bookKey(title), normalizeBook(title));
   }
   return [...titles].map(([key, title]) => ({ key: "book:" + key, title })).sort((a, b) => a.title.localeCompare(b.title, "de"));
@@ -17,6 +18,30 @@ export function matchesBook(word: BookWord, filter: string) {
   if (!filter) return true;
   const options = bookOptions([word]);
   return filter === "none" ? options.length === 0 : options.some(book => book.key === filter);
+}
+export function sharedBookSources(word: BookWord): BookSource[] {
+  const rows = new Map<string, { sourceBook: string; lessonNumbers: Set<number> }>();
+  for (const source of [...(word.bookSources ?? []), ...(word.sourceBook ? [{ sourceBook: word.sourceBook, lessonNumbers: word.lessonNumber == null ? [] : [word.lessonNumber] }] : [])]) {
+    const title = normalizeBook(source.sourceBook), key = bookKey(title);
+    if (!title) continue;
+    const row = rows.get(key) ?? { sourceBook: title, lessonNumbers: new Set<number>() };
+    for (const number of source.lessonNumbers) if (Number.isInteger(number) && number > 0 && number <= 10000) row.lessonNumbers.add(number);
+    rows.set(key, row);
+  }
+  return [...rows.values()].map(row => ({ sourceBook: row.sourceBook, lessonNumbers: [...row.lessonNumbers].sort((a,b) => a-b) })).sort((a,b) => a.sourceBook.localeCompare(b.sourceBook, "de"));
+}
+export function lessonsForBook(word: BookWord, filter: string): number[] {
+  if (!matchesBook(word, filter)) return [];
+  const rows = sharedBookSources(word).filter(row => !filter || filter === "none" || "book:" + bookKey(row.sourceBook) === filter);
+  const values = rows.flatMap(row => row.lessonNumbers);
+  if ((!filter || filter === "none") && !word.sourceBook && word.lessonNumber != null) values.push(word.lessonNumber);
+  return [...new Set(values)].sort((a,b) => a-b);
+}
+export function matchesLesson(word: BookWord, book: string, lesson: string): boolean {
+  if (!matchesBook(word, book)) return false;
+  if (!lesson || lesson === "all") return true;
+  const numbers = lessonsForBook(word, book);
+  return lesson === "none" ? numbers.length === 0 : numbers.includes(Number(lesson));
 }
 export type PersonalBooks = { wordId: string; titles: string[]; revision: string | null };
 type Requester = (path: string, init?: RequestInit) => Promise<Response>;
@@ -54,10 +79,10 @@ export class PersonalBooksClient {
 
 export type LibraryWord = BookWord & { lessonNumber: number | null };
 export function filterLibraryWords<T extends LibraryWord>(words: readonly T[], book: string, lesson: string): T[] {
-  return words.filter(word => matchesBook(word, book) && (!lesson || (lesson === "none" ? word.lessonNumber === null : String(word.lessonNumber) === lesson)));
+  return words.filter(word => matchesLesson(word, book, lesson));
 }
 export function libraryLessons(words: readonly LibraryWord[], book: string, selected: string): number[] {
-  const lessons = new Set(words.filter(word => matchesBook(word, book)).flatMap(word => word.lessonNumber === null ? [] : [word.lessonNumber]));
+  const lessons = new Set(words.flatMap(word => lessonsForBook(word, book)));
   if (/^[1-9][0-9]*$/.test(selected)) lessons.add(Number(selected));
   return [...lessons].sort((a, b) => a - b);
 }

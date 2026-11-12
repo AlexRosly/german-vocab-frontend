@@ -1,4 +1,5 @@
 "use client";
+import { WordBookSources } from "./word-book-sources";
 import { ProposeCorrection } from "./corrections";
 import { safeErrorMessage } from "@/lib/i18n";
 import { useI18n } from "./ui-language-provider";
@@ -127,12 +128,12 @@ export function LibraryPanel({ language, onDictionaryChange, onBusyChange, corre
     {error && <p className={styles.error} role="alert">{errorText(error)} <button type="button" disabled={addingId !== null} onClick={() => setSearch((current) => ({ ...current, attempt: current.attempt + 1 }))}>{t("Обновить библиотеку")}</button></p>}
     {loading ? <p role="status">{t("Загружаем библиотеку…")}</p> : !error && !visible.length ? <p>{t("Слова не найдены. Попробуйте другой запрос.")}</p> : <div className={styles.grid}>
       {visible.map((word) => <article className={styles.card} key={word.id}>
-        <p className={styles.meta}>{t("Опубликовано ·")}{" "}{word.level ?? t("Уровень не указан")}{word.lessonNumber !== null ? t(" · Урок {0}", { 0: word.lessonNumber }) : ""}</p>
+        <p className={styles.meta}>{t("Опубликовано ·")}{" "}{word.level ?? t("Уровень не указан")}</p>
         <h4 className={word.grammaticalNumber === "plural" ? "article-orange" : word.article === "der" ? "article-blue" : word.article === "die" ? "article-red" : word.article === "das" ? "article-green" : "article-neutral"}>
           {word.article !== "none" && `${word.article} `}{word.german}
         </h4>
-        {word.sourceBook && <p className={styles.hint}>{t("Книга-источник")}: {word.sourceBook}</p>}
         <p>{displayTranslation(word, t("Перевод отсутствует"))}</p>
+        <WordBookSources word={word} />
         {word.pluralForm && <p className={styles.hint}>{t("Мн. число:")}{" "}{word.pluralForm}</p>}
         {word.notes && <p className={styles.hint}>{word.notes}</p>}
         <LibraryExamples wordId={word.id} />

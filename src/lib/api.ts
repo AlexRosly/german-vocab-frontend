@@ -30,6 +30,7 @@ export type StudyWord = {
   publicationStatus: "PENDING_REVIEW" | "PUBLISHED" | "REJECTED";
   createdByUserId: string | null;
   sourceBook?: string | null;
+  bookSources?: { sourceBook: string; lessonNumbers: number[] }[];
   personalBooks?: string[];
   level: string | null;
   lessonNumber: number | null;

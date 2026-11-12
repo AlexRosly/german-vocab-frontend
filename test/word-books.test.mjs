@@ -68,3 +68,15 @@ test("library filters combine book and lesson and retain empty lessons without c
  assert.deepEqual(libraryLessons(words, "book:a1 treffpunkt", "99"), [15, 16, 99]);
  assert.deepEqual(words, before);
 });
+
+test('shared book and lesson filters match the SAME occurrence without borrowing another book lesson', async () => {
+ const {filterLibraryWords,libraryLessons,lessonsForBook,sharedBookSources}=await import('../src/lib/word-books.ts');
+ const word={id:'a',sourceBook:'B1+ Brückenkurs',lessonNumber:6,personalBooks:['My private book'],bookSources:[{sourceBook:'A1 Treffpunkt',lessonNumbers:[9,10]},{sourceBook:'A1.1 Schritte plus',lessonNumbers:[2]}]};
+ assert.deepEqual(filterLibraryWords([word],'book:a1 treffpunkt','9').map(x=>x.id),['a']);
+ assert.deepEqual(filterLibraryWords([word],'book:a1 treffpunkt','2'),[]);
+ assert.deepEqual(filterLibraryWords([word],'book:a1.1 schritte plus','6'),[]);
+ assert.deepEqual(libraryLessons([word],'book:a1 treffpunkt',''),[9,10]);
+ assert.deepEqual(lessonsForBook(word,'book:my private book'),[]);
+ assert.equal(bookOptions([word]).length,4);
+ assert.deepEqual(sharedBookSources({sourceBook:'A1 Book',lessonNumber:2,bookSources:[{sourceBook:'A1 Book',lessonNumbers:[1,2]}]})[0].lessonNumbers,[1,2]);
+});

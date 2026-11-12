@@ -1,8 +1,9 @@
 "use client";
+import { WordBookSources } from "./word-book-sources";
 import { CorrectionsClient } from "@/lib/corrections-client";
 import { CorrectionsPanel, ProposeCorrection } from "./corrections";
 import { PersonalBooks } from "./personal-books";
-import { bookOptions, bookFilterOptions, matchesBook, normalizeBook } from "@/lib/word-books";
+import { bookOptions, bookFilterOptions, matchesBook, matchesLesson as matchesBookLesson, lessonsForBook, normalizeBook } from "@/lib/word-books";
 import { GoogleAccountPanel } from "./google-account-panel";
 import practiceStyles from "./practice-card.module.css";
 import { PracticeCard } from "./practice-card";
@@ -54,6 +55,7 @@ type Word = {
   publicationStatus: "PENDING_REVIEW" | "PUBLISHED" | "REJECTED";
   createdByUserId: string | null;
   sourceBook?: string | null;
+  bookSources?: { sourceBook: string; lessonNumbers: number[] }[];
   personalBooks?: string[];
   level: string | null;
   lessonNumber: number | null;
@@ -812,6 +814,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
         word.pluralForm ?? "",
         word.notes ?? "",
         word.sourceBook ?? "",
+        ...(word.bookSources ?? []).map(source => source.sourceBook),
         ...(word.personalBooks ?? []),
         ...examples.flatMap((example) => [example.german, example.selectedTranslation.text ?? ""]),
       ]
@@ -823,9 +826,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
       const matchesLevel = filterLevel === "all" || word.level === filterLevel;
 
-      const matchesLesson =
-        filterLesson === "all" ||
-        String(word.lessonNumber ?? "") === filterLesson;
+      const matchesLesson = filterLesson === "all" || matchesBookLesson(word, filterBook, filterLesson);
 
       const matchesArticle =
         filterArticle === "all" ||
@@ -1599,7 +1600,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         {[
                           ...new Set(
                             words
-                              .map((word) => word.lessonNumber)
+                              .flatMap((word) => lessonsForBook(word, filterBook))
                               .filter(
                                 (value): value is number => value != null,
                               ),
@@ -1992,12 +1993,10 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
                         <div className="word-meta">
                           <span>{t(publicationLabel(word.publicationStatus))}</span>
-                          {word.sourceBook && <span>{t("Книга-источник")}: {word.sourceBook}</span>}
+                          <WordBookSources word={word} />
                           {(word.personalBooks ?? []).map(title => <span key={title}>{t("Моя книга")}: {title}</span>)}
                           {word.level && <span>{word.level}</span>}
-                          {word.lessonNumber != null && (
-                            <span>{t("Урок")}{" "}{word.lessonNumber}</span>
-                          )}
+
                         </div>
 
                         {word.dictionaryEntry?.isArchived && <p className="hint">{t("В архиве")}</p>}

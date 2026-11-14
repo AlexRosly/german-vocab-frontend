@@ -1,4 +1,5 @@
 import "./globals.css";
+import "./mobile-layout.css";
 import { UiLanguageProvider } from "@/components/ui-language-provider";
 import { PublicFooter } from "@/components/public-footer";
 

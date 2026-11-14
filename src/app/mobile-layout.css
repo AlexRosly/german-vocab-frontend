@@ -1,0 +1,36 @@
+/* Mobile controls and navigation. Keep the desktop layout unchanged. */
+@media (max-width: 600px) {
+  body :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]) {
+    font-size: 16px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  body main button.small-button,
+  body dialog[open] button {
+    font-size: 14px;
+    min-height: 44px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  body main button.speak-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .dashboard-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .dashboard-tabs .dashboard-tab {
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 6px;
+    font-size: 14px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}

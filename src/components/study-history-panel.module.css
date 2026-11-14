@@ -25,3 +25,11 @@
 .notice { padding: 12px; background: #fff4d8; border-radius: 10px; font-size: 13px; line-height: 1.7; }
 .empty { padding: 28px 0; }
 @media (max-width: 600px) { .panel { padding: 18px; } .session { padding: 16px; } .totals { gap: 8px; } .totals div { padding: 10px; } .totals dd { font-size: 18px; } .words li { align-items: flex-start; flex-wrap: wrap; } }
+
+/* Let translated labels and word counts fit narrow history cards. */
+@media (max-width: 480px) {
+  .totals { grid-template-columns: minmax(0, 1fr); }
+  .totals > div { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+  .totals dt { margin: 0; }
+  .totals dt, .totals dd { min-width: 0; overflow-wrap: anywhere; }
+}

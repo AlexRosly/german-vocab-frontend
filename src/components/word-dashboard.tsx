@@ -398,7 +398,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     setGrammaticalNumber(word.grammaticalNumber);
     setTranslationValues(translationDraft(word.translations));
     setFormLanguage(user.translationLanguage);
-    setLevel(word.level ?? "A1");
+    setLevel(word.level ?? "");
     setSourceBook(word.sourceBook ?? "");
     setLessonNumber(word.lessonNumber == null ? "" : String(word.lessonNumber));
     setPluralForm(word.pluralForm ?? "");
@@ -419,7 +419,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
         grammaticalNumber,
         translations: translationPatch(translationValues),
         ...(!editingId ? { examples: initialExamples(newExamples), relatedWordIds: relatedDraft.map(card => card.id) } : {}),
-        level,
+        level: level || null,
         sourceBook: normalizeBook(sourceBook) || null,
         lessonNumber: lessonNumber ? Number(lessonNumber) : null,
         pluralForm: pluralForm.trim() || null,
@@ -1508,6 +1508,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                     value={level}
                     onChange={(event) => setLevel(event.target.value)}
                   >
+                    <option value="">{t("Без уровня")}</option>
                     {["A1", "A2", "B1", "B2", "C1", "C2"].map((item) => (
                       <option key={item} value={item}>
                         {item}

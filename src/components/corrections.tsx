@@ -10,7 +10,7 @@ const statuses={ALL:"Все",OPEN:"Ожидает рассмотрения",RESO
 
 function Dialog({title,onClose,busy,children}:{title:string;onClose:()=>void;busy:boolean;children:React.ReactNode}){
  const {t}=useI18n();const dialog=useRef<HTMLDialogElement>(null),heading=useRef<HTMLHeadingElement>(null);
- useEffect(()=>{const previous=document.activeElement instanceof HTMLElement?document.activeElement:null;const element=dialog.current;element?.showModal();heading.current?.focus();return()=>{element?.close();previous?.focus();};},[]);
+ useEffect(()=>{const previous=document.activeElement instanceof HTMLElement?document.activeElement:null;const element=dialog.current;const overflow=document.body.style.overflow;document.body.style.overflow="hidden";element?.showModal();heading.current?.focus({preventScroll:true});return()=>{element?.close();document.body.style.overflow=overflow;previous?.focus({preventScroll:true});};},[]);
  return <dialog ref={dialog} className={styles.dialog} aria-label={title} onCancel={e=>{e.preventDefault();if(!busy)onClose();}}>
   <div className={styles.header}><h2 ref={heading} tabIndex={-1}>{title}</h2><button type="button" aria-label={t("Закрыть")} disabled={busy} onClick={onClose}>{"×"}<span className={styles.srOnly}> {title}</span></button></div>{children}
  </dialog>;

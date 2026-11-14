@@ -21,3 +21,9 @@
 .text {white-space:pre-wrap;}
 .srOnly {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
 @media(max-width:600px){.panel,.dialog {padding:16px;}.controls {align-items:stretch;}.controls label {width:100%;}.header h2 {font-size:19px;}}
+
+/* Keep long German titles and close controls within narrow dialogs. */
+.dialog {overscroll-behavior:contain;}
+.header {position:sticky;top:0;z-index:1;background:var(--panel);}
+.header h2 {min-width:0;overflow-wrap:anywhere;}
+.header > button {flex-shrink:0;}

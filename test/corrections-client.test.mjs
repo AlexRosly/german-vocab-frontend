@@ -29,3 +29,22 @@ test('review sends only a manual decision, comment and expected revision; confli
 test('a removed shared card does not remove the reporter history or imply access to current data',async()=>{
  const detail=await new CorrectionsClient(async()=>ok({...report,current:null,cardChanged:true})).detail('report-1',false);assert.equal(detail.current,null);assert.equal(detail.snapshot.german,'Baum');
 });
+
+test('the All filter accepts mixed real statuses through both scoped endpoints and preserves pagination',async()=>{
+ const closed=status=>({...report,id:'report-'+status,status,reviewComment:'Checked',reviewedAt:'2026-11-14T10:00:00.000Z'});
+ const items=[report,closed('RESOLVED'),closed('REJECTED')],calls=[];
+ const client=new CorrectionsClient(async path=>{calls.push(path);return ok({items,total:33,page:1,pageSize:30});});
+ assert.deepEqual((await client.list(false,'ALL',1)).items,items);
+ assert.deepEqual((await client.list(true,'ALL',1)).items,items);
+ assert.deepEqual(calls,['/corrections/mine?status=ALL&page=1','/moderation/corrections?status=ALL&page=1']);
+});
+
+test('All remains a filter, while invalid response statuses and mismatches in a specific filter are rejected',async()=>{
+ const rejected={...report,status:'REJECTED',reviewComment:'Checked',reviewedAt:'2026-11-14T10:00:00.000Z'};
+ const response=items=>ok({items,total:items.length,page:0,pageSize:30});
+ await assert.rejects(()=>new CorrectionsClient(async()=>response([report,rejected])).list(false,'OPEN',0),e=>e instanceof CorrectionsError&&e.status===502);
+ await assert.rejects(()=>new CorrectionsClient(async()=>response([{...rejected,status:'ALL'}])).list(false,'ALL',0),e=>e instanceof CorrectionsError&&e.status===502);
+ let calls=0;
+ await assert.rejects(()=>new CorrectionsClient(async()=>{calls++;return response([]);}).list(false,'INVALID',0),e=>e instanceof CorrectionsError&&e.status===400);
+ assert.equal(calls,0);
+});

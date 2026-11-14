@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
-import { CorrectionsClient, correctionCategories, correctionStatuses, type Correction, type CorrectionCategory, type CorrectionDetail, type CorrectionSnapshot, type CorrectionStatus } from "@/lib/corrections-client";
+import { CorrectionsClient, correctionCategories, correctionStatusFilters, type Correction, type CorrectionCategory, type CorrectionDetail, type CorrectionSnapshot, type CorrectionStatusFilter } from "@/lib/corrections-client";
 import { useI18n } from "./ui-language-provider";
 import styles from "./corrections.module.css";
 const client=new CorrectionsClient(apiFetch);
 const categories={WORD:"Слово и грамматика",TRANSLATION:"Перевод",EXAMPLE:"Пример употребления",RELATION:"Связанные слова",OTHER:"Другое"};
-const statuses={OPEN:"Ожидает рассмотрения",RESOLVED:"Исправлено",REJECTED:"Отклонено"};
+const statuses={ALL:"Все",OPEN:"Ожидает рассмотрения",RESOLVED:"Исправлено",REJECTED:"Отклонено"};
 
 function Dialog({title,onClose,busy,children}:{title:string;onClose:()=>void;busy:boolean;children:React.ReactNode}){
  const {t}=useI18n();const dialog=useRef<HTMLDialogElement>(null),heading=useRef<HTMLHeadingElement>(null);
@@ -42,7 +42,7 @@ function SnapshotView({snapshot:s}:{snapshot:CorrectionSnapshot}){
  </div>;
 }
 export function CorrectionsPanel({isAdmin,onBusyChange,onOpenCard}:{isAdmin:boolean;onBusyChange:(busy:boolean)=>void;onOpenCard:(wordId:string)=>void}){
- const {t,errorText,date}=useI18n();const [scope,setScope]=useState(isAdmin),[status,setStatus]=useState<CorrectionStatus>("OPEN"),[page,setPage]=useState(0),[version,setVersion]=useState(0),[rows,setRows]=useState<Correction[]>([]),[total,setTotal]=useState(0),[loading,setLoading]=useState(true),[error,setError]=useState<unknown>(null);
+ const {t,errorText,date}=useI18n();const [scope,setScope]=useState(isAdmin),[status,setStatus]=useState<CorrectionStatusFilter>("OPEN"),[page,setPage]=useState(0),[version,setVersion]=useState(0),[rows,setRows]=useState<Correction[]>([]),[total,setTotal]=useState(0),[loading,setLoading]=useState(true),[error,setError]=useState<unknown>(null);
  const [selected,setSelected]=useState<string|null>(null),[detail,setDetail]=useState<CorrectionDetail|null>(null),[detailError,setDetailError]=useState<unknown>(null),[detailVersion,setDetailVersion]=useState(0),[comment,setComment]=useState(""),[busy,setBusy]=useState(false),[blocked,setBlocked]=useState(false),[notice,setNotice]=useState("");const saving=useRef(false);
  useEffect(()=>{if(!busy)return;onBusyChange(true);return()=>onBusyChange(false);},[busy,onBusyChange]);
  useEffect(()=>{const abort=new AbortController();setLoading(true);setError(null);setRows([]);void client.list(scope,status,page,abort.signal).then(data=>{if(!abort.signal.aborted){setRows(data.items);setTotal(data.total);}}).catch(e=>{if(!abort.signal.aborted)setError(e);}).finally(()=>{if(!abort.signal.aborted)setLoading(false);});return()=>abort.abort();},[scope,status,page,version]);
@@ -55,11 +55,11 @@ export function CorrectionsPanel({isAdmin,onBusyChange,onOpenCard}:{isAdmin:bool
  return <section className={styles.panel} aria-label={t("Исправления")}><h3>{t(scope?"Предложения пользователей":"Мои предложения")}</h3>
   <p>{t("Предложения не меняют карточки автоматически. Изменения в общую карточку вносит администратор.")}</p>
   <div className={styles.controls}>{isAdmin&&<label>{t("Показать")}<select disabled={busy} value={scope?"all":"mine"} onChange={e=>{setScope(e.target.value==="all");setPage(0);setSelected(null);}}><option value="all">{t("Все предложения")}</option><option value="mine">{t("Мои предложения")}</option></select></label>}
-   <label>{t("Статус")}<select disabled={busy} value={status} onChange={e=>{setStatus(e.target.value as CorrectionStatus);setPage(0);setSelected(null);}}>{correctionStatuses.map(s=><option value={s} key={s}>{t(statuses[s])}</option>)}</select></label>
+   <label>{t("Статус")}<select disabled={busy} value={status} onChange={e=>{setStatus(e.target.value as CorrectionStatusFilter);setPage(0);setSelected(null);}}>{correctionStatusFilters.map(s=><option value={s} key={s}>{t(statuses[s])}</option>)}</select></label>
    <button type="button" disabled={busy||loading} onClick={()=>setVersion(v=>v+1)}>{t("Обновить список")}</button>
   </div>
   {notice&&<p role="status">{t(notice)}</p>}
-  {loading?<p role="status">{t("Загружаем предложения…")}</p>:error!==null?<p role="alert">{errorText(error)}</p>:!rows.length?<p>{t("Предложений с этим статусом пока нет.")}</p>:<ul className={styles.list}>{rows.map(r=><li key={r.id}><button type="button" onClick={()=>{setSelected(r.id);setNotice("");}}><strong>{r.snapshot.article!=="none"?r.snapshot.article+" ":""}{r.snapshot.german}</strong><span>{t(categories[r.category])} · {date(r.createdAt)}</span><span>{r.description}</span></button></li>)}</ul>}
+  {loading?<p role="status">{t("Загружаем предложения…")}</p>:error!==null?<p role="alert">{errorText(error)}</p>:!rows.length?<p>{t("Предложений с этим статусом пока нет.")}</p>:<ul className={styles.list}>{rows.map(r=><li key={r.id}><button type="button" onClick={()=>{setSelected(r.id);setNotice("");}}><strong>{r.snapshot.article!=="none"?r.snapshot.article+" ":""}{r.snapshot.german}</strong><span>{t(statuses[r.status])}</span><span>{t(categories[r.category])} · {date(r.createdAt)}</span><span>{r.description}</span></button></li>)}</ul>}
   <div className={styles.controls}><button type="button" disabled={loading||busy||page===0} onClick={()=>setPage(p=>p-1)}>{t("Предыдущая страница")}</button><span>{t("Страница {current} из {total}",{current:page+1,total:Math.max(1,Math.ceil(total/30))})}</span><button type="button" disabled={loading||busy||(page+1)*30>=total} onClick={()=>setPage(p=>p+1)}>{t("Следующая страница")}</button></div>
   {selected&&<Dialog title={t("Предложение исправления")} onClose={()=>setSelected(null)} busy={busy}>
    {detailError!==null&&<p role="alert">{errorText(detailError)}</p>}

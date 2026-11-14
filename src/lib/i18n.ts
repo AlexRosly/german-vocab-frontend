@@ -1,6 +1,7 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
   "Показать": {"de": "Anzeigen", "en": "Show", "uk": "Показати"},
+  "Все": {"de": "Alle", "en": "All", "uk": "Усі"},
   "Статус": {"de": "Status", "en": "Status", "uk": "Статус"},
   "Изменить слово": {"de": "Wort bearbeiten", "en": "Edit word", "uk": "Змінити слово"},
 

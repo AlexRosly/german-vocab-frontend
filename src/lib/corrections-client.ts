@@ -2,6 +2,8 @@ export const correctionCategories = ["WORD", "TRANSLATION", "EXAMPLE", "RELATION
 export const correctionStatuses = ["OPEN", "RESOLVED", "REJECTED"] as const;
 export type CorrectionCategory = typeof correctionCategories[number];
 export type CorrectionStatus = typeof correctionStatuses[number];
+export const correctionStatusFilters = ["ALL", ...correctionStatuses] as const;
+export type CorrectionStatusFilter = typeof correctionStatusFilters[number];
 type Translation = { language: string; text: string };
 export type CorrectionSnapshot = { id: string; german: string; translation: string; article: string; grammaticalNumber: string; pluralForm: string | null; notes: string | null;
  sourceBook: string | null; level: string | null; lessonNumber: number | null; publicationStatus: string;
@@ -39,10 +41,10 @@ export class CorrectionsClient {
   const data=await read(await this.request(`/words/${id}/corrections`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({category,description:text,...(replacement?{suggestion:replacement}:{})})}));
   if(!correction(data)||data.wordId!==wordId||data.status!=="OPEN")throw new CorrectionsError(502);return data;
  }
- async list(admin:boolean,status:CorrectionStatus,page:number,signal?:AbortSignal){
-  if(!correctionStatuses.includes(status)||!Number.isSafeInteger(page)||page<0||page>1000000)throw new CorrectionsError(400);
+ async list(admin:boolean,status:CorrectionStatusFilter,page:number,signal?:AbortSignal){
+  if(!correctionStatusFilters.includes(status)||!Number.isSafeInteger(page)||page<0||page>1000000)throw new CorrectionsError(400);
   const data=await read(await this.request(`${admin?"/moderation/corrections":"/corrections/mine"}?status=${status}&page=${page}`,{signal})) as {items:Correction[];total:number;page:number;pageSize:number};
-  if(!data||!Array.isArray(data.items)||!data.items.every(correction)||data.items.some(c=>c.status!==status)||new Set(data.items.map(c=>c.id)).size!==data.items.length||!Number.isSafeInteger(data.total)||data.total<data.items.length||data.page!==page||data.pageSize!==30)throw new CorrectionsError(502);return data;
+  if(!data||!Array.isArray(data.items)||!data.items.every(correction)||(status!=="ALL"&&data.items.some(c=>c.status!==status))||new Set(data.items.map(c=>c.id)).size!==data.items.length||!Number.isSafeInteger(data.total)||data.total<data.items.length||data.page!==page||data.pageSize!==30)throw new CorrectionsError(502);return data;
  }
  async detail(id:string,admin:boolean,signal?:AbortSignal){
   const data=await read(await this.request(`${admin?"/moderation/corrections":"/corrections/mine"}/${this.path(id)}`,{signal})) as CorrectionDetail;

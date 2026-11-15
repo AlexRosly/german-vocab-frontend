@@ -25,10 +25,10 @@ export function VerbFormsEditor({ forms, onChange, disabled }: { forms: VerbForm
   </fieldset>;
 }
 
-export function VerbForms({ forms }: { forms?: VerbForm[] }) {
+export function VerbForms({ forms, initiallyOpen = false, onOpenReference }: { forms?: VerbForm[]; initiallyOpen?: boolean; onOpenReference?: () => void }) {
   const { t } = useI18n();
   if (!forms?.length) return null;
-  return <details className={styles.display}><summary>{t("Формы глагола")}</summary>
+  return <><details className={styles.display} open={initiallyOpen || undefined}><summary>{t("Формы глагола")}</summary>
     <p className="hint">{t("Формы для er/sie/es")}</p>
     {forms.map((form, index) => <div className={styles.variant} key={index}>
       {form.usage && <p>{form.usage}</p>}
@@ -38,5 +38,5 @@ export function VerbForms({ forms }: { forms?: VerbForm[] }) {
         <div><dt>Perfekt</dt><dd>{perfekt(form)}</dd></div>
       </dl>
     </div>)}
-  </details>;
+  </details>{onOpenReference && <button type="button" className="small-button secondary-button" aria-haspopup="dialog" onClick={onOpenReference}>{t("В справочник глаголов")}</button>}</>;
 }

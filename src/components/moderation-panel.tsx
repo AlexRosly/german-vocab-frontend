@@ -22,8 +22,8 @@ const actionLabels: Record<PublicationStatus, string> = {
 };
 const message = (error: unknown) => error instanceof Error ? safeErrorMessage(error) : "Не удалось выполнить запрос. Повторите попытку.";
 
-export function ModerationPanel({ initialWordId, onEditWord, decisionsLocked, onDecision, onBusyChange, translationVersion, onEditTranslations, translationLanguage }: {
-  initialWordId?: string; onEditWord?: (word: ReviewCard) => void; decisionsLocked: boolean; onDecision: () => Promise<void>; onBusyChange: (busy: boolean) => void;
+export function ModerationPanel({ initialWordId, onOpenVerb, onEditWord, decisionsLocked, onDecision, onBusyChange, translationVersion, onEditTranslations, translationLanguage }: {
+  onOpenVerb?: (id: string) => void; initialWordId?: string; onEditWord?: (word: ReviewCard) => void; decisionsLocked: boolean; onDecision: () => Promise<void>; onBusyChange: (busy: boolean) => void;
   translationLanguage: string; translationVersion: number; onEditTranslations: (word: { id: string; german: string }) => void;
 }) {
   const { t, errorText } = useI18n();
@@ -181,7 +181,7 @@ export function ModerationPanel({ initialWordId, onEditWord, decisionsLocked, on
             </dl>
             {onEditWord && <button type="button" disabled={saving || decisionsLocked || relationsOpen} onClick={() => onEditWord(detail)}>{t("Изменить слово")}</button>}
             <SourceBookEditor key={`${detail.id}-${detail.revision}`} wordId={detail.id} sourceBook={detail.sourceBook} disabled={saving || decisionsLocked || relationsOpen} onBusyChange={setRelationsBusy} onSaved={() => { setDetailAttempt(value => value + 1); setListAttempt(value => value + 1); }} />
-            <VerbForms forms={detail.verbForms} />
+            <VerbForms forms={detail.verbForms} onOpenReference={onOpenVerb ? () => onOpenVerb(detail.id) : undefined} />
             {detail.notes && <p className={styles.notes}>{detail.notes}</p>}
             <RelatedWords key={detail.id + ":" + relationsVersion} wordId={detail.id} language={translationLanguage} />
             <button type="button" disabled={saving || relationsBusy || decisionsLocked} onClick={() => { setConfirmation(null); setRelationsOpen(value => !value); }}>{relationsOpen ? t("Закрыть редактор связей") : t("Редактировать связи")}</button>

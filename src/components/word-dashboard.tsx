@@ -1,4 +1,5 @@
 "use client";
+import { VerbCatalog } from "./verb-catalog";
 import { VerbFormsEditor, VerbForms } from "./verb-forms";
 import { emptyVerbForm, verbDraft, verbPayload, type VerbForm } from "@/lib/verb-forms";
 import { WordBookSources } from "./word-book-sources";
@@ -136,6 +137,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const [relatedDraft, setRelatedDraft] = useState<RelatedCard[]>([]);
   const formHeading = useRef<HTMLHeadingElement>(null);
   const studyHeading = useRef<HTMLHeadingElement>(null);
+  const [verbCatalogEnabled, setVerbCatalogEnabled] = useState(false);
+  const [verbTarget, setVerbTarget] = useState<string | null>(null);
+  function openVerbReference(id: string) { setVerbTarget(id); setActiveTab("verbs"); }
   const [verbsEnabled, setVerbsEnabled] = useState(false);
   const [isVerb, setIsVerb] = useState(false);
   const [wasVerb, setWasVerb] = useState(false);
@@ -143,10 +147,11 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   useEffect(() => {
     let cancelled = false;
     setVerbsEnabled(false);
+    setVerbCatalogEnabled(false);
     void apiFetch("/verbs/config", { cache: "no-store" }).then(async response => {
       if (!response.ok) return;
       const config = await response.json();
-      if (!cancelled) setVerbsEnabled(config.enabled === true && config.version === 1);
+      if (!cancelled) { setVerbsEnabled(config.enabled === true && config.version === 1); setVerbCatalogEnabled(config.enabled === true && config.version === 1 && config.catalog === true); }
     }).catch(() => {});
     return () => { cancelled = true; };
   }, [user.id]);
@@ -217,7 +222,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const [historyVersion, setHistoryVersion] = useState(0);
   const [dictionaryLoading, setDictionaryLoading] = useState(true);
 
-  const [activeTab, setActiveTab] = useState<"dictionary" | "progress" | "history" | "settings" | "library" | "moderation" | "corrections">(
+  const [activeTab, setActiveTab] = useState<"dictionary" | "progress" | "history" | "settings" | "library" | "verbs" | "moderation" | "corrections">(
     "dictionary",
   );
 
@@ -1085,7 +1090,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
           disabled={libraryBusy || moderationBusy || correctionsBusy} onClick={() => setActiveTab("history")}>{t("История")}</button>
         <button type="button" className={activeTab === "library" ? "dashboard-tab active" : "dashboard-tab"}
           disabled={libraryBusy || moderationBusy || correctionsBusy} onClick={() => setActiveTab("library")}>{t("Библиотека")}</button>
-        {user.role === "ADMIN" && <button type="button"
+        {verbCatalogEnabled && <button type="button" className={activeTab === "verbs" ? "dashboard-tab active" : "dashboard-tab"}
+            disabled={libraryBusy || moderationBusy || correctionsBusy} onClick={() => { setVerbTarget(null); setActiveTab("verbs"); }}>{t("Глаголы")}</button>}
+          {user.role === "ADMIN" && <button type="button"
           className={activeTab === "moderation" ? "dashboard-tab active" : "dashboard-tab"}
           disabled={libraryBusy || moderationBusy || correctionsBusy} onClick={() => setActiveTab("moderation")}>{t("Модерация")}</button>}
         {correctionsEnabled && <button type="button" className={activeTab === "corrections" ? "dashboard-tab active" : "dashboard-tab"}
@@ -1094,16 +1101,17 @@ export function WordDashboard({ user }: { user: AuthUser }) {
           disabled={libraryBusy || moderationBusy || correctionsBusy} onClick={() => setActiveTab("settings")}>{t("Настройки")}</button>
       </nav>
 
-      {activeTab === "settings" && <><GoogleAccountPanel key={`google-${user.id}`} userId={user.id} /><StudySettingsPanel key={user.id} userId={user.id} onSaved={() => setSettingsVersion((value) => value + 1)} /><AccountSessionsPanel key={`sessions-${user.id}`} userId={user.id} /></>}
+      {activeTab === "verbs" && verbCatalogEnabled && <VerbCatalog language={user.translationLanguage} initialWordId={verbTarget} />}
+        {activeTab === "settings" && <><GoogleAccountPanel key={`google-${user.id}`} userId={user.id} /><StudySettingsPanel key={user.id} userId={user.id} onSaved={() => setSettingsVersion((value) => value + 1)} /><AccountSessionsPanel key={`sessions-${user.id}`} userId={user.id} /></>}
 
       {activeTab === "history" && <StudyHistoryPanel userId={user.id} language={user.translationLanguage} version={historyVersion} />}
 
       {activeTab === "corrections" && correctionsEnabled && <CorrectionsPanel key={user.id} isAdmin={user.role === "ADMIN"} onBusyChange={setCorrectionsBusy} onOpenCard={wordId => { setModerationTarget(wordId); setActiveTab("moderation"); }} />}
 
-      {activeTab === "library" && <LibraryPanel language={user.translationLanguage} correctionsEnabled={correctionsEnabled}
+      {activeTab === "library" && <LibraryPanel onOpenVerb={verbCatalogEnabled ? openVerbReference : undefined} language={user.translationLanguage} correctionsEnabled={correctionsEnabled}
         onDictionaryChange={async () => { await Promise.all([loadWords(), loadDueWords(), loadStudyProgress()]); }} onBusyChange={setLibraryBusy} />}
 
-      {activeTab === "moderation" && user.role === "ADMIN" && <ModerationPanel initialWordId={moderationTarget}
+      {activeTab === "moderation" && user.role === "ADMIN" && <ModerationPanel onOpenVerb={verbCatalogEnabled ? openVerbReference : undefined} initialWordId={moderationTarget}
         onEditWord={card => { setActiveTab("dictionary"); startEditing({ ...card, selectedTranslation: { language: user.translationLanguage, text: card.translations.find(entry => entry.language === user.translationLanguage)?.text ?? null } }); }}
         decisionsLocked={studyMode || studySaving || (studyFinished && !studySaved)}
         onDecision={syncAfterCardChange} onBusyChange={setModerationBusy}
@@ -2015,7 +2023,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         {word.selectedTranslation.source === "personal" && <small>{t("Ваш личный перевод")}</small>}
                         <button type="button" disabled={busy || libraryBusy || moderationBusy || translationTarget !== null || studyMode || studySaving || (studyFinished && !studySaved)} onClick={() => { stopSpeech(); setPersonalTranslationTarget(word); }}>{t("Мой перевод")}</button>
 
-                        <VerbForms forms={word.verbForms} />
+                        <VerbForms forms={word.verbForms} onOpenReference={verbCatalogEnabled ? () => openVerbReference(word.id) : undefined} />
                          {word.pluralForm && (
                           <p className="word-extra">
                             <strong>{t("Мн. число:")}</strong> {word.pluralForm}

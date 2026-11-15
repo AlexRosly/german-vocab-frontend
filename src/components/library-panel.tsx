@@ -21,8 +21,8 @@ async function readResponse<T>(response: Response): Promise<T> {
   return response.json();
 }
 
-export function LibraryPanel({ language, onDictionaryChange, onBusyChange, correctionsEnabled = false }: {
-  correctionsEnabled?: boolean; language: string; onDictionaryChange: () => Promise<void>; onBusyChange: (busy: boolean) => void;
+export function LibraryPanel({ language, onDictionaryChange, onBusyChange, correctionsEnabled = false, onOpenVerb }: {
+  onOpenVerb?: (id: string) => void; correctionsEnabled?: boolean; language: string; onDictionaryChange: () => Promise<void>; onBusyChange: (busy: boolean) => void;
 }) {
   const { t, errorText } = useI18n();
   const [input, setInput] = useState("");
@@ -135,7 +135,7 @@ export function LibraryPanel({ language, onDictionaryChange, onBusyChange, corre
         </h4>
         <p>{displayTranslation(word, t("Перевод отсутствует"))}</p>
         <WordBookSources word={word} />
-        <VerbForms forms={word.verbForms} />
+        <VerbForms forms={word.verbForms} onOpenReference={onOpenVerb ? () => onOpenVerb(word.id) : undefined} />
         {word.pluralForm && <p className={styles.hint}>{t("Мн. число:")}{" "}{word.pluralForm}</p>}
         {word.notes && <p className={styles.hint}>{word.notes}</p>}
         <LibraryExamples wordId={word.id} />

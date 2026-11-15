@@ -1,5 +1,16 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Это глагол": {"de": "Dies ist ein Verb", "en": "This is a verb", "uk": "Це дієслово"},
+  "Формы глагола": {"de": "Verbformen", "en": "Verb forms", "uk": "Форми дієслова"},
+  "Укажите формы для er/sie/es. Для разных значений можно добавить отдельный вариант.": {"de": "Gib die Formen für er/sie/es an. Für unterschiedliche Bedeutungen kannst du eine weitere Variante hinzufügen.", "en": "Enter the er/sie/es forms. Add a separate variant for different meanings.", "uk": "Вкажіть форми для er/sie/es. Для різних значень можна додати окремий варіант."},
+  "Формы для er/sie/es": {"de": "Formen für er/sie/es", "en": "Forms for er/sie/es", "uk": "Форми для er/sie/es"},
+  "Вариант {0}": {"de": "Variante {0}", "en": "Variant {0}", "uk": "Варіант {0}"},
+  "Вспомогательный глагол": {"de": "Hilfsverb", "en": "Auxiliary verb", "uk": "Допоміжне дієслово"},
+  "Возвратный вариант (sich)": {"de": "Reflexive Variante (sich)", "en": "Reflexive variant (sich)", "uk": "Зворотний варіант (sich)"},
+  "Значение или употребление (необязательно)": {"de": "Bedeutung oder Gebrauch (optional)", "en": "Meaning or usage (optional)", "uk": "Значення або вживання (необов’язково)"},
+  "Убрать вариант {0}": {"de": "Variante {0} entfernen", "en": "Remove variant {0}", "uk": "Прибрати варіант {0}"},
+  "Добавить вариант форм": {"de": "Formvariante hinzufügen", "en": "Add form variant", "uk": "Додати варіант форм"},
+  "Заполните Präteritum, Partizip II и haben/sein": {"de": "Trage Präteritum, Partizip II und haben/sein ein", "en": "Enter Präteritum, Partizip II and haben/sein", "uk": "Заповніть Präteritum, Partizip II та haben/sein"},
   "Показать": {"de": "Anzeigen", "en": "Show", "uk": "Показати"},
   "Все": {"de": "Alle", "en": "All", "uk": "Усі"},
   "Статус": {"de": "Status", "en": "Status", "uk": "Статус"},

@@ -1,4 +1,5 @@
 "use client";
+import { VerbForms } from "./verb-forms";
 import { WordBookSources } from "./word-book-sources";
 import { ProposeCorrection } from "./corrections";
 import { safeErrorMessage } from "@/lib/i18n";
@@ -134,6 +135,7 @@ export function LibraryPanel({ language, onDictionaryChange, onBusyChange, corre
         </h4>
         <p>{displayTranslation(word, t("Перевод отсутствует"))}</p>
         <WordBookSources word={word} />
+        <VerbForms forms={word.verbForms} />
         {word.pluralForm && <p className={styles.hint}>{t("Мн. число:")}{" "}{word.pluralForm}</p>}
         {word.notes && <p className={styles.hint}>{word.notes}</p>}
         <LibraryExamples wordId={word.id} />

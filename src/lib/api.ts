@@ -19,7 +19,10 @@ export const apiClient = new ApiClient({
 
 export const apiFetch = (path: string, init?: RequestInit): Promise<Response> => apiClient.request(path, init);
 
+import type { VerbForm } from "./verb-forms";
+
 export type StudyWord = {
+  verbForms?: VerbForm[];
   id: string;
   german: string;
   article: "der" | "das" | "die" | "none";

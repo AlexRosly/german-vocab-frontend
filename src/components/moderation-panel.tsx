@@ -1,4 +1,5 @@
 "use client";
+import { VerbForms } from "./verb-forms";
 import { SourceBookEditor } from "./source-book-editor";
 import { ModerationConfirmation } from "./moderation-confirmation";
 import { ModerationDialog } from "./moderation-dialog";
@@ -180,6 +181,7 @@ export function ModerationPanel({ initialWordId, onEditWord, decisionsLocked, on
             </dl>
             {onEditWord && <button type="button" disabled={saving || decisionsLocked || relationsOpen} onClick={() => onEditWord(detail)}>{t("Изменить слово")}</button>}
             <SourceBookEditor key={`${detail.id}-${detail.revision}`} wordId={detail.id} sourceBook={detail.sourceBook} disabled={saving || decisionsLocked || relationsOpen} onBusyChange={setRelationsBusy} onSaved={() => { setDetailAttempt(value => value + 1); setListAttempt(value => value + 1); }} />
+            <VerbForms forms={detail.verbForms} />
             {detail.notes && <p className={styles.notes}>{detail.notes}</p>}
             <RelatedWords key={detail.id + ":" + relationsVersion} wordId={detail.id} language={translationLanguage} />
             <button type="button" disabled={saving || relationsBusy || decisionsLocked} onClick={() => { setConfirmation(null); setRelationsOpen(value => !value); }}>{relationsOpen ? t("Закрыть редактор связей") : t("Редактировать связи")}</button>

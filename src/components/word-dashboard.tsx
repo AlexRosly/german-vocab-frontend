@@ -1,4 +1,6 @@
 "use client";
+import { VerbFormsEditor, VerbForms } from "./verb-forms";
+import { emptyVerbForm, verbDraft, verbPayload, type VerbForm } from "@/lib/verb-forms";
 import { WordBookSources } from "./word-book-sources";
 import { CorrectionsClient } from "@/lib/corrections-client";
 import { CorrectionsPanel, ProposeCorrection } from "./corrections";
@@ -44,6 +46,7 @@ import { emptyExample, examplePayload, initialExamples, translationDraft, transl
 const dictionaryEntries = new DictionaryEntryClient(apiFetch);
 
 type Word = {
+  verbForms?: VerbForm[];
   dictionaryEntry?: DictionaryEntry;
   id: string;
   german: string;
@@ -133,6 +136,20 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const [relatedDraft, setRelatedDraft] = useState<RelatedCard[]>([]);
   const formHeading = useRef<HTMLHeadingElement>(null);
   const studyHeading = useRef<HTMLHeadingElement>(null);
+  const [verbsEnabled, setVerbsEnabled] = useState(false);
+  const [isVerb, setIsVerb] = useState(false);
+  const [wasVerb, setWasVerb] = useState(false);
+  const [verbForms, setVerbForms] = useState<VerbForm[]>([emptyVerbForm()]);
+  useEffect(() => {
+    let cancelled = false;
+    setVerbsEnabled(false);
+    void apiFetch("/verbs/config", { cache: "no-store" }).then(async response => {
+      if (!response.ok) return;
+      const config = await response.json();
+      if (!cancelled) setVerbsEnabled(config.enabled === true && config.version === 1);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [user.id]);
   const [german, setGerman] = useState("");
   const [article, setArticle] = useState<Article>("der");
   const [grammaticalNumber, setGrammaticalNumber] =
@@ -377,6 +394,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     setRelatedDraft([]);
     setEditingId(null);
     setGerman("");
+    setIsVerb(false);
+    setWasVerb(false);
+    setVerbForms([emptyVerbForm()]);
     setArticle("der");
     setGrammaticalNumber("singular");
     setTranslationValues({});
@@ -394,6 +414,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     setDictionaryArea("add");
     setEditingId(word.id);
     setGerman(word.german);
+    setIsVerb(Boolean(word.verbForms?.length));
+    setWasVerb(Boolean(word.verbForms?.length));
+    setVerbForms(verbDraft(word.verbForms));
     setArticle(word.article);
     setGrammaticalNumber(word.grammaticalNumber);
     setTranslationValues(translationDraft(word.translations));
@@ -415,6 +438,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     try {
       const payload = {
         german: german.trim(),
+        ...verbPayload(verbsEnabled, isVerb, verbForms, wasVerb),
         article,
         grammaticalNumber,
         translations: translationPatch(translationValues),
@@ -1459,8 +1483,18 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                 />
               </label>
 
-              <label>{t("Артикль / категория")}{" "}<select
-                  value={`${article}:${grammaticalNumber}`}
+              {verbsEnabled && <>
+                    <label style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: ".6rem", minHeight: 44 }}>
+                      <input type="checkbox" style={{ width: 20, height: 20, margin: 0 }} checked={isVerb} disabled={busy} onChange={event => {
+                        setIsVerb(event.target.checked);
+                        if (event.target.checked) { setArticle("none"); setGrammaticalNumber("not_applicable"); setPluralForm(""); }
+                      }} />{t("Это глагол")}
+                    </label>
+                    {isVerb && <VerbFormsEditor forms={verbForms} onChange={setVerbForms} disabled={busy} />}
+                  </>}
+                  <label>{t("Артикль / категория")}{" "}<select
+                  disabled={isVerb}
+                    value={`${article}:${grammaticalNumber}`}
                   onChange={(event) => {
                     const [nextArticle, nextNumber] = event.target.value.split(
                       ":",
@@ -1482,7 +1516,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                 onLanguage={setFormLanguage} onText={(language, text) => setTranslationValues((current) => ({ ...current, [language]: text }))} />
 
               <label>{t("Множественное число")}{" "}<input
-                  value={pluralForm}
+                  disabled={isVerb}
+                    value={pluralForm}
                   onChange={(event) => setPluralForm(event.target.value)}
                   placeholder={t("Например: die Äpfel")}
                 />
@@ -1980,7 +2015,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         {word.selectedTranslation.source === "personal" && <small>{t("Ваш личный перевод")}</small>}
                         <button type="button" disabled={busy || libraryBusy || moderationBusy || translationTarget !== null || studyMode || studySaving || (studyFinished && !studySaved)} onClick={() => { stopSpeech(); setPersonalTranslationTarget(word); }}>{t("Мой перевод")}</button>
 
-                        {word.pluralForm && (
+                        <VerbForms forms={word.verbForms} />
+                         {word.pluralForm && (
                           <p className="word-extra">
                             <strong>{t("Мн. число:")}</strong> {word.pluralForm}
                           </p>

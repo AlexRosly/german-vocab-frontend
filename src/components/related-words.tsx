@@ -35,7 +35,7 @@ export function RelatedWords({ wordId, language }: { wordId: string; language: s
   </section>;
 }
 
-function RelatedWordDialog({ initialId, language, onClose }: { initialId: string; language: string; onClose: () => void }) {
+export function RelatedWordDialog({ initialId, language, onClose }: { initialId: string; language: string; onClose: () => void }) {
   const { t, errorText } = useI18n();
   const dialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);

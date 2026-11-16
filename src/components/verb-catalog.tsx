@@ -1,4 +1,5 @@
 "use client";
+import { CollocationsPanel } from "./collocations";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { apiFetch } from "@/lib/api";
 import { VerbCatalogClient, type VerbCard, type VerbPage, type VerbQuery, type VerbExample } from "@/lib/verb-catalog-client";
@@ -9,7 +10,7 @@ import { useI18n } from "./ui-language-provider";
 import styles from "./verb-catalog.module.css";
 const client=new VerbCatalogClient(apiFetch);
 
-function VerbDialog({ id, language, onClose, restoreFocus }: {id:string;language:string;onClose:()=>void;restoreFocus:()=>void}) {
+function VerbDialog({ id, language, onClose, restoreFocus, collocationsEnabled, isAdmin }: {id:string;language:string;onClose:()=>void;restoreFocus:()=>void;collocationsEnabled:boolean;isAdmin:boolean}) {
   const {t,errorText}=useI18n();
   const dialog=useRef<HTMLDialogElement>(null),heading=useRef<HTMLHeadingElement>(null);
   const restore=useRef(restoreFocus);useEffect(()=>{restore.current=restoreFocus},[restoreFocus]);
@@ -23,6 +24,7 @@ function VerbDialog({ id, language, onClose, restoreFocus }: {id:string;language
       {data.word.selectedTranslation.source==="personal"&&<p className={styles.hint}>{t("Мой перевод")}</p>}
       <p className={styles.hint}>{t(publicationLabel(data.word.publicationStatus))}</p>
       <VerbForms forms={data.word.verbForms} initiallyOpen />
+      {collocationsEnabled && <CollocationsPanel wordId={id} kind="verb" language={language} isAdmin={isAdmin} />}
       {data.word.notes&&<p>{data.word.notes}</p>}
       {data.word.sourceBook&&<p>{t("Книга-источник")}: {data.word.sourceBook}</p>}
       <h3>{t("Примеры употребления")}</h3>
@@ -31,7 +33,7 @@ function VerbDialog({ id, language, onClose, restoreFocus }: {id:string;language
   </dialog>;
 }
 
-export function VerbCatalog({language,initialWordId}:{language:string;initialWordId:string|null}) {
+export function VerbCatalog({language,initialWordId,collocationsEnabled=false,isAdmin=false}:{language:string;initialWordId:string|null;collocationsEnabled?:boolean;isAdmin?:boolean}) {
   const {t,errorText}=useI18n();
   const [input,setInput]=useState(""),[query,setQuery]=useState<VerbQuery>({q:"",scope:"library",auxiliary:"",page:1});
   const [data,setData]=useState<VerbPage|null>(null),[error,setError]=useState<unknown>(null),[attempt,setAttempt]=useState(0);
@@ -61,6 +63,6 @@ export function VerbCatalog({language,initialWordId}:{language:string;initialWor
       </table>}
       <nav className={styles.pagination} aria-label={t("Страницы справочника")}><button type="button" disabled={query.page===1} onClick={()=>{setQuery(value=>({...value,page:value.page-1}));heading.current?.focus()}}>{t("Предыдущая страница")}</button><span>{t("Страница {0} из {1}",{0:query.page,1:Math.max(1,Math.ceil(data.total/data.pageSize))})}</span><button type="button" disabled={!data.hasNext} onClick={()=>{setQuery(value=>({...value,page:value.page+1}));heading.current?.focus()}}>{t("Следующая страница")}</button></nav>
     </>}
-    {target&&<VerbDialog key={target} id={target} language={language} onClose={()=>setTarget(null)} restoreFocus={()=>heading.current?.focus()} />}
+    {target&&<VerbDialog collocationsEnabled={collocationsEnabled} isAdmin={isAdmin} key={target} id={target} language={language} onClose={()=>setTarget(null)} restoreFocus={()=>heading.current?.focus()} />}
   </section>;
 }

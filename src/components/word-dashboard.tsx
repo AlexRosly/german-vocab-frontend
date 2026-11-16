@@ -1,4 +1,6 @@
 "use client";
+import { CollocationsPanel } from "./collocations";
+import { CollocationsClient } from "@/lib/collocations-client";
 import { VerbCatalog } from "./verb-catalog";
 import { VerbFormsEditor, VerbForms } from "./verb-forms";
 import { emptyVerbForm, verbDraft, verbPayload, type VerbForm } from "@/lib/verb-forms";
@@ -137,6 +139,11 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const [relatedDraft, setRelatedDraft] = useState<RelatedCard[]>([]);
   const formHeading = useRef<HTMLHeadingElement>(null);
   const studyHeading = useRef<HTMLHeadingElement>(null);
+  const [collocationsEnabled, setCollocationsEnabled] = useState(false);
+  useEffect(() => { const controller = new AbortController(); setCollocationsEnabled(false);
+    void new CollocationsClient(apiFetch).config(controller.signal).then(enabled => { if (!controller.signal.aborted) setCollocationsEnabled(enabled); }).catch(() => {});
+    return () => controller.abort();
+  }, [user.id]);
   const [verbCatalogEnabled, setVerbCatalogEnabled] = useState(false);
   const [verbTarget, setVerbTarget] = useState<string | null>(null);
   function openVerbReference(id: string) { setVerbTarget(id); setActiveTab("verbs"); }
@@ -1101,17 +1108,17 @@ export function WordDashboard({ user }: { user: AuthUser }) {
           disabled={libraryBusy || moderationBusy || correctionsBusy} onClick={() => setActiveTab("settings")}>{t("Настройки")}</button>
       </nav>
 
-      {activeTab === "verbs" && verbCatalogEnabled && <VerbCatalog language={user.translationLanguage} initialWordId={verbTarget} />}
+      {activeTab === "verbs" && verbCatalogEnabled && <VerbCatalog collocationsEnabled={collocationsEnabled} isAdmin={user.role === "ADMIN"} language={user.translationLanguage} initialWordId={verbTarget} />}
         {activeTab === "settings" && <><GoogleAccountPanel key={`google-${user.id}`} userId={user.id} /><StudySettingsPanel key={user.id} userId={user.id} onSaved={() => setSettingsVersion((value) => value + 1)} /><AccountSessionsPanel key={`sessions-${user.id}`} userId={user.id} /></>}
 
       {activeTab === "history" && <StudyHistoryPanel userId={user.id} language={user.translationLanguage} version={historyVersion} />}
 
       {activeTab === "corrections" && correctionsEnabled && <CorrectionsPanel key={user.id} isAdmin={user.role === "ADMIN"} onBusyChange={setCorrectionsBusy} onOpenCard={wordId => { setModerationTarget(wordId); setActiveTab("moderation"); }} />}
 
-      {activeTab === "library" && <LibraryPanel onOpenVerb={verbCatalogEnabled ? openVerbReference : undefined} language={user.translationLanguage} correctionsEnabled={correctionsEnabled}
+      {activeTab === "library" && <LibraryPanel collocationsEnabled={collocationsEnabled} isAdmin={user.role === "ADMIN"} onOpenVerb={verbCatalogEnabled ? openVerbReference : undefined} language={user.translationLanguage} correctionsEnabled={correctionsEnabled}
         onDictionaryChange={async () => { await Promise.all([loadWords(), loadDueWords(), loadStudyProgress()]); }} onBusyChange={setLibraryBusy} />}
 
-      {activeTab === "moderation" && user.role === "ADMIN" && <ModerationPanel onOpenVerb={verbCatalogEnabled ? openVerbReference : undefined} initialWordId={moderationTarget}
+      {activeTab === "moderation" && user.role === "ADMIN" && <ModerationPanel collocationsEnabled={collocationsEnabled} onOpenVerb={verbCatalogEnabled ? openVerbReference : undefined} initialWordId={moderationTarget}
         onEditWord={card => { setActiveTab("dictionary"); startEditing({ ...card, selectedTranslation: { language: user.translationLanguage, text: card.translations.find(entry => entry.language === user.translationLanguage)?.text ?? null } }); }}
         decisionsLocked={studyMode || studySaving || (studyFinished && !studySaved)}
         onDecision={syncAfterCardChange} onBusyChange={setModerationBusy}
@@ -2189,6 +2196,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                           </form>
 )}
                         </section>
+                        {collocationsEnabled && (word.article !== "none" || !!word.verbForms?.length) && <CollocationsPanel wordId={word.id} kind={word.verbForms?.length ? "verb" : "noun"} language={user.translationLanguage} isAdmin={user.role === "ADMIN"} onOpenVerb={verbCatalogEnabled ? openVerbReference : undefined} />}
                         <RelatedWords wordId={word.id} language={user.translationLanguage} />
                       </div>
 

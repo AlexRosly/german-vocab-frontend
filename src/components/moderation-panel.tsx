@@ -1,4 +1,5 @@
 "use client";
+import { CollocationsPanel } from "./collocations";
 import { VerbForms } from "./verb-forms";
 import { SourceBookEditor } from "./source-book-editor";
 import { ModerationConfirmation } from "./moderation-confirmation";
@@ -22,11 +23,12 @@ const actionLabels: Record<PublicationStatus, string> = {
 };
 const message = (error: unknown) => error instanceof Error ? safeErrorMessage(error) : "Не удалось выполнить запрос. Повторите попытку.";
 
-export function ModerationPanel({ initialWordId, onOpenVerb, onEditWord, decisionsLocked, onDecision, onBusyChange, translationVersion, onEditTranslations, translationLanguage }: {
-  onOpenVerb?: (id: string) => void; initialWordId?: string; onEditWord?: (word: ReviewCard) => void; decisionsLocked: boolean; onDecision: () => Promise<void>; onBusyChange: (busy: boolean) => void;
+export function ModerationPanel({ initialWordId, collocationsEnabled = false, onOpenVerb, onEditWord, decisionsLocked, onDecision, onBusyChange, translationVersion, onEditTranslations, translationLanguage }: {
+  collocationsEnabled?: boolean; onOpenVerb?: (id: string) => void; initialWordId?: string; onEditWord?: (word: ReviewCard) => void; decisionsLocked: boolean; onDecision: () => Promise<void>; onBusyChange: (busy: boolean) => void;
   translationLanguage: string; translationVersion: number; onEditTranslations: (word: { id: string; german: string }) => void;
 }) {
   const { t, errorText } = useI18n();
+  const [collocationLocked, setCollocationLocked] = useState(false);
   const [relationsOpen, setRelationsOpen] = useState(false);
   const [relationsBusy, setRelationsBusy] = useState(false);
   const [relationsVersion, setRelationsVersion] = useState(0);
@@ -59,7 +61,7 @@ export function ModerationPanel({ initialWordId, onOpenVerb, onEditWord, decisio
   const selectedIndex = queue.matches.findIndex(word => word.id === selectedId);
   const previousId = selectedId ? adjacentModerationWord(queue.matches, selectedId, -1) : null;
   const nextId = selectedId ? adjacentModerationWord(queue.matches, selectedId, 1) : null;
-  const navigationLocked = loading || !!listError || saving || relationsBusy || relationsOpen;
+  const navigationLocked = loading || !!listError || saving || relationsBusy || relationsOpen || collocationLocked;
 
   function clearSelection() {
     setRelationsOpen(false); setSelectedId(null); setDetail(null); setDetailLoading(false); setDetailError("");
@@ -91,16 +93,16 @@ export function ModerationPanel({ initialWordId, onOpenVerb, onEditWord, decisio
     return () => controller.abort();
   }, [selectedId, detailAttempt, translationVersion]);
 
-  useEffect(() => { onBusyChange(saving || relationsBusy); return () => onBusyChange(false); }, [saving, relationsBusy, onBusyChange]);
+  useEffect(() => { onBusyChange(saving || relationsBusy || collocationLocked); return () => onBusyChange(false); }, [saving, relationsBusy, collocationLocked, onBusyChange]);
   useEffect(() => { if (detail && !detailLoading) reviewHeading.current?.focus(); }, [detail, detailLoading]);
 
   function openCard(id: string) {
-    if (savingRef.current || relationsBusy || relationsOpen) return;
+    if (savingRef.current || relationsBusy || relationsOpen || collocationLocked) return;
     setNotice(""); selectCard(id);
   }
 
   async function decide(advance = false) {
-    if (!detail || !confirmation || decisionsLocked || blocked || savingRef.current || relationsBusy || relationsOpen) return;
+    if (!detail || !confirmation || decisionsLocked || blocked || savingRef.current || relationsBusy || relationsOpen || collocationLocked) return;
     const next = advance ? adjacentModerationWord(queue.matches, detail.id, 1) : null;
     const remaining = queue.matches.filter(word => word.id !== detail.id);
     savingRef.current = true; setSaving(true); setDecisionError(""); setNotice("");
@@ -128,7 +130,7 @@ export function ModerationPanel({ initialWordId, onOpenVerb, onEditWord, decisio
         <select id="moderation-filter" value={filter} disabled={saving} onChange={(event) => {
           setFilter(event.target.value as PublicationStatus); setWords([]); setSearch(""); setLesson("all"); setPage(0); clearSelection();
         }}>{statuses.map((status) => <option key={status} value={status}>{t(publicationLabel(status))}</option>)}</select>
-        <button type="button" disabled={saving || loading} onClick={() => setListAttempt((value) => value + 1)}>{t("Обновить список")}</button>
+        <button type="button" disabled={collocationLocked || saving || loading} onClick={() => setListAttempt((value) => value + 1)}>{t("Обновить список")}</button>
       </div>
     </div>
     <p className={styles.hint}>{t("Откройте карточку, проверьте все переводы и примеры, затем выберите решение.")}</p>
@@ -139,7 +141,7 @@ export function ModerationPanel({ initialWordId, onOpenVerb, onEditWord, decisio
         <input ref={searchInput} id="moderation-search" type="search" maxLength={200} value={search} disabled={saving} onChange={event => { setSearch(event.target.value); setPage(0); clearSelection(); }} />
       </label>
       <label htmlFor="moderation-lesson">{t("Урок")}
-        <select id="moderation-lesson" value={lesson} disabled={saving || loading} onChange={event => { setLesson(event.target.value); setPage(0); clearSelection(); }}>
+        <select id="moderation-lesson" value={lesson} disabled={collocationLocked || saving || loading} onChange={event => { setLesson(event.target.value); setPage(0); clearSelection(); }}>
           <option value="all">{t("Все уроки")}</option>{lessonOptions.map(number => <option key={number} value={number}>{number}</option>)}
         </select>
       </label>
@@ -155,12 +157,12 @@ export function ModerationPanel({ initialWordId, onOpenVerb, onEditWord, decisio
           </button></li>)}
         </ul>
         <nav className={styles.paging} aria-label={t("Страницы очереди модерации")}>
-          <button type="button" disabled={saving || queue.page === 0} onClick={() => { setPage(queue.page - 1); clearSelection(); }}>{t("Предыдущая страница")}</button>
+          <button type="button" disabled={collocationLocked || saving || queue.page === 0} onClick={() => { setPage(queue.page - 1); clearSelection(); }}>{t("Предыдущая страница")}</button>
           <span>{t("Страница {current} из {total}", { current: queue.page + 1, total: queue.pages })}</span>
-          <button type="button" disabled={saving || queue.page + 1 === queue.pages} onClick={() => { setPage(queue.page + 1); clearSelection(); }}>{t("Следующая страница")}</button>
+          <button type="button" disabled={collocationLocked || saving || queue.page + 1 === queue.pages} onClick={() => { setPage(queue.page + 1); clearSelection(); }}>{t("Следующая страница")}</button>
         </nav></>}
       </div>
-      {selectedId && <ModerationDialog locked={saving || relationsBusy} onClose={() => { if (!savingRef.current && !relationsBusy) clearSelection(); }} restoreFocus={() => { (queueButtons.current.get(selectedId) ?? searchInput.current)?.focus({ preventScroll: true }); }}>
+      {selectedId && <ModerationDialog locked={saving || relationsBusy || collocationLocked} onClose={() => { if (!savingRef.current && !relationsBusy && !collocationLocked) clearSelection(); }} restoreFocus={() => { (queueButtons.current.get(selectedId) ?? searchInput.current)?.focus({ preventScroll: true }); }}>
       <section className={styles.review} aria-label={t("Проверка карточки")} aria-busy={detailLoading || saving}>
         {notice && <p role="status" className={styles.notice}>{t(notice)}</p>}
         <>
@@ -179,16 +181,17 @@ export function ModerationPanel({ initialWordId, onOpenVerb, onEditWord, decisio
               <div><dt>{t("Книга-источник")}</dt><dd>{detail.sourceBook ?? "—"}</dd></div>
               <div><dt>{t("Уровень / урок")}</dt><dd>{detail.level ?? "—"} / {detail.lessonNumber ?? "—"}</dd></div>
             </dl>
-            {onEditWord && <button type="button" disabled={saving || decisionsLocked || relationsOpen} onClick={() => onEditWord(detail)}>{t("Изменить слово")}</button>}
-            <SourceBookEditor key={`${detail.id}-${detail.revision}`} wordId={detail.id} sourceBook={detail.sourceBook} disabled={saving || decisionsLocked || relationsOpen} onBusyChange={setRelationsBusy} onSaved={() => { setDetailAttempt(value => value + 1); setListAttempt(value => value + 1); }} />
+            {onEditWord && <button type="button" disabled={collocationLocked || saving || decisionsLocked || relationsOpen} onClick={() => onEditWord(detail)}>{t("Изменить слово")}</button>}
+            <SourceBookEditor key={`${detail.id}-${detail.revision}`} wordId={detail.id} sourceBook={detail.sourceBook} disabled={collocationLocked || saving || decisionsLocked || relationsOpen} onBusyChange={setRelationsBusy} onSaved={() => { setDetailAttempt(value => value + 1); setListAttempt(value => value + 1); }} />
             <VerbForms forms={detail.verbForms} onOpenReference={onOpenVerb ? () => onOpenVerb(detail.id) : undefined} />
             {detail.notes && <p className={styles.notes}>{detail.notes}</p>}
+            {collocationsEnabled && (detail.article !== "none" || !!detail.verbForms?.length) && <CollocationsPanel key={detail.id + ":collocations"} wordId={detail.id} kind={detail.verbForms?.length ? "verb" : "noun"} language={translationLanguage} isAdmin onOpenVerb={onOpenVerb} disabled={saving || relationsBusy || relationsOpen || decisionsLocked} onEditorChange={setCollocationLocked} onChanged={() => { setConfirmation(null); setDetailAttempt(value => value + 1); setListAttempt(value => value + 1); }} />}
             <RelatedWords key={detail.id + ":" + relationsVersion} wordId={detail.id} language={translationLanguage} />
-            <button type="button" disabled={saving || relationsBusy || decisionsLocked} onClick={() => { setConfirmation(null); setRelationsOpen(value => !value); }}>{relationsOpen ? t("Закрыть редактор связей") : t("Редактировать связи")}</button>
-            {relationsOpen && <><p className={styles.hint}>{t("Закройте редактор связей перед решением по карточке.")}</p><WordRelationsEditor key={detail.id} wordId={detail.id} language={translationLanguage} disabled={saving || decisionsLocked} onChanged={invalidateRelations} onBusyChange={setRelationsBusy} /></>}
+            <button type="button" disabled={collocationLocked || saving || relationsBusy || decisionsLocked} onClick={() => { setConfirmation(null); setRelationsOpen(value => !value); }}>{relationsOpen ? t("Закрыть редактор связей") : t("Редактировать связи")}</button>
+            {relationsOpen && <><p className={styles.hint}>{t("Закройте редактор связей перед решением по карточке.")}</p><WordRelationsEditor key={detail.id} wordId={detail.id} language={translationLanguage} disabled={collocationLocked || saving || decisionsLocked} onChanged={invalidateRelations} onBusyChange={setRelationsBusy} /></>}
             <h5>{t("Переводы карточки")}</h5>
             {!detail.translations.length ? <p>{t("Переводов пока нет.")}</p> : <dl className={styles.translations}>{detail.translations.map((row) => <div key={row.language}><dt>{row.language.toUpperCase()}</dt><dd>{row.text}</dd></div>)}</dl>}
-            <button type="button" disabled={saving || decisionsLocked || relationsOpen} onClick={() => {
+            <button type="button" disabled={collocationLocked || saving || decisionsLocked || relationsOpen} onClick={() => {
               setConfirmation(null); onEditTranslations(detail);
             }}>{t("Редактировать переводы")}</button>
             <h5>{t("Примеры употребления")}</h5>
@@ -197,14 +200,14 @@ export function ModerationPanel({ initialWordId, onOpenVerb, onEditWord, decisio
               {duplicateId && <button type="button" disabled={saving} onClick={() => openCard(duplicateId)}>{t("Посмотреть существующую карточку")}</button>}
             </div>}
             <div className={styles.actions}>{statuses.filter((status) => status !== detail.publicationStatus).map((status) => <button type="button" key={status}
-              disabled={saving || blocked || decisionsLocked || relationsOpen} className={status === "PUBLISHED" ? styles.primary : undefined} aria-haspopup="dialog" onClick={() => setConfirmation(status)}>
+              disabled={collocationLocked || saving || blocked || decisionsLocked || relationsOpen} className={status === "PUBLISHED" ? styles.primary : undefined} aria-haspopup="dialog" onClick={() => setConfirmation(status)}>
               {status === "REJECTED" && detail.publicationStatus === "PUBLISHED" ? t("Снять с публикации") : t(actionLabels[status])}
             </button>)}</div>
             {confirmation && <ModerationConfirmation title={<>{t(actionLabels[confirmation])} «{detail.german}»?</>}
               description={confirmation === "PUBLISHED" ? t("Карточка станет доступна в общей библиотеке.") : t("Карточка останется у автора. Другие пользователи увидят её снова после публикации; их прогресс сохранится.")}
               locked={saving} onCancel={() => { if (!savingRef.current) setConfirmation(null); }}>
-              <button type="button" className={styles.primary} disabled={saving || decisionsLocked} onClick={() => void decide()}>{saving ? t("Сохраняем…") : t("Подтвердить решение")}</button>
-              {nextId && <button type="button" disabled={saving || decisionsLocked || navigationLocked} onClick={() => void decide(true)}>{t("Подтвердить и открыть следующую")}</button>}
+              <button type="button" className={styles.primary} disabled={collocationLocked || saving || decisionsLocked} onClick={() => void decide()}>{saving ? t("Сохраняем…") : t("Подтвердить решение")}</button>
+              {nextId && <button type="button" disabled={collocationLocked || saving || decisionsLocked || navigationLocked} onClick={() => void decide(true)}>{t("Подтвердить и открыть следующую")}</button>}
             </ModerationConfirmation>}
           </>}
         </>

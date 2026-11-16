@@ -1,4 +1,5 @@
 "use client";
+import { CollocationsPanel } from "./collocations";
 import { VerbForms } from "./verb-forms";
 import { WordBookSources } from "./word-book-sources";
 import { ProposeCorrection } from "./corrections";
@@ -21,8 +22,8 @@ async function readResponse<T>(response: Response): Promise<T> {
   return response.json();
 }
 
-export function LibraryPanel({ language, onDictionaryChange, onBusyChange, correctionsEnabled = false, onOpenVerb }: {
-  onOpenVerb?: (id: string) => void; correctionsEnabled?: boolean; language: string; onDictionaryChange: () => Promise<void>; onBusyChange: (busy: boolean) => void;
+export function LibraryPanel({ language, onDictionaryChange, onBusyChange, correctionsEnabled = false, onOpenVerb, collocationsEnabled = false, isAdmin = false }: {
+  collocationsEnabled?: boolean; isAdmin?: boolean; onOpenVerb?: (id: string) => void; correctionsEnabled?: boolean; language: string; onDictionaryChange: () => Promise<void>; onBusyChange: (busy: boolean) => void;
 }) {
   const { t, errorText } = useI18n();
   const [input, setInput] = useState("");
@@ -139,6 +140,7 @@ export function LibraryPanel({ language, onDictionaryChange, onBusyChange, corre
         {word.pluralForm && <p className={styles.hint}>{t("Мн. число:")}{" "}{word.pluralForm}</p>}
         {word.notes && <p className={styles.hint}>{word.notes}</p>}
         <LibraryExamples wordId={word.id} />
+        {collocationsEnabled && (word.article !== "none" || !!word.verbForms?.length) && <CollocationsPanel wordId={word.id} kind={word.verbForms?.length ? "verb" : "noun"} language={language} isAdmin={isAdmin} onOpenVerb={onOpenVerb} />}
         <RelatedWords wordId={word.id} language={language} />
         {correctionsEnabled && <ProposeCorrection wordId={word.id} german={word.german} disabled={addingId !== null} onBusyChange={onBusyChange} />}
         <button type="button" disabled={addingId !== null || membership.has(word.id)} onClick={() => void add(word)}

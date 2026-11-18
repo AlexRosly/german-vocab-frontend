@@ -1,4 +1,5 @@
 "use client";
+import { DictionaryImportPanel } from "./dictionary-import-panel";
 import { useEffect, useRef, useState } from "react";
 import { apiClient, apiFetch } from "@/lib/api";
 import { DictionaryExportClient, type DictionaryFileKind } from "@/lib/dictionary-export-client";
@@ -48,7 +49,8 @@ export function DictionaryExportPanel({ userId }: { userId: string }) {
         <li>{t("CSV для Excel: UTF-8, разделитель — точка с запятой. Если колонки не разделились, откройте через импорт текста/CSV.")}</li>
         <li>{t("Дополнительные примеры, формы и книги сохранены в колонках с окончанием _json. Оставьте их без изменений для дальнейшего переноса.")}</li>
       </ul></details>
-      <p className={styles.hint}>{t("Загрузка CSV/Excel в приложение появится следующим этапом. История тренировок и общие связи в этот CSV не входят.")}</p>
+      <p className={styles.hint}>{t("История тренировок и общие связи в этот CSV не входят.")}</p>
+      <DictionaryImportPanel key={userId} userId={userId} />
     </>}
   </section>;
 }

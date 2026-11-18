@@ -1,0 +1,10 @@
+.panel { margin-top:24px; padding:28px; background:white; border:1px solid #e2e8e2; border-radius:24px; min-width:0; overflow-wrap:anywhere; }
+.panel h3 { margin:0 0 12px; }
+.panel p { line-height:1.5; }
+.actions { display:flex; flex-direction:row; flex-wrap:wrap; gap:10px; margin:20px 0; }
+.panel button { min-height:44px; max-width:100%; white-space:normal; }
+.hint { color:#617067; font-size:.9rem; }
+.panel summary { cursor:pointer; min-height:44px; padding:10px 0; font-weight:600; }
+.help { padding-left:20px; line-height:1.6; }
+.help li { margin:8px 0; }
+@media(max-width:480px) { .panel { padding:18px; } .actions>button { flex:1 1 100%; } }

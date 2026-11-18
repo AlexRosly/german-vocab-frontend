@@ -1,4 +1,5 @@
 "use client";
+import { DictionaryExportPanel } from "./dictionary-export-panel";
 import { CollocationsPanel } from "./collocations";
 import { CollocationsClient } from "@/lib/collocations-client";
 import { VerbCatalog } from "./verb-catalog";
@@ -1109,7 +1110,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       </nav>
 
       {activeTab === "verbs" && verbCatalogEnabled && <VerbCatalog collocationsEnabled={collocationsEnabled} isAdmin={user.role === "ADMIN"} language={user.translationLanguage} initialWordId={verbTarget} />}
-        {activeTab === "settings" && <><GoogleAccountPanel key={`google-${user.id}`} userId={user.id} /><StudySettingsPanel key={user.id} userId={user.id} onSaved={() => setSettingsVersion((value) => value + 1)} /><AccountSessionsPanel key={`sessions-${user.id}`} userId={user.id} /></>}
+        {activeTab === "settings" && <><DictionaryExportPanel key={`export-${user.id}`} userId={user.id} />
+            <GoogleAccountPanel key={`google-${user.id}`} userId={user.id} /><StudySettingsPanel key={user.id} userId={user.id} onSaved={() => setSettingsVersion((value) => value + 1)} /><AccountSessionsPanel key={`sessions-${user.id}`} userId={user.id} /></>}
 
       {activeTab === "history" && <StudyHistoryPanel userId={user.id} language={user.translationLanguage} version={historyVersion} />}
 

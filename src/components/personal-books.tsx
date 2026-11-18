@@ -37,6 +37,7 @@ function BooksEditor({ wordId, suggestions, disabled, onSaved }: { wordId: strin
   return <div className={styles.editor}>
     <p className="hint">{t("Эти книги видны только вам. Книга-источник общей карточки не изменится.")}</p>
     {loading ? <p role="status">{t("Загружаем книги…")}</p> : books && <form onSubmit={event => void save(event)}>
+      {Object.entries(books.lessons ?? {}).filter(([,numbers])=>numbers.length).map(([title,numbers])=><p key={title}>{title} · {t("Уроки из импорта")}: {numbers.join(", ")}</p>)}
       <fieldset disabled={disabled || busy || conflict} className={styles.fields}>
         {draft.map((title, index) => <div className={styles.row} key={index}><label>{t("Книга {0}", { 0: index + 1 })}<input list={`book-options-${wordId}`} maxLength={120} value={title} onChange={event => { setDraft(values => values.map((old, i) => i === index ? event.target.value : old)); setSaved(false); }} /></label>
           <button type="button" className="small-button secondary-button" aria-label={t("Убрать книгу {0}", { 0: index + 1 })} onClick={() => { setDraft(values => values.filter((_, i) => i !== index)); setSaved(false); }}>{t("Убрать")}</button></div>)}

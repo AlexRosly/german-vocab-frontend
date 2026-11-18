@@ -1,4 +1,5 @@
 "use client";
+import { DictionaryImportSave } from "./dictionary-import-save";
 import { useEffect, useRef, useState } from "react";
 import { apiClient, apiFetch } from "@/lib/api";
 import { DictionaryImportClient, IMPORT_STATUSES, type ImportPreview, type ImportStatus } from "@/lib/dictionary-import-client";
@@ -21,6 +22,7 @@ export function DictionaryImportPanel({ userId }: { userId: string }) {
   const [enabled, setEnabled] = useState<boolean | null>(null), [failure, setFailure] = useState<unknown>(null), [attempt, setAttempt] = useState(0);
   const [file, setFile] = useState<File | null>(null), [preview, setPreview] = useState<ImportPreview | null>(null), [busy, setBusy] = useState(false);
   const [filter, setFilter] = useState<ImportStatus | "all">("all"), [page, setPage] = useState(0);
+  const [saving, setSaving] = useState(false);
   const operation = useRef<AbortController | null>(null), input = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
     const controller = new AbortController(); setEnabled(null); setFailure(null); setFile(null); setPreview(null); setPage(0); if (input.current) input.current.value = "";
@@ -39,11 +41,11 @@ export function DictionaryImportPanel({ userId }: { userId: string }) {
   return <section className={styles.panel} aria-labelledby="dictionary-import-heading" aria-busy={busy}>
     <h4 id="dictionary-import-heading">{t("Проверить файл перед импортом")}</h4>
     <p>{t("Загрузите CSV по нашему шаблону. Проверка ничего не сохраняет и не меняет карточки.")}</p>
-    <p className={styles.hint}>{t("До 25 МБ и 10000 записей. Excel и сохранение проверенных слов — следующие этапы.")}</p>
+    <p className={styles.hint}>{t("До 25 МБ и 10000 записей. После проверки выберите действия и подтвердите сохранение. Excel — следующий этап.")}</p>
     {enabled === null ? failure ? <p role="alert">{errorText(failure)} <button type="button" onClick={() => setAttempt(a => a + 1)}>{t("Повторить")}</button></p> : <p role="status">{t("Проверяем доступность импорта…")}</p> : <>
       <label htmlFor="dictionary-import-file">{t("Файл CSV")}</label>
-      <input ref={input} id="dictionary-import-file" type="file" accept=".csv,text/csv" disabled={busy} onChange={e => { setFile(e.target.files?.[0] ?? null); setPreview(null); setFailure(null); setPage(0); }} />
-      <div className={styles.actions}><button type="button" disabled={!file || busy} onClick={() => void check()}>{t("Проверить совпадения")}</button>{busy && <button type="button" className="secondary-button" onClick={() => operation.current?.abort()}>{t("Отменить")}</button>}</div>
+      <input ref={input} id="dictionary-import-file" type="file" accept=".csv,text/csv" disabled={busy || saving} onChange={e => { setFile(e.target.files?.[0] ?? null); setPreview(null); setFailure(null); setPage(0); }} />
+      <div className={styles.actions}><button type="button" disabled={!file || busy || saving} onClick={() => void check()}>{t("Проверить совпадения")}</button>{busy && <button type="button" className="secondary-button" onClick={() => operation.current?.abort()}>{t("Отменить")}</button>}</div>
       {busy && <p role="status">{t("Проверяем файл и каталог…")}</p>}{failure !== null && <p role="alert">{errorText(failure)}</p>}
       {preview && <>
         <p role="status">{t("Проверка завершена. Записей: {count}. Ничего не сохранено.", { count: preview.total })}</p>
@@ -64,6 +66,7 @@ export function DictionaryImportPanel({ userId }: { userId: string }) {
         {!rows.length && <p>{t("В этой группе записей нет")}</p>}
         <nav className={styles.actions} aria-label={t("Страницы проверки файла")}><button type="button" className="secondary-button" disabled={page === 0} onClick={() => setPage(p => p - 1)}>{t("Предыдущая страница")}</button><span>{t("Страница {page} из {pages}", { page: page + 1, pages })}</span><button type="button" className="secondary-button" disabled={page + 1 >= pages} onClick={() => setPage(p => p + 1)}>{t("Следующая страница")}</button></nav>
       </>}
+      <DictionaryImportSave userId={userId} file={file} preview={preview} onBusy={setSaving} />
     </>}
   </section>;
 }

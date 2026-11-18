@@ -1,5 +1,5 @@
 export type BookSource = { sourceBook: string; lessonNumbers: readonly number[] };
-export type BookWord = { sourceBook?: string | null; lessonNumber?: number | null; bookSources?: readonly BookSource[]; personalBooks?: readonly string[] };
+export type BookWord = { sourceBook?: string | null; lessonNumber?: number | null; bookSources?: readonly BookSource[]; personalBooks?: readonly string[]; personalBookLessons?: Readonly<Record<string,readonly number[]>> };
 export const normalizeBook = (title: string) => title.normalize("NFC").trim().replace(/\s+/gu, " ");
 const bookKey = (title: string) => normalizeBook(title).toLocaleLowerCase("de");
 export function bookOptions(words: readonly BookWord[]) {
@@ -32,7 +32,8 @@ export function sharedBookSources(word: BookWord): BookSource[] {
 }
 export function lessonsForBook(word: BookWord, filter: string): number[] {
   if (!matchesBook(word, filter)) return [];
-  const rows = sharedBookSources(word).filter(row => !filter || filter === "none" || "book:" + bookKey(row.sourceBook) === filter);
+  const privateRows = Object.entries(word.personalBookLessons ?? {}).filter(([title]) => (word.personalBooks ?? []).some(book => bookKey(book) === bookKey(title))).map(([sourceBook,lessonNumbers]) => ({sourceBook,lessonNumbers}));
+  const rows = [...sharedBookSources(word), ...privateRows].filter(row => !filter || filter === "none" || "book:" + bookKey(row.sourceBook) === filter);
   const values = rows.flatMap(row => row.lessonNumbers);
   if ((!filter || filter === "none") && !word.sourceBook && word.lessonNumber != null) values.push(word.lessonNumber);
   return [...new Set(values)].sort((a,b) => a-b);
@@ -43,7 +44,7 @@ export function matchesLesson(word: BookWord, book: string, lesson: string): boo
   const numbers = lessonsForBook(word, book);
   return lesson === "none" ? numbers.length === 0 : numbers.includes(Number(lesson));
 }
-export type PersonalBooks = { wordId: string; titles: string[]; revision: string | null };
+export type PersonalBooks = { wordId: string; titles: string[]; lessons?: Record<string,number[]>; revision: string | null };
 type Requester = (path: string, init?: RequestInit) => Promise<Response>;
 export class BooksError extends Error {
   readonly status: number;
@@ -65,7 +66,12 @@ export class PersonalBooksClient {
     if (!value || value.wordId !== wordId || !Array.isArray(value.titles)) throw new BooksError(502);
     let titles: string[]; try { titles = normalizeTitles(value.titles); } catch { throw new BooksError(502); }
     if (titles.length === 0 ? value.revision !== null : typeof value.revision !== "string" || !/^[A-Za-z0-9_-]{1,64}$/.test(value.revision)) throw new BooksError(502);
-    return { wordId, titles, revision: value.revision };
+    const lessons:Record<string,number[]>={};
+    if(value.lessons!==undefined){
+      if(!value.lessons || typeof value.lessons!=="object" || Array.isArray(value.lessons))throw new BooksError(502);
+      for(const [title,numbers]of Object.entries(value.lessons)){if(!titles.includes(title)||!Array.isArray(numbers)||numbers.some(n=>!Number.isInteger(n)||Number(n)<1||Number(n)>10000))throw new BooksError(502);Object.defineProperty(lessons,title,{value:numbers,enumerable:true});}
+    }
+    return { wordId, titles, ...(value.lessons===undefined?{}:{lessons}), revision: value.revision };
   }
   async get(wordId: string, signal?: AbortSignal) { return this.read(await this.request(this.path(wordId), { signal, cache: "no-store" }), wordId); }
   async save(wordId: string, titles: readonly string[], revision: string | null, signal?: AbortSignal) {

@@ -6,6 +6,15 @@ export type ImportPreview = { version: 1; readOnly: true; total: number; counts:
 const MAX_BYTES = 25 * 1024 * 1024;
 const failure = () => new Error("Не удалось проверить CSV-файл");
 const messages: Record<string, string> = {
+  "dictionary_import_supported_files": "Выберите файл CSV или Excel (.xlsx).",
+  "dictionary_import_invalid_xlsx": "Не удалось прочитать Excel. Сохраните файл в формате .xlsx по нашему шаблону.",
+  "dictionary_import_xlsx_limits": "Книга Excel слишком сложная или большая. Разделите её и удалите лишнюю разметку.",
+  "dictionary_import_xlsx_busy": "Сейчас проверяются другие книги Excel. Попробуйте немного позже.",
+  "dictionary_import_xlsx_formulas": "В Excel найдены формулы. Замените их значениями перед импортом.",
+  "dictionary_import_xlsx_merged": "В Excel есть объединённые ячейки. Отмените объединение перед импортом.",
+  "dictionary_import_xlsx_cell_type": "В Excel есть ошибки или даты. Используйте текст, числа и true/false.",
+  "dictionary_import_xlsx_one_sheet": "Оставьте в Excel один заполненный видимый лист. Скрытые данные тоже учитываются.",
+
   dictionary_import_invalid_csv: "Неверный CSV. Используйте наш шаблон: UTF-8 и точка с запятой.",
   dictionary_import_empty: "Файл не содержит слов.", dictionary_import_csv_only: "Выберите файл CSV. Excel подключим следующим этапом.",
   dictionary_import_too_large: "Файл слишком большой. Максимум 25 МБ и 10000 записей.", dictionary_import_too_many_rows: "Файл слишком большой. Максимум 25 МБ и 10000 записей.",
@@ -13,15 +22,17 @@ const messages: Record<string, string> = {
 };
 type Fetcher = (path: string, init?: RequestInit) => Promise<Response>;
 export class DictionaryImportClient {
+  supportsXlsx = false;
   private readonly fetcher: Fetcher; private readonly currentAccount: () => string | null;
   constructor(fetcher: Fetcher, currentAccount: () => string | null) { this.fetcher = fetcher; this.currentAccount = currentAccount; }
   async config(signal?: AbortSignal): Promise<boolean> {
+    this.supportsXlsx = false;
     const response = await this.fetcher("/dictionary-import/config", { signal, cache: "no-store" }); if (response.status === 404) return false;
-    if (!response.ok) throw failure(); const data = await response.json(); return data?.enabled === true && data.version === 1 && data.readOnly === true && data.formats?.includes("csv");
+    if (!response.ok) throw failure(); const data = await response.json(); this.supportsXlsx = data?.enabled === true && data.version === 1 && data.readOnly === true && Array.isArray(data.formats) && data.formats.includes("xlsx"); return data?.enabled === true && data.version === 1 && data.readOnly === true && data.formats?.includes("csv");
   }
   async preview(file: File, userId: string, signal?: AbortSignal): Promise<ImportPreview> {
     const current = () => { if (!userId || this.currentAccount() !== userId) throw new Error("Сессия изменилась. Повторите вход."); if (signal?.aborted) throw new DOMException("Aborted", "AbortError"); }; current();
-    if (!/\.csv$/i.test(file.name)) throw new Error(messages.dictionary_import_csv_only);
+    if (!/\.csv$/i.test(file.name) && !(this.supportsXlsx && /\.xlsx$/i.test(file.name))) throw new Error(this.supportsXlsx ? messages.dictionary_import_supported_files : messages.dictionary_import_csv_only);
     if (!file.size) throw new Error(messages.dictionary_import_empty);
     if (file.size > MAX_BYTES) throw new Error(messages.dictionary_import_too_large);
     const form = new FormData(); form.append("file", file);

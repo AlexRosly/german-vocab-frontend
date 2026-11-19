@@ -23,10 +23,11 @@ export function DictionaryImportPanel({ userId }: { userId: string }) {
   const [file, setFile] = useState<File | null>(null), [preview, setPreview] = useState<ImportPreview | null>(null), [busy, setBusy] = useState(false);
   const [filter, setFilter] = useState<ImportStatus | "all">("all"), [page, setPage] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [xlsx, setXlsx] = useState(false);
   const operation = useRef<AbortController | null>(null), input = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
     const controller = new AbortController(); setEnabled(null); setFailure(null); setFile(null); setPreview(null); setPage(0); if (input.current) input.current.value = "";
-    void client.config(controller.signal).then(value => { if (!controller.signal.aborted) setEnabled(value); }).catch(error => { if (!controller.signal.aborted) setFailure(error); });
+    void client.config(controller.signal).then(value => { if (!controller.signal.aborted) { setEnabled(value); setXlsx(client.supportsXlsx); } }).catch(error => { if (!controller.signal.aborted) setFailure(error); });
     return () => { controller.abort(); operation.current?.abort(); };
   }, [userId, attempt]);
   async function check() {
@@ -40,11 +41,12 @@ export function DictionaryImportPanel({ userId }: { userId: string }) {
   const rows = preview?.rows.filter(r => filter === "all" || r.status === filter) ?? [], pages = Math.max(1, Math.ceil(rows.length / 25));
   return <section className={styles.panel} aria-labelledby="dictionary-import-heading" aria-busy={busy}>
     <h4 id="dictionary-import-heading">{t("Проверить файл перед импортом")}</h4>
-    <p>{t("Загрузите CSV по нашему шаблону. Проверка ничего не сохраняет и не меняет карточки.")}</p>
-    <p className={styles.hint}>{t("До 25 МБ и 10000 записей. После проверки выберите действия и подтвердите сохранение. Excel — следующий этап.")}</p>
+    <p>{xlsx ? t("Загрузите CSV или Excel (.xlsx) по нашему шаблону. Проверка ничего не сохраняет и не меняет карточки.") : t("Загрузите CSV по нашему шаблону. Проверка ничего не сохраняет и не меняет карточки.")}</p>
+    <p className={styles.hint}>{xlsx ? t("До 25 МБ и 10000 записей. После проверки выберите действия и подтвердите сохранение.") : t("До 25 МБ и 10000 записей. После проверки выберите действия и подтвердите сохранение. Excel — следующий этап.")}</p>
     {enabled === null ? failure ? <p role="alert">{errorText(failure)} <button type="button" onClick={() => setAttempt(a => a + 1)}>{t("Повторить")}</button></p> : <p role="status">{t("Проверяем доступность импорта…")}</p> : <>
-      <label htmlFor="dictionary-import-file">{t("Файл CSV")}</label>
-      <input ref={input} id="dictionary-import-file" type="file" accept=".csv,text/csv" disabled={busy || saving} onChange={e => { setFile(e.target.files?.[0] ?? null); setPreview(null); setFailure(null); setPage(0); }} />
+      <label htmlFor="dictionary-import-file">{xlsx ? t("Файл CSV или Excel (.xlsx)") : t("Файл CSV")}</label>
+      <input ref={input} id="dictionary-import-file" type="file" accept={xlsx ? ".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : ".csv,text/csv"} disabled={busy || saving} onChange={e => { setFile(e.target.files?.[0] ?? null); setPreview(null); setFailure(null); setPage(0); }} />
+      {xlsx && <p className={styles.hint}>{t("Откройте CSV-шаблон в Excel и сохраните как .xlsx. Названия колонок в первой строке сохраните; оставьте один заполненный лист без формул и объединённых ячеек.")}</p>}
       <div className={styles.actions}><button type="button" disabled={!file || busy || saving} onClick={() => void check()}>{t("Проверить совпадения")}</button>{busy && <button type="button" className="secondary-button" onClick={() => operation.current?.abort()}>{t("Отменить")}</button>}</div>
       {busy && <p role="status">{t("Проверяем файл и каталог…")}</p>}{failure !== null && <p role="alert">{errorText(failure)}</p>}
       {preview && <>

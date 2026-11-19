@@ -20,8 +20,8 @@ export function DictionaryImportSave({userId,file,preview,onBusy}:{userId:string
  const close=()=>operation(async signal=>{if(batch&&!['COMPLETED','EXPIRED'].includes(batch.state))await client.discard(batch.key,userId,signal);if(!signal.aborted&&current()){remember(null);setBatch(null);setConfirm(false);setPaused(false);}});
  if(!enabled)return error?<p role="alert">{errorText(error)}</p>:null;
  const unresolved=unresolvedChoices(choices),shown=preview?.rows.filter(r=>all||!choices[r.row-1]?.action)??[],pages=Math.max(1,Math.ceil(shown.length/25));
- return <section className={styles.panel} aria-label={t('Сохранение CSV')}>
-  <h4>{t('Сохранение CSV')}</h4>
+ return <section className={styles.panel} aria-label={t('Сохранение импорта')}>
+  <h4>{t('Сохранение импорта')}</h4>
   <p>{t('Новые карточки отправятся на модерацию. У найденных карточек общие тексты, примеры и формы не меняются. Личные книги и уроки добавляются только вам.')}</p>
   <p className={styles.hint}>{t('Существующие личные заметки, переводы, архив и избранное сохраняются. Отличия будут в отчёте. При остановке уже сохранённые слова останутся.')}</p>
   {!batch&&preview&&<>

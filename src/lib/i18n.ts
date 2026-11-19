@@ -1,5 +1,16 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Проверьте период: начальная дата должна быть не позже конечной.": {"de": "Prüfe den Zeitraum: Das Startdatum darf nicht nach dem Enddatum liegen.", "en": "Check the period: the start date must not be after the end date.", "uk": "Перевірте період: початкова дата має бути не пізніше кінцевої."},
+  "История слишком большая. Укажите меньший период.": {"de": "Der Verlauf ist zu groß. Wähle einen kürzeren Zeitraum.", "en": "The history is too large. Choose a shorter period.", "uk": "Історія надто велика. Виберіть менший період."},
+  "Экспорт истории тренировок": {"de": "Trainingsverlauf exportieren", "en": "Export training history", "uk": "Експорт історії тренувань"},
+  "Скачайте список тренировок или ответы по словам. Даты и время — UTC. Пустой период означает всю историю.": {"de": "Lade die Trainingsliste oder Antworten zu Wörtern herunter. Datum und Uhrzeit sind UTC. Ohne Zeitraum wird der gesamte Verlauf exportiert.", "en": "Download the training list or word answers. Dates and times are UTC. An empty period means the entire history.", "uk": "Завантажте список тренувань або відповіді за словами. Дати й час — UTC. Порожній період означає всю історію."},
+  "С даты (UTC)": {"de": "Ab Datum (UTC)", "en": "From date (UTC)", "uk": "З дати (UTC)"},
+  "По дату (UTC)": {"de": "Bis Datum (UTC)", "en": "Through date (UTC)", "uk": "До дати (UTC)"},
+  "Скачать тренировки в CSV": {"de": "Trainings als CSV herunterladen", "en": "Download training sessions as CSV", "uk": "Завантажити тренування в CSV"},
+  "Скачать ответы в CSV": {"de": "Antworten als CSV herunterladen", "en": "Download answers as CSV", "uk": "Завантажити відповіді в CSV"},
+  "Выгрузка предназначена для просмотра и анализа. Названия слов соответствуют текущим доступным карточкам.": {"de": "Der Export dient zur Ansicht und Auswertung. Die Wörter entsprechen den aktuell verfügbaren Karten.", "en": "The export is for viewing and analysis. Word names reflect currently accessible cards.", "uk": "Вивантаження призначене для перегляду й аналізу. Назви слів відповідають поточним доступним карткам."},
+  "CSV словаря и CSV истории скачиваются отдельно. Общие связи в экспорт словаря не входят.": {"de": "Wörterbuch und Verlauf werden als separate CSV-Dateien heruntergeladen. Allgemeine Verknüpfungen sind nicht im Wörterbuchexport enthalten.", "en": "Dictionary and history CSV files are downloaded separately. Shared relations are not included in the dictionary export.", "uk": "CSV словника та CSV історії завантажуються окремо. Загальні зв’язки не входять до експорту словника."},
+
   "Сохранение импорта": {"de": "Import speichern", "en": "Save import", "uk": "Збереження імпорту"},
   "Выберите файл CSV или Excel (.xlsx).": {"de": "Wähle eine CSV- oder Excel-Datei (.xlsx).", "en": "Choose a CSV or Excel (.xlsx) file.", "uk": "Виберіть файл CSV або Excel (.xlsx)."},
   "Не удалось прочитать Excel. Сохраните файл в формате .xlsx по нашему шаблону.": {"de": "Excel konnte nicht gelesen werden. Speichere die Datei als .xlsx mit unserer Vorlage.", "en": "Could not read Excel. Save the file as .xlsx using our template.", "uk": "Не вдалося прочитати Excel. Збережіть файл у форматі .xlsx за нашим шаблоном."},

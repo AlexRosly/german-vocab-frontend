@@ -10,10 +10,11 @@ export function DictionaryExportPanel({ userId }: { userId: string }) {
   const { t, errorText } = useI18n();
   const [enabled, setEnabled] = useState<boolean | null>(null), [error, setError] = useState<unknown>(null), [attempt, setAttempt] = useState(0);
   const [busy, setBusy] = useState<DictionaryFileKind | null>(null), [ready, setReady] = useState(false);
+  const [history, setHistory] = useState(false), [from, setFrom] = useState(""), [to, setTo] = useState("");
   const operation = useRef<AbortController | null>(null), urls = useRef(new Set<string>());
   useEffect(() => {
-    const controller = new AbortController(); setEnabled(null); setError(null); setReady(false);
-    void client.config(controller.signal).then(value => { if (!controller.signal.aborted) setEnabled(value); }).catch(failure => { if (!controller.signal.aborted) setError(failure); });
+    const controller = new AbortController(); setEnabled(null); setError(null); setReady(false); setHistory(false); setFrom(""); setTo("");
+    void client.config(controller.signal).then(value => { if (!controller.signal.aborted) { setEnabled(value); setHistory(client.supportsHistory); } }).catch(failure => { if (!controller.signal.aborted) setError(failure); });
     const generated = urls.current;
     return () => { controller.abort(); operation.current?.abort(); for (const url of generated) URL.revokeObjectURL(url); generated.clear(); };
   }, [userId, attempt]);
@@ -21,7 +22,7 @@ export function DictionaryExportPanel({ userId }: { userId: string }) {
     if (operation.current) return; const controller = new AbortController(); operation.current = controller; setBusy(kind); setError(null); setReady(false);
     const timer = window.setTimeout(() => { setError(new Error("Не удалось подготовить CSV-файл")); controller.abort(); }, 60_000);
     try {
-      const file = await client.file(kind, userId, controller.signal);
+      const file = await client.file(kind, userId, controller.signal, { from, to });
       if (controller.signal.aborted || apiClient.getSnapshot().user?.id !== userId) return;
       const url = URL.createObjectURL(file.blob); urls.current.add(url);
       const anchor = document.createElement("a"); anchor.href = url; anchor.download = file.filename; document.body.appendChild(anchor); anchor.click(); anchor.remove();
@@ -49,7 +50,20 @@ export function DictionaryExportPanel({ userId }: { userId: string }) {
         <li>{t("CSV для Excel: UTF-8, разделитель — точка с запятой. Если колонки не разделились, откройте через импорт текста/CSV.")}</li>
         <li>{t("Дополнительные примеры, формы и книги сохранены в колонках с окончанием _json. Оставьте их без изменений для дальнейшего переноса.")}</li>
       </ul></details>
-      <p className={styles.hint}>{t("История тренировок и общие связи в этот CSV не входят.")}</p>
+      <p className={styles.hint}>{t("CSV словаря и CSV истории скачиваются отдельно. Общие связи в экспорт словаря не входят.")}</p>
+      {history && <section aria-labelledby="history-export-heading">
+        <h4 id="history-export-heading">{t("Экспорт истории тренировок")}</h4>
+        <p>{t("Скачайте список тренировок или ответы по словам. Даты и время — UTC. Пустой период означает всю историю.")}</p>
+        <div className={styles.actions}>
+          <label>{t("С даты (UTC)")}<input type="date" value={from} disabled={busy !== null} onChange={e => setFrom(e.target.value)} /></label>
+          <label>{t("По дату (UTC)")}<input type="date" value={to} disabled={busy !== null} onChange={e => setTo(e.target.value)} /></label>
+        </div>
+        <div className={styles.actions}>
+          <button type="button" disabled={busy !== null} onClick={() => void download("history-sessions")}>{t("Скачать тренировки в CSV")}</button>
+          <button type="button" disabled={busy !== null} className="secondary-button" onClick={() => void download("history-answers")}>{t("Скачать ответы в CSV")}</button>
+        </div>
+        <p className={styles.hint}>{t("Выгрузка предназначена для просмотра и анализа. Названия слов соответствуют текущим доступным карточкам.")}</p>
+      </section>}
       <DictionaryImportPanel key={userId} userId={userId} />
     </>}
   </section>;

@@ -1724,12 +1724,12 @@ export function WordDashboard({ user }: { user: AuthUser }) {
               <legend>{t("Режим тренировки")}</legend>
               <div className={practiceStyles.options}>
                 {([
-                  ["forward", "Немецкий → перевод"], ["reverse", "Перевод → немецкий"], ["article", "Артикли der/die/das"],
+                  ["forward", "Немецкий → перевод"], ["reverse", "Перевод → немецкий"], ["article", "Артикли der/die/das"], ["plural", "Единственное → множественное"],
                 ] as const).map(([mode, label]) => <label key={mode} className={practiceStyles.option}>
                   <input type="radio" name="practice-mode" value={mode} checked={practiceMode === mode} onChange={() => setPracticeMode(mode)} /><span>{t(label)}</span>
                 </label>)}
               </div>
-              <p className={practiceStyles.hint}>{t(practiceMode === "reverse" ? "В этом режиме участвуют слова с переводом на выбранном языке." : practiceMode === "article" ? "В этом режиме участвуют существительные с der, die или das в единственном числе." : "Вспомните перевод немецкого слова и оцените свой ответ.")}</p>
+              <p className={practiceStyles.hint}>{t(practiceMode === "reverse" ? "В этом режиме участвуют слова с переводом на выбранном языке." : practiceMode === "article" ? "В этом режиме участвуют существительные с der, die или das в единственном числе." : practiceMode === "plural" ? "В этом режиме участвуют существительные в единственном числе с полной формой множественного числа." : "Вспомните перевод немецкого слова и оцените свой ответ.")}</p>
               <p className={practiceStyles.hint}>{t("Ответы всех режимов влияют на общий прогресс слова.")}</p>
             </fieldset>
             <p className={workspaceStyles.hint}>{t("Фильтры применяются ко всем трём вариантам тренировки. Архивные слова не участвуют.")}</p>

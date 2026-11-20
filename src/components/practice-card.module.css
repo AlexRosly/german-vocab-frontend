@@ -1,7 +1,7 @@
 .card { overflow-wrap: anywhere; }
 .modes { min-width: 0; border: 1px solid var(--line); border-radius: 16px; padding: 18px; margin: 20px 0; }
 .modes legend { font-weight: 700; padding: 0 8px; }
-.options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .option { display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 12px; border: 1px solid #cbd6cd; border-radius: 12px; background: #f7faf6; cursor: pointer; }
 .option:has(input:checked) { background: #e8f4ed; border-color: #217c5b; }
 .option input { width: 18px; min-height: 18px; height: 18px; margin: 0; flex-shrink: 0; accent-color: #217c5b; }
@@ -21,3 +21,11 @@
   .articleChoices { gap: 8px; }
   .articleChoices button { min-width: 62px; padding: 10px 16px; }
 }
+
+.pluralAnswer { margin: 22px 0; text-align: left; }
+.pluralAnswer form { display: grid; gap: 10px; }
+.pluralAnswer label { font-weight: 700; }
+.pluralAnswer input { width: 100%; min-width: 0; min-height: 50px; box-sizing: border-box; font-size: 18px; padding: 12px; border: 1px solid #a6b7ad; border-radius: 12px; }
+.pluralAnswer input:focus-visible { outline: 3px solid #217c5b; outline-offset: 2px; }
+.inputActions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.inputActions button { min-height: 48px; flex: 1 1 150px; }

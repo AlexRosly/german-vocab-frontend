@@ -1,5 +1,11 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Единственное → множественное": {"de": "Singular → Plural", "en": "Singular → plural", "uk": "Однина → множина"},
+  "В этом режиме участвуют существительные в единственном числе с полной формой множественного числа.": {"de": "In diesem Modus übst du Nomen im Singular mit einer vollständig angegebenen Pluralform.", "en": "This mode includes singular nouns with a complete plural form.", "uk": "У цьому режимі беруть участь іменники в однині з повною формою множини."},
+  "Введите множественное число": {"de": "Gib die Pluralform ein", "en": "Enter the plural form", "uk": "Введіть форму множини"},
+  "Можно с артиклем die или без него. Регистр не учитывается, умлауты и ß важны.": {"de": "Mit oder ohne Artikel die. Groß- und Kleinschreibung wird ignoriert; Umlaute und ß sind wichtig.", "en": "With or without the article die. Case is ignored; umlauts and ß matter.", "uk": "Можна з артиклем die або без нього. Регістр не враховується, умлаути та ß важливі."},
+  "Проверить ответ": {"de": "Antwort prüfen", "en": "Check answer", "uk": "Перевірити відповідь"},
+  "Ваш ответ: {0}": {"de": "Deine Antwort: {0}", "en": "Your answer: {0}", "uk": "Ваша відповідь: {0}"},
   "Проверьте период: начальная дата должна быть не позже конечной.": {"de": "Prüfe den Zeitraum: Das Startdatum darf nicht nach dem Enddatum liegen.", "en": "Check the period: the start date must not be after the end date.", "uk": "Перевірте період: початкова дата має бути не пізніше кінцевої."},
   "История слишком большая. Укажите меньший период.": {"de": "Der Verlauf ist zu groß. Wähle einen kürzeren Zeitraum.", "en": "The history is too large. Choose a shorter period.", "uk": "Історія надто велика. Виберіть менший період."},
   "Экспорт истории тренировок": {"de": "Trainingsverlauf exportieren", "en": "Export training history", "uk": "Експорт історії тренувань"},

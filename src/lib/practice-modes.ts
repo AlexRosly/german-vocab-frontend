@@ -1,4 +1,4 @@
-export type PracticeMode = "forward" | "reverse" | "article" | "plural";
+export type PracticeMode = "forward" | "reverse" | "article" | "plural" | "spelling";
 export type NounArticle = "der" | "die" | "das";
 export type PracticeWord = {
   id: string; german: string; article: "der" | "die" | "das" | "none";
@@ -16,7 +16,7 @@ export function hasPracticeArticle(word: PracticeWord): boolean {
 }
 
 export function practiceWords<T extends PracticeWord>(words: readonly T[], mode: PracticeMode): T[] {
-  return words.filter(word => mode === "reverse" ? hasPracticeTranslation(word) : mode === "article" ? hasPracticeArticle(word) : mode === "plural" ? practicePlurals(word).length > 0 : true);
+  return words.filter(word => (mode === "reverse" || mode === "spelling") ? hasPracticeTranslation(word) : mode === "article" ? hasPracticeArticle(word) : mode === "plural" ? practicePlurals(word).length > 0 : true);
 }
 
 export function barePracticeGerman(word: PracticeWord): string {
@@ -54,4 +54,19 @@ export function practicePlurals(word: PluralWord): string[] {
 export function correctPracticePlural(word: PluralWord, answer: string): boolean {
   const actual = withoutArticle(answer).toLocaleLowerCase("de");
   return !!actual && practicePlurals(word).some(form => form.toLocaleLowerCase("de") === actual);
+}
+
+// Spelling uses the exact card text, not synonyms. For nouns only the optional
+// definite article is case-insensitive; the lexeme keeps its written case.
+export function correctPracticeSpelling(word: PracticeWord, answer: string): boolean {
+  if (!hasPracticeTranslation(word)) return false;
+  const actual = clean(answer);
+  const expected = clean(barePracticeGerman(word));
+  if (!actual || !expected) return false;
+  if (hasPracticeArticle(word) || word.grammaticalNumber === "plural") {
+    const article = word.grammaticalNumber === "plural" ? "die" : word.article;
+    const prefix = /^(der|die|das)\s+(.+)$/iu.exec(actual);
+    return prefix ? prefix[1].toLocaleLowerCase("de") === article && prefix[2] === expected : actual === expected;
+  }
+  return actual === expected;
 }

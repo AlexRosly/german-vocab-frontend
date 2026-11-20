@@ -22,10 +22,10 @@
   .articleChoices button { min-width: 62px; padding: 10px 16px; }
 }
 
-.pluralAnswer { margin: 22px 0; text-align: left; }
-.pluralAnswer form { display: grid; gap: 10px; }
-.pluralAnswer label { font-weight: 700; }
-.pluralAnswer input { width: 100%; min-width: 0; min-height: 50px; box-sizing: border-box; font-size: 18px; padding: 12px; border: 1px solid #a6b7ad; border-radius: 12px; }
-.pluralAnswer input:focus-visible { outline: 3px solid #217c5b; outline-offset: 2px; }
+.writtenAnswer { margin: 22px 0; text-align: left; }
+.writtenAnswer form { display: grid; gap: 10px; }
+.writtenAnswer label { font-weight: 700; }
+.writtenAnswer input { width: 100%; min-width: 0; min-height: 50px; box-sizing: border-box; font-size: 18px; padding: 12px; border: 1px solid #a6b7ad; border-radius: 12px; }
+.writtenAnswer input:focus-visible { outline: 3px solid #217c5b; outline-offset: 2px; }
 .inputActions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
 .inputActions button { min-height: 48px; flex: 1 1 150px; }

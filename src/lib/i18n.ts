@@ -1,5 +1,11 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Написание слов": {"de": "Wörter schreiben", "en": "Spelling", "uk": "Написання слів"},
+  "Написание по переводу": {"de": "Schreiben nach Übersetzung", "en": "Write from translation", "uk": "Написання за перекладом"},
+  "Напишите немецкое слово": {"de": "Schreibe das deutsche Wort", "en": "Write the German word", "uk": "Напишіть німецьке слово"},
+  "Напишите немецкое слово по переводу на выбранном языке. Карточки без перевода не участвуют.": {"de": "Schreibe das deutsche Wort zur Übersetzung in deiner gewählten Sprache. Karten ohne Übersetzung sind ausgeschlossen.", "en": "Write the German word from its translation in your selected language. Cards without a translation are excluded.", "uk": "Напишіть німецьке слово за перекладом вибраною мовою. Картки без перекладу не беруть участі."},
+  "Напишите слово из этой карточки. Учитываются регистр, умлауты и ß. Артикль существительного можно опустить.": {"de": "Schreibe das Wort von dieser Karte. Groß- und Kleinschreibung, Umlaute und ß zählen. Den Artikel eines Nomens kannst du weglassen.", "en": "Write the word from this card. Capitalization, umlauts and ß matter. You may omit a noun’s article.", "uk": "Напишіть слово з цієї картки. Враховуються регістр, умлаути та ß. Артикль іменника можна пропустити."},
+  "Правильный ответ:": {"de": "Richtige Antwort:", "en": "Correct answer:", "uk": "Правильна відповідь:"},
   "Единственное → множественное": {"de": "Singular → Plural", "en": "Singular → plural", "uk": "Однина → множина"},
   "В этом режиме участвуют существительные в единственном числе с полной формой множественного числа.": {"de": "In diesem Modus übst du Nomen im Singular mit einer vollständig angegebenen Pluralform.", "en": "This mode includes singular nouns with a complete plural form.", "uk": "У цьому режимі беруть участь іменники в однині з повною формою множини."},
   "Введите множественное число": {"de": "Gib die Pluralform ein", "en": "Enter the plural form", "uk": "Введіть форму множини"},

@@ -2,6 +2,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { StudySettingsClient, type StudySettings } from "@/lib/study-settings-client";
+import { DailyNewWordsSummary } from "./daily-new-words";
 import { useI18n } from "./ui-language-provider";
 import styles from "./study-settings-panel.module.css";
 const client = new StudySettingsClient(apiFetch);
@@ -12,6 +13,7 @@ export function StudySettingsPanel({ userId, onSaved }: { userId: string; onSave
   const [settings, setSettings] = useState<StudySettings | null>(null);
   const [timeZone, setTimeZone] = useState("UTC");
   const [goal, setGoal] = useState("10");
+  const [newGoal, setNewGoal] = useState("10");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
@@ -22,7 +24,7 @@ export function StudySettingsPanel({ userId, onSaved }: { userId: string; onSave
     const controller = new AbortController(); setSettings(null); setError(""); setSaved(false);
     void client.get(controller.signal).then((data) => {
       if (controller.signal.aborted) return;
-      setSettings(data); setTimeZone(data.timeZone); setGoal(String(data.dailyGoal));
+      setSettings(data); setTimeZone(data.timeZone); setGoal(String(data.dailyGoal)); setNewGoal(String(data.newWordsDailyGoal ?? 10));
     }).catch(() => { if (!controller.signal.aborted) setError("Не удалось сохранить или загрузить настройки обучения"); });
     return () => { controller.abort(); writeController.current?.abort(); };
   }, [userId, attempt]);
@@ -31,8 +33,8 @@ export function StudySettingsPanel({ userId, onSaved }: { userId: string; onSave
     const controller = new AbortController(); writeController.current = controller;
     saving.current = true; setBusy(true); setError(""); setSaved(false);
     try {
-      const data = await client.save({ timeZone, dailyGoal: Number(goal) }, controller.signal);
-      if (!controller.signal.aborted) { setSettings(data); setTimeZone(data.timeZone); setGoal(String(data.dailyGoal)); setSaved(true); onSaved(); }
+      const data = await client.save({ timeZone, dailyGoal: Number(goal), ...(settings.newWordsDailyGoal === undefined ? {} : { newWordsDailyGoal: Number(newGoal) }) }, controller.signal);
+      if (!controller.signal.aborted) { setSettings(data); setTimeZone(data.timeZone); setGoal(String(data.dailyGoal)); setNewGoal(String(data.newWordsDailyGoal ?? 10)); setSaved(true); onSaved(); }
     } catch (failure) { if (!controller.signal.aborted) setError(failure instanceof Error ? failure.message : "Не удалось сохранить или загрузить настройки обучения"); }
     finally { if (!controller.signal.aborted) { saving.current = false; setBusy(false); } }
   }
@@ -43,6 +45,11 @@ export function StudySettingsPanel({ userId, onSaved }: { userId: string; onSave
       <fieldset disabled={busy} className={styles.fields}>
         <label htmlFor="daily-goal-input">{t("Ежедневная цель, слов")}</label>
         <input id="daily-goal-input" type="number" min={1} max={500} step={1} required value={goal} onChange={(event) => { setGoal(event.target.value); setSaved(false); }} />
+        {settings.newWordsDailyGoal !== undefined && <>
+          <label htmlFor="new-daily-goal-input">{t("Новых слов в день — ваш план")}</label>
+          <input id="new-daily-goal-input" type="number" min={1} max={500} step={1} required value={newGoal} onChange={event => { setNewGoal(event.target.value); setSaved(false); }} />
+          <p className={styles.hint}>{t("От 1 до 500. Это ориентир: после выполнения можно учиться дальше.")}</p>
+        </>}
         <label htmlFor="time-zone-input">{t("Часовой пояс")}</label>
         <input id="time-zone-input" list="time-zone-options" required maxLength={100} value={timeZone} onChange={(event) => { setTimeZone(event.target.value); setSaved(false); }} />
         <datalist id="time-zone-options">{[...new Set([...zones, settings.timeZone])].map((zone) => <option key={zone} value={zone} />)}</datalist>
@@ -57,7 +64,7 @@ export function StudySettingsPanel({ userId, onSaved }: { userId: string; onSave
   </section>;
 }
 
-export type DailyProgress = StudySettings & { studiedToday: number; studyDate: string };
+export type DailyProgress = StudySettings & { studiedToday: number; studyDate: string; newWordsStudiedToday?: number };
 export function DailyGoalCard({ progress, loading, error, onRetry }: { progress: DailyProgress | null; loading: boolean; error: string; onRetry: () => void }) {
   const { t, count } = useI18n();
   return <section className="daily-goal" aria-label={t("Цель на сегодня")}>
@@ -68,6 +75,7 @@ export function DailyGoalCard({ progress, loading, error, onRetry }: { progress:
       <div className="daily-goal-track" role="progressbar" aria-label={t("Цель на сегодня")} aria-valuemin={0} aria-valuemax={progress.dailyGoal} aria-valuenow={Math.min(progress.studiedToday, progress.dailyGoal)}>
         <div className="daily-goal-fill" style={{ width: `${Math.min(progress.studiedToday / progress.dailyGoal, 1) * 100}%` }} />
       </div>
+      <DailyNewWordsSummary progress={progress} />
       <p>{progress.studiedToday >= progress.dailyGoal ? t("Цель достигнута!") : t("До цели осталось: {count}", { count: count(progress.dailyGoal - progress.studiedToday) })}</p>
     </>}
   </section>;

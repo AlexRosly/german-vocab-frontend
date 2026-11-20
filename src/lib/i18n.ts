@@ -1,5 +1,16 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Новых слов в день — ваш план": {"de": "Neue Wörter pro Tag — dein Plan", "en": "New words per day — your plan", "uk": "Нових слів на день — ваш план"},
+  "От 1 до 500. Это ориентир: после выполнения можно учиться дальше.": {"de": "1 bis 500. Ein Richtwert: Danach kannst du weiterlernen.", "en": "1 to 500. A guide: You can keep learning after reaching it.", "uk": "Від 1 до 500. Це орієнтир: після виконання можна вчитися далі."},
+  "План новых слов": {"de": "Plan für neue Wörter", "en": "New words plan", "uk": "План нових слів"},
+  "Новых слов сегодня: {done} из {goal}": {"de": "Neue Wörter heute: {done} von {goal}", "en": "New words today: {done} of {goal}", "uk": "Нових слів сьогодні: {done} із {goal}"},
+  "План выполнен! Можно продолжать без ограничений.": {"de": "Plan erreicht! Du kannst unbegrenzt weiterlernen.", "en": "Plan reached! You can keep learning without restrictions.", "uk": "План виконано! Можна продовжувати без обмежень."},
+  "Осталось по плану: {count}": {"de": "Noch im Plan: {count}", "en": "Remaining in your plan: {count}", "uk": "Залишилося за планом: {count}"},
+  "Первый сохранённый ответ на слово в любом режиме. Повторные ответы не увеличивают число.": {"de": "Die erste gespeicherte Antwort auf ein Wort in einem beliebigen Modus. Wiederholte Antworten erhöhen die Zahl nicht.", "en": "The first saved answer to a word in any mode. Repeated answers do not increase the count.", "uk": "Перша збережена відповідь на слово в будь-якому режимі. Повторні відповіді не збільшують кількість."},
+  "Изучить по плану ({count})": {"de": "Nach Plan lernen ({count})", "en": "Learn within plan ({count})", "uk": "Вивчити за планом ({count})"},
+  "Продолжить новые слова ({0})": {"de": "Mit neuen Wörtern fortfahren ({0})", "en": "Continue with new words ({0})", "uk": "Продовжити нові слова ({0})"},
+  "План новых слов выполнен. Можно продолжить обычную тренировку новых слов.": {"de": "Der Plan für neue Wörter ist erreicht. Du kannst das normale Training mit neuen Wörtern fortsetzen.", "en": "Your new words plan is complete. You can continue the regular new words practice.", "uk": "План нових слів виконано. Можна продовжити звичайне тренування нових слів."},
+  "План новых слов должен быть целым числом от 1 до 500": {"de": "Der Plan für neue Wörter muss eine ganze Zahl von 1 bis 500 sein", "en": "The new words plan must be a whole number from 1 to 500", "uk": "План нових слів має бути цілим числом від 1 до 500"},
   "Просроченные повторения": {"de": "Überfällige Wiederholungen", "en": "Overdue reviews", "uk": "Прострочені повторення"},
   "Срок раньше сегодняшнего дня ({0}). Сначала самые давние.": {"de": "Vor dem heutigen Tag fällig ({0}). Die ältesten zuerst.", "en": "Scheduled before today ({0}). Oldest first.", "uk": "Термін раніше сьогоднішнього дня ({0}). Спочатку найдавніші."},
   "Повторить просроченные ({count})": {"de": "Überfällige Wörter wiederholen ({count})", "en": "Practice overdue words ({count})", "uk": "Повторити прострочені ({count})"},

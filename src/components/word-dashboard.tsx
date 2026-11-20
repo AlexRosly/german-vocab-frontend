@@ -14,6 +14,8 @@ import { GoogleAccountPanel } from "./google-account-panel";
 import practiceStyles from "./practice-card.module.css";
 import { PracticeCard } from "./practice-card";
 import { DifficultTrainingAction, DifficultWordToggle } from "./difficult-words";
+import { DailyNewWordsSummary } from "./daily-new-words";
+import { dailyNewWordsPlan, plannedNewWords } from "@/lib/daily-new-words";
 import { OverdueReviewAction } from "./overdue-review-action";
 import { overdueReviewWords, type ReviewSchedule } from "@/lib/overdue-review";
 import { practiceWords, type PracticeMode } from "@/lib/practice-modes";
@@ -97,6 +99,8 @@ type StudyProgress = {
   studiedToday: number;
   timeZone: string;
   dailyGoal: number;
+  newWordsDailyGoal?: number;
+  newWordsStudiedToday?: number;
   studyDate: string;
   dueCount: number;
 };
@@ -744,7 +748,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     }
   }
 
-  async function startNewWordsStudy() {
+  async function startNewWordsStudy(followPlan = false) {
     setNewWordsLoading(true);
     setNewWordsError("");
 
@@ -760,8 +764,15 @@ export function WordDashboard({ user }: { user: AuthUser }) {
         return;
       }
 
-      const wordsToStudy =
-        newWordsLimit === 0 ? selected : selected.slice(0, newWordsLimit);
+      let wordsToStudy = newWordsLimit === 0 ? selected : selected.slice(0, newWordsLimit);
+      if (followPlan) {
+        const response = await apiFetch("/study/progress", { cache: "no-store" });
+        if (!response.ok) throw new Error("Не удалось загрузить статистику обучения");
+        const plan = dailyNewWordsPlan(await response.json());
+        if (!plan) throw new Error("Не удалось загрузить статистику обучения");
+        wordsToStudy = plannedNewWords(selected, newWordsLimit, plan);
+        if (!wordsToStudy.length) { setNewWordsError("План новых слов выполнен. Можно продолжить обычную тренировку новых слов."); return; }
+      }
       startStudyWithWords(wordsToStudy);
     } catch (error) {
       setNewWordsError(
@@ -911,6 +922,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   useEffect(() => { if (!dictionaryLoading && !difficultEnabled && dictionaryView === "difficult") setDictionaryView("active"); }, [dictionaryLoading, difficultEnabled, dictionaryView]);
 
   const filteredTrainingWords = practiceWords(activeTrainingWords(filteredWords), practiceMode);
+  const dailyNewPlan = !progressError && !progressLoading ? dailyNewWordsPlan(studyProgress) : null;
   const filteredNewWords = eligibleTrainingWords(filteredTrainingWords, newPool);
   const filteredDueWords = eligibleTrainingWords(filteredTrainingWords, duePool);
   const trainingLocked = studyMode || studySaving || busy || dictionaryLoading || dictionarySettingsBlocked || newWordsLoading || dueLoading || (studyFinished && !studySaved);
@@ -1757,7 +1769,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                 <select id="new-words-limit" value={newWordsLimit === 0 ? "all" : String(newWordsLimit)} disabled={trainingLocked} onChange={event => setNewWordsLimit(event.target.value === "all" ? 0 : Number(event.target.value))}>
                   {[5, 10, 20].map(limit => <option key={limit} value={limit}>{count(limit)}</option>)}<option value="all">{t("Все новые слова")}</option>
                 </select>
-                <button type="button" disabled={trainingLocked || !filteredNewWords.length} onClick={() => void startNewWordsStudy()}>{t("Изучить новые слова ({0})", { 0: newWordsLimit ? Math.min(newWordsLimit, filteredNewWords.length) : filteredNewWords.length })}</button>
+                <button type="button" disabled={trainingLocked || !filteredNewWords.length} onClick={() => void startNewWordsStudy()}>{t(dailyNewPlan?.remaining === 0 ? "Продолжить новые слова ({0})" : "Изучить новые слова ({0})", { 0: newWordsLimit ? Math.min(newWordsLimit, filteredNewWords.length) : filteredNewWords.length })}</button>
+                <DailyNewWordsSummary progress={!progressError && !progressLoading ? studyProgress : null} />
+                {dailyNewPlan && dailyNewPlan.remaining > 0 && <button type="button" disabled={trainingLocked || !filteredNewWords.length} onClick={() => void startNewWordsStudy(true)}>{t("Изучить по плану ({count})", { count: count(plannedNewWords(filteredNewWords, newWordsLimit, dailyNewPlan).length) })}</button>}
                 {newWordsError && <p role="alert">{errorText(newWordsError)} <button type="button" onClick={() => void refreshNewWordsCount()}>{t("Повторить")}</button></p>}
               </div>
               <div><h4>{t("Пора повторить")}</h4><p className={workspaceStyles.hint}>{t("Повторение по расписанию: {0}", { 0: count(filteredDueWords.length) })}</p>

@@ -14,6 +14,8 @@ import { GoogleAccountPanel } from "./google-account-panel";
 import practiceStyles from "./practice-card.module.css";
 import { PracticeCard } from "./practice-card";
 import { DifficultTrainingAction, DifficultWordToggle } from "./difficult-words";
+import { OverdueReviewAction } from "./overdue-review-action";
+import { overdueReviewWords, type ReviewSchedule } from "@/lib/overdue-review";
 import { practiceWords, type PracticeMode } from "@/lib/practice-modes";
 import workspaceStyles from "./dictionary-workspace.module.css";
 import { DraftRelatedWords } from "./draft-related-words";
@@ -245,7 +247,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const [progressLoading, setProgressLoading] = useState(false);
   const [progressError, setProgressError] = useState("");
   const [studyWords, setStudyWords] = useState<Word[]>([]);
-  const [duePool, setDuePool] = useState<Word[]>([]);
+  const [duePool, setDuePool] = useState<(Word & ReviewSchedule)[]>([]);
   const [dueLoading, setDueLoading] = useState(false);
   const [dueError, setDueError] = useState("");
 
@@ -715,12 +717,19 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     startStudyWithWords(activeTrainingWords(filteredWords));
   }
 
-  async function startDueStudy() {
+  async function startDueStudy(overdueOnly = false) {
     setDueLoading(true);
     setDueError("");
 
     try {
       const words = await loadDueWords();
+      if (!words) return;
+      if (overdueOnly) {
+        const queue = overdueReviewWords(filteredTrainingWords, words, studyProgress?.timeZone);
+        if (!queue.length) { setDueError("Просроченных слов по выбранным фильтрам больше нет."); return; }
+        startStudyWithWords(queue);
+        return;
+      }
 
       if (words.length === 0) {
         if (!dueError) {
@@ -954,7 +963,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     return () => { window.clearInterval(timer); document.removeEventListener("visibilitychange", refresh); progressRequest.current += 1; };
   }, [user.id, settingsVersion, loadStudyProgress]);
 
-  async function loadDueWords(): Promise<Word[]> {
+  async function loadDueWords(): Promise<(Word & ReviewSchedule)[] | null> {
     try {
       setDueError("");
 
@@ -972,7 +981,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
           : "Не удалось загрузить слова для повторения",
       );
 
-      return [];
+      return null;
     }
   }
 
@@ -1753,7 +1762,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
               </div>
               <div><h4>{t("Пора повторить")}</h4><p className={workspaceStyles.hint}>{t("Повторение по расписанию: {0}", { 0: count(filteredDueWords.length) })}</p>
                 <button type="button" disabled={trainingLocked || !filteredDueWords.length} onClick={() => void startDueStudy()}>{t("Пора повторить ({0})", { 0: filteredDueWords.length })}</button>
-                {dueError && <p role="alert">{errorText(dueError)} <button type="button" onClick={() => void loadDueWords()}>{t("Повторить")}</button></p>}
+                <OverdueReviewAction words={filteredTrainingWords} due={duePool} timeZone={studyProgress?.timeZone} disabled={trainingLocked || progressLoading} onStart={() => void startDueStudy(true)} />
+                          {dueError && <p role="alert">{errorText(dueError)} <button type="button" onClick={() => void loadDueWords()}>{t("Повторить")}</button></p>}
               </div>
             </div>
             <h3>{t("Карточки по выбранным фильтрам")}</h3>

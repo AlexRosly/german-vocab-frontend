@@ -1,5 +1,10 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Просроченные повторения": {"de": "Überfällige Wiederholungen", "en": "Overdue reviews", "uk": "Прострочені повторення"},
+  "Срок раньше сегодняшнего дня ({0}). Сначала самые давние.": {"de": "Vor dem heutigen Tag fällig ({0}). Die ältesten zuerst.", "en": "Scheduled before today ({0}). Oldest first.", "uk": "Термін раніше сьогоднішнього дня ({0}). Спочатку найдавніші."},
+  "Повторить просроченные ({count})": {"de": "Überfällige Wörter wiederholen ({count})", "en": "Practice overdue words ({count})", "uk": "Повторити прострочені ({count})"},
+  "Часовой пояс ещё не загружен. Обновите словарь или повторите загрузку статистики.": {"de": "Die Zeitzone wurde noch nicht geladen. Aktualisiere das Wörterbuch oder lade die Statistik erneut.", "en": "Your time zone has not loaded yet. Refresh the dictionary or retry loading progress.", "uk": "Часовий пояс ще не завантажено. Оновіть словник або повторіть завантаження статистики."},
+  "Просроченных слов по выбранным фильтрам больше нет.": {"de": "Mit diesen Filtern gibt es keine überfälligen Wörter mehr.", "en": "No overdue words remain for these filters.", "uk": "Прострочених слів за вибраними фільтрами більше немає."},
   "Трудные слова": {"de": "Schwierige Wörter", "en": "Difficult words", "uk": "Складні слова"},
   "Отметить трудным": {"de": "Als schwierig markieren", "en": "Mark as difficult", "uk": "Позначити складним"},
   "✓ Трудное": {"de": "✓ Schwierig", "en": "✓ Difficult", "uk": "✓ Складне"},

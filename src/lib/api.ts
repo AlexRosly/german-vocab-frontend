@@ -46,9 +46,11 @@ export type NewWordsResponse = {
   words: StudyWord[];
 };
 
+export type DueStudyWord = StudyWord & { progress?: { nextReviewAt: string | null } };
+
 export type DueWordsResponse = {
   dueCount: number;
-  words: StudyWord[];
+  words: DueStudyWord[];
 };
 
 export async function fetchDueWords(): Promise<DueWordsResponse> {

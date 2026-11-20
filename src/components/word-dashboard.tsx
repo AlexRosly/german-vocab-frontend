@@ -99,6 +99,7 @@ type StudyProgress = {
   studiedToday: number;
   timeZone: string;
   dailyGoal: number;
+  historyVersion?: number;
   newWordsDailyGoal?: number;
   newWordsStudiedToday?: number;
   studyDate: string;
@@ -208,6 +209,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   useEffect(() => { setVisibleWordCount(30); }, [searchQuery, filterBook, filterLevel, filterLesson, filterArticle, sortOrder, dictionaryView]);
 
   const [practiceMode, setPracticeMode] = useState<PracticeMode>("forward");
+  const [sessionHistoryMode, setSessionHistoryMode] = useState<PracticeMode | undefined>(undefined);
   const [sessionPracticeMode, setSessionPracticeMode] = useState<PracticeMode>("forward");
   const answerLock = useRef(false);
   const [studyMode, setStudyMode] = useState(false);
@@ -691,7 +693,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   ) {
     const requestKey = studyRequestKey.current ?? crypto.randomUUID();
     studyRequestKey.current = requestKey;
-    await saveTrainingAnswers(apiFetch, sessionWords, requestKey);
+    await saveTrainingAnswers(apiFetch, sessionWords, requestKey, sessionHistoryMode);
     void refreshNewWordsCount();
   }
 
@@ -706,6 +708,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     stopSpeech();
     studyRequestKey.current = crypto.randomUUID();
     setSessionPracticeMode(practiceMode);
+    setSessionHistoryMode(studyProgress?.historyVersion === 2 ? practiceMode : undefined);
     setStudyWords(wordsToStudy);
     setStudyIndex(0);
     setShowTranslation(false);

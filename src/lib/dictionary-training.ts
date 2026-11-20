@@ -1,3 +1,4 @@
+import type { PracticeMode } from "./practice-modes";
 type Answer = { wordId: string; answer: "KNOWN" | "NEEDS_REVIEW" };
 type Fetcher = (path: string, init: RequestInit) => Promise<Response>;
 
@@ -8,14 +9,15 @@ export function eligibleTrainingWords<T extends { id: string }>(filtered: readon
 }
 
 // Each server session accepts at most 500 answers. A retry reuses every chunk's key/body.
-export async function saveTrainingAnswers(fetcher: Fetcher, answers: readonly Answer[], requestKey: string): Promise<void> {
+export async function saveTrainingAnswers(fetcher: Fetcher, answers: readonly Answer[], requestKey: string, mode?: PracticeMode): Promise<void> {
+  if (mode !== undefined && !["forward", "reverse", "article", "plural", "spelling"].includes(mode)) throw new Error("Некорректный режим тренировки");
   if (!answers.length || new Set(answers.map(row => row.wordId)).size !== answers.length) throw new Error("Не удалось сохранить результаты тренировки");
   for (let offset = 0; offset < answers.length; offset += 500) {
     const words = answers.slice(offset, offset + 500);
     const response = await fetcher("/study/sessions", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Idempotency-Key": `${requestKey}:${offset / 500}` },
-      body: JSON.stringify({ totalWords: words.length, words }),
+      body: JSON.stringify({ totalWords: words.length, words, ...(mode === undefined ? {} : { mode }) }),
     });
     if (!response.ok) {
       const data = await response.json().catch(() => null);

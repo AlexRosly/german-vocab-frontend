@@ -1,5 +1,11 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Режим не сохранён": {"de": "Übungsmodus nicht gespeichert", "en": "Practice mode not recorded", "uk": "Режим не збережено"},
+  "Следующий срок не сохранён": {"de": "Nächster Termin nicht gespeichert", "en": "Next review date not recorded", "uk": "Наступний термін не збережено"},
+  "Дата ответа: {0}": {"de": "Beantwortet am: {0}", "en": "Answered at: {0}", "uk": "Дата відповіді: {0}"},
+  "Назначено повторение после ответа: {0}": {"de": "Nach dieser Antwort geplante Wiederholung: {0}", "en": "Review scheduled after this answer: {0}", "uk": "Призначено повторення після відповіді: {0}"},
+  "Срок в истории назначен после того ответа; последующие тренировки его не меняют.": {"de": "Der Termin wurde nach dieser Antwort vergeben. Spätere Übungen ändern diesen Verlaufseintrag nicht.", "en": "This date was assigned after that answer. Later practice does not change this history entry.", "uk": "Термін в історії призначено після тієї відповіді; наступні тренування його не змінюють."},
+  "Некорректный режим тренировки": {"de": "Ungültiger Übungsmodus", "en": "Invalid practice mode", "uk": "Некоректний режим тренування"},
   "Новых слов в день — ваш план": {"de": "Neue Wörter pro Tag — dein Plan", "en": "New words per day — your plan", "uk": "Нових слів на день — ваш план"},
   "От 1 до 500. Это ориентир: после выполнения можно учиться дальше.": {"de": "1 bis 500. Ein Richtwert: Danach kannst du weiterlernen.", "en": "1 to 500. A guide: You can keep learning after reaching it.", "uk": "Від 1 до 500. Це орієнтир: після виконання можна вчитися далі."},
   "План новых слов": {"de": "Plan für neue Wörter", "en": "New words plan", "uk": "План нових слів"},

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { displayTranslation } from "@/lib/word-view";
-import { StudyHistoryClient, type HistoryDetail, type HistoryPage } from "@/lib/study-history-client";
+import { StudyHistoryClient, historyModeLabel, type HistoryDetail, type HistoryPage } from "@/lib/study-history-client";
 import { safeErrorMessage } from "@/lib/i18n";
 import { useI18n } from "./ui-language-provider";
 import styles from "./study-history-panel.module.css";
@@ -66,6 +66,7 @@ export function StudyHistoryPanel({ userId, language, version }: { userId: strin
               <button type="button" aria-expanded={selected === session.id} aria-controls={`history-${session.id}`}
                 onClick={() => setSelected((current) => current === session.id ? null : session.id)}>{t(selected === session.id ? "Скрыть слова" : "Показать слова")}</button>
             </div>
+            <p className={styles.hint}>{t(historyModeLabel(session.mode))}</p>
             <dl className={styles.totals}>
               <div><dt>{t("Всего слов")}</dt><dd>{count(session.totalWords)}</dd></div>
               <div><dt>{t("Знаю")}</dt><dd>{session.knownCount}</dd></div>
@@ -81,7 +82,7 @@ export function StudyHistoryPanel({ userId, language, version }: { userId: strin
 }
 
 function HistorySessionDetail({ sessionId, userId, language, version }: { sessionId: string; userId: string; language: string; version: number }) {
-  const { t, errorText } = useI18n();
+  const { t, errorText, date } = useI18n();
   const [detail, setDetail] = useState<HistoryDetail | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -97,6 +98,7 @@ function HistorySessionDetail({ sessionId, userId, language, version }: { sessio
   const words = detail.words.filter((row) => filter === "all" || row.answer === filter);
   return <section className={styles.details} aria-label={t("Ответы по словам")}>
     <p className={styles.hint}>{t("Ответы сохранены во время тренировки. Формы и переводы слов показаны в текущем виде.")}</p>
+    <p className={styles.hint}>{t("Срок в истории назначен после того ответа; последующие тренировки его не меняют.")}</p>
     {detail.words.length < detail.totalWords && <p className={styles.notice}>{t("Часть карточек сейчас недоступна. Итоговые счётчики тренировки сохранены.")}</p>}
     {!detail.words.length ? <p>{t("Детали карточек сейчас недоступны.")}</p> : <>
       <div className={styles.filters} aria-label={t("Фильтр ответов")}>
@@ -105,7 +107,9 @@ function HistorySessionDetail({ sessionId, userId, language, version }: { sessio
         <button type="button" aria-pressed={filter === "NEEDS_REVIEW"} onClick={() => setFilter("NEEDS_REVIEW")}>{t("Нужно повторить")}</button>
       </div>
       {!words.length ? <p>{t("Нет ответов в этой категории.")}</p> : <ul className={styles.words}>{words.map((row) => <li key={row.id}>
-        <div><strong>{row.word.article !== "none" && `${row.word.article} `}{row.word.german}</strong><p>{displayTranslation(row.word, t("Перевод отсутствует"))}</p></div>
+        <div><strong>{row.word.article !== "none" && `${row.word.article} `}{row.word.german}</strong><p>{displayTranslation(row.word, t("Перевод отсутствует"))}</p>
+          <p className={styles.hint}>{t("Дата ответа: {0}", { 0: date(row.answeredAt) })}</p>
+          <p className={styles.hint}>{row.nextReviewAt ? t("Назначено повторение после ответа: {0}", { 0: date(row.nextReviewAt) }) : t("Следующий срок не сохранён")}</p></div>
         <span className={row.answer === "KNOWN" ? styles.known : styles.review}>{t(row.answer === "KNOWN" ? "Знаю" : "Нужно повторить")}</span>
       </li>)}</ul>}
     </>}

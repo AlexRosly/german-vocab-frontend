@@ -1,14 +1,15 @@
+import type { PracticeMode } from "./practice-modes";
 import type { StudyWord } from "./api";
 
 export type HistorySummary = {
   id: string; totalWords: number; knownCount: number; needsReviewCount: number;
-  startedAt: string; completedAt: string;
+  startedAt: string; completedAt: string; mode?: PracticeMode | null;
 };
 export type HistoryPage = { sessions: HistorySummary[]; nextCursor: string | null };
 type HistoryWord = Pick<StudyWord, "id" | "german" | "article" | "grammaticalNumber" | "selectedTranslation">;
 export type HistoryDetail = HistorySummary & {
   userId: string;
-  words: { id: string; sessionId: string; wordId: string; answer: "KNOWN" | "NEEDS_REVIEW"; answeredAt: string; word: HistoryWord }[];
+  words: { id: string; sessionId: string; wordId: string; answer: "KNOWN" | "NEEDS_REVIEW"; answeredAt: string; nextReviewAt?: string | null; word: HistoryWord }[];
 };
 type Requester = (path: string, init?: RequestInit) => Promise<Response>;
 
@@ -22,7 +23,7 @@ function summary(value: unknown): value is HistorySummary {
   if (!value || typeof value !== "object") return false;
   const row = value as HistorySummary;
   return typeof row.id === "string" && !!row.id && count(row.totalWords) && count(row.knownCount) && count(row.needsReviewCount) &&
-    row.knownCount + row.needsReviewCount === row.totalWords && validDate(row.startedAt) && validDate(row.completedAt);
+    (row.mode == null || ["forward", "reverse", "article", "plural", "spelling"].includes(row.mode)) && row.knownCount + row.needsReviewCount === row.totalWords && validDate(row.startedAt) && validDate(row.completedAt);
 }
 function cursor(value: unknown): value is string { return typeof value === "string" && /^[A-Za-z0-9_-]{1,512}$/.test(value); }
 async function read(response: Response): Promise<unknown> {
@@ -61,7 +62,7 @@ export class StudyHistoryClient {
     if (detail.id !== sessionId || detail.userId !== userId || !Array.isArray(detail.words) || detail.words.length > detail.totalWords ||
       new Set(detail.words.map((row) => row?.wordId)).size !== detail.words.length || !detail.words.every((row) =>
         row && typeof row.id === "string" && row.sessionId === sessionId && typeof row.wordId === "string" && !!row.wordId &&
-        ["KNOWN", "NEEDS_REVIEW"].includes(row.answer) && validDate(row.answeredAt) && row.word && row.word.id === row.wordId &&
+        ["KNOWN", "NEEDS_REVIEW"].includes(row.answer) && validDate(row.answeredAt) && (row.nextReviewAt == null || (validDate(row.nextReviewAt) && Date.parse(row.nextReviewAt) >= Date.parse(row.answeredAt))) && row.word && row.word.id === row.wordId &&
         typeof row.word.german === "string" && !!row.word.german && ["der", "die", "das", "none"].includes(row.word.article) &&
         ["singular", "plural", "not_applicable"].includes(row.word.grammaticalNumber) && row.word.selectedTranslation?.language === language &&
         (row.word.selectedTranslation.text === null || typeof row.word.selectedTranslation.text === "string")) ||
@@ -71,4 +72,8 @@ export class StudyHistoryClient {
     }
     return detail;
   }
+}
+
+export function historyModeLabel(mode?: PracticeMode | null): string {
+  return ({ forward: "Немецкий → перевод", reverse: "Перевод → немецкий", article: "Артикли der/die/das", plural: "Единственное → множественное", spelling: "Написание слов" } as Record<string, string>)[mode ?? ""] ?? "Режим не сохранён";
 }

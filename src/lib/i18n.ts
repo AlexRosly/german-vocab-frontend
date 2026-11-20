@@ -1,5 +1,13 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Трудные слова": {"de": "Schwierige Wörter", "en": "Difficult words", "uk": "Складні слова"},
+  "Отметить трудным": {"de": "Als schwierig markieren", "en": "Mark as difficult", "uk": "Позначити складним"},
+  "✓ Трудное": {"de": "✓ Schwierig", "en": "✓ Difficult", "uk": "✓ Складне"},
+  "Убрать {0} из трудных слов": {"de": "{0} aus schwierigen Wörtern entfernen", "en": "Remove {0} from difficult words", "uk": "Прибрати {0} зі складних слів"},
+  "Отметить {0} как трудное": {"de": "{0} als schwierig markieren", "en": "Mark {0} as difficult", "uk": "Позначити {0} як складне"},
+  "Личная отметка. Здесь слова по выбранным фильтрам и режиму.": {"de": "Persönliche Markierung. Hier gelten deine Filter und der gewählte Übungsmodus.", "en": "A personal marker. Your selected filters and practice mode apply here.", "uk": "Особиста позначка. Тут діють вибрані фільтри та режим тренування."},
+  "Тренировать трудные ({count})": {"de": "Schwierige Wörter üben ({count})", "en": "Practice difficult words ({count})", "uk": "Тренувати складні ({count})"},
+  "Фильтры применяются ко всем вариантам тренировки. Архивные слова не участвуют.": {"de": "Die Filter gelten für alle Übungsarten. Archivierte Wörter sind ausgeschlossen.", "en": "Filters apply to all training options. Archived words are excluded.", "uk": "Фільтри діють для всіх варіантів тренування. Архівні слова не беруть участі."},
   "Написание слов": {"de": "Wörter schreiben", "en": "Spelling", "uk": "Написання слів"},
   "Написание по переводу": {"de": "Schreiben nach Übersetzung", "en": "Write from translation", "uk": "Написання за перекладом"},
   "Напишите немецкое слово": {"de": "Schreibe das deutsche Wort", "en": "Write the German word", "uk": "Напишіть німецьке слово"},

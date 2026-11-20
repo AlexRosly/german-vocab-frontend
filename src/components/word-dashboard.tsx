@@ -13,6 +13,7 @@ import { bookOptions, bookFilterOptions, matchesBook, matchesLesson as matchesBo
 import { GoogleAccountPanel } from "./google-account-panel";
 import practiceStyles from "./practice-card.module.css";
 import { PracticeCard } from "./practice-card";
+import { DifficultTrainingAction, DifficultWordToggle } from "./difficult-words";
 import { practiceWords, type PracticeMode } from "@/lib/practice-modes";
 import workspaceStyles from "./dictionary-workspace.module.css";
 import { DraftRelatedWords } from "./draft-related-words";
@@ -25,7 +26,7 @@ import { useI18n } from "./ui-language-provider";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { apiClient, apiFetch, fetchDueWords, fetchNewWords } from "@/lib/api";
 import type { AuthUser } from "@/lib/api-client";
-import { DictionaryEntryClient, matchesDictionaryView, activeTrainingWords, type DictionaryEntry, type DictionaryView } from "@/lib/dictionary-entry-client";
+import { DictionaryEntryClient, matchesDictionaryView, supportsDifficultWords, activeTrainingWords, type DictionaryEntry, type DictionaryView } from "@/lib/dictionary-entry-client";
 import { canEditWord, displayTranslation, publicationLabel } from "@/lib/word-view";
 import { RelatedWords } from "./related-words";
 import { PersonalTranslationsEditor } from "./personal-translations-editor";
@@ -490,7 +491,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     }
   }
 
-  async function changeDictionaryEntry(word: Word, patch: { isFavorite?: boolean; isArchived?: boolean }) {
+  async function changeDictionaryEntry(word: Word, patch: { isFavorite?: boolean; isArchived?: boolean; isDifficult?: boolean }) {
     if (!word.dictionaryEntry || dictionaryWrite.current || busy || dictionarySettingsBlocked || studyMode || studySaving || (studyFinished && !studySaved)) return;
     dictionaryWrite.current = true; setBusy(true);
     try {
@@ -896,6 +897,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       // recent: сохраняем порядок, полученный от API.
       return 0;
     });
+
+  const difficultEnabled = supportsDifficultWords(words);
+  useEffect(() => { if (!dictionaryLoading && !difficultEnabled && dictionaryView === "difficult") setDictionaryView("active"); }, [dictionaryLoading, difficultEnabled, dictionaryView]);
 
   const filteredTrainingWords = practiceWords(activeTrainingWords(filteredWords), practiceMode);
   const filteredNewWords = eligibleTrainingWords(filteredTrainingWords, newPool);
@@ -1616,7 +1620,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                   <legend>{t("Фильтры словаря и тренировки")}</legend>
                   <div>
                   <label>{t("Раздел словаря")} <select value={dictionaryView} onChange={event => setDictionaryView(event.target.value as DictionaryView)} disabled={busy}>
-                    <option value="active">{t("Активные слова")}</option><option value="favorites">{t("Избранное")}</option><option value="archive">{t("Архив")}</option><option value="all">{t("Все слова")}</option>
+                    <option value="active">{t("Активные слова")}</option><option value="favorites">{t("Избранное")}</option>{difficultEnabled && <option value="difficult">{t("Трудные слова")}</option>}<option value="archive">{t("Архив")}</option><option value="all">{t("Все слова")}</option>
                   </select></label>
                   <label>{t("Поиск")}{" "}<input
                       type="search"
@@ -1732,8 +1736,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
               <p className={practiceStyles.hint}>{t(practiceMode === "reverse" ? "В этом режиме участвуют слова с переводом на выбранном языке." : practiceMode === "article" ? "В этом режиме участвуют существительные с der, die или das в единственном числе." : practiceMode === "plural" ? "В этом режиме участвуют существительные в единственном числе с полной формой множественного числа." : practiceMode === "spelling" ? "Напишите немецкое слово по переводу на выбранном языке. Карточки без перевода не участвуют." : "Вспомните перевод немецкого слова и оцените свой ответ.")}</p>
               <p className={practiceStyles.hint}>{t("Ответы всех режимов влияют на общий прогресс слова.")}</p>
             </fieldset>
-            <p className={workspaceStyles.hint}>{t("Фильтры применяются ко всем трём вариантам тренировки. Архивные слова не участвуют.")}</p>
+            <p className={workspaceStyles.hint}>{t("Фильтры применяются ко всем вариантам тренировки. Архивные слова не участвуют.")}</p>
             <div className={workspaceStyles.trainingActions}>
+                <DifficultTrainingAction words={filteredTrainingWords} enabled={difficultEnabled} disabled={trainingLocked} onStart={startStudyWithWords} />
               <div><h4>{t("Весь выбранный словарь")}</h4><p className={workspaceStyles.hint}>{t("По выбранным фильтрам: {0}", { 0: count(filteredTrainingWords.length) })}</p>
                 <button type="button" disabled={trainingLocked || !filteredTrainingWords.length} onClick={startStudy}>{t("Начать тренировку ({count})", { count: count(filteredTrainingWords.length) })}</button>
                 {filteredTrainingWords.length > 500 && <p className={workspaceStyles.hint}>{t("Длинная тренировка будет записана в историю несколькими занятиями.")}</p>}
@@ -2055,6 +2060,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
                         {word.dictionaryEntry?.isArchived && <p className="hint">{t("В архиве")}</p>}
                         <div className={organizationStyles.actions}>
+                            <DifficultWordToggle german={word.german} entry={word.dictionaryEntry} disabled={trainingLocked} onToggle={() => void changeDictionaryEntry(word, { isDifficult: !word.dictionaryEntry?.isDifficult })} />
                           <button type="button" className="small-button secondary-button" disabled={!word.dictionaryEntry || busy || dictionarySettingsBlocked || studyMode || studySaving || (studyFinished && !studySaved) || dueLoading || newWordsLoading}
                             aria-pressed={word.dictionaryEntry?.isFavorite ?? false} aria-label={t(word.dictionaryEntry?.isFavorite ? "Убрать {0} из избранного" : "Добавить {0} в избранное", { 0: word.german })}
                             onClick={() => void changeDictionaryEntry(word, { isFavorite: !word.dictionaryEntry?.isFavorite })}>{word.dictionaryEntry?.isFavorite ? t("★ В избранном") : t("☆ В избранное")}</button>

@@ -17,7 +17,7 @@
 .filters > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .filters p { margin: 12px 0; }
 .filters select, .filters input { width: 100%; min-width: 0; box-sizing: border-box; }
-.trainingActions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 20px 0 28px; }
+.trainingActions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 20px 0 28px; }
 .trainingActions > div { padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: #f6f9f5; display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
 .trainingActions h4, .trainingActions p { margin: 0; }
 .trainingActions button { min-height: 48px; white-space: normal; }

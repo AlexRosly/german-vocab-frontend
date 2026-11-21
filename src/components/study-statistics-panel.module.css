@@ -1,0 +1,18 @@
+.panel { margin-bottom: 20px; padding: 28px; border: 1px solid var(--line); border-radius: 24px; background: var(--panel); min-width: 0; overflow-wrap: anywhere; }
+.heading, .periods { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.heading { justify-content: space-between; }
+.heading h3 { margin: 0; font-size: 24px; }
+.periods { margin-top: 18px; }
+.panel button { border: 1px solid #b7d5c2; border-radius: 12px; background: var(--green-soft); color: #18543c; padding: 10px 14px; font-weight: 600; cursor: pointer; }
+.panel button[aria-pressed="true"] { color: white; background: #206849; }
+.panel button:focus-visible { outline: 3px solid #82b999; outline-offset: 3px; }
+.panel button:disabled { opacity: .65; cursor: default; }
+.hint { color: var(--muted); font-size: 13px; line-height: 1.7; }
+.totals, .modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+.totals div, .modes li { min-width: 0; padding: 16px; background: #f3f7f2; border-radius: 12px; }
+.totals dt { font-size: 13px; color: #58685e; }
+.totals dd { font-size: 24px; font-weight: 700; margin: 8px 0 0; }
+.modes { padding: 0; list-style: none; }
+.modes h4 { margin: 0; }
+.modes p { font-size: 14px; }
+@media(max-width: 600px) { .panel { padding: 18px; } .totals, .modes { grid-template-columns: minmax(0, 1fr); } }

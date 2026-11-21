@@ -6,6 +6,7 @@ import { displayTranslation } from "@/lib/word-view";
 import { StudyHistoryClient, historyModeLabel, type HistoryDetail, type HistoryPage } from "@/lib/study-history-client";
 import { safeErrorMessage } from "@/lib/i18n";
 import { useI18n } from "./ui-language-provider";
+import { StudyStatisticsPanel } from "./study-statistics-panel";
 import styles from "./study-history-panel.module.css";
 
 const client = new StudyHistoryClient(apiFetch);
@@ -51,7 +52,7 @@ export function StudyHistoryPanel({ userId, language, version }: { userId: strin
     }
   }
 
-  return <section className={styles.panel} aria-labelledby="history-heading">
+  return <><StudyStatisticsPanel key={userId} userId={userId} version={version} /><section className={styles.panel} aria-labelledby="history-heading">
     <div className={styles.heading}><div><p className="eyebrow">{t("ТВОЁ ОБУЧЕНИЕ")}</p><h3 id="history-heading">{t("История тренировок")}</h3></div>
       <button type="button" disabled={loading || moreBusy} onClick={() => setAttempt((value) => value + 1)}>{t("Обновить историю")}</button>
     </div>
@@ -78,7 +79,7 @@ export function StudyHistoryPanel({ userId, language, version }: { userId: strin
         {moreError && <p className={styles.error} role="alert">{errorText(moreError)}</p>}
         {page.nextCursor && <button type="button" disabled={moreBusy} onClick={() => void loadMore()}>{t(moreBusy ? "Загружаем историю…" : "Загрузить ещё")}</button>}
       </>}
-  </section>;
+  </section></>;
 }
 
 function HistorySessionDetail({ sessionId, userId, language, version }: { sessionId: string; userId: string; language: string; version: number }) {

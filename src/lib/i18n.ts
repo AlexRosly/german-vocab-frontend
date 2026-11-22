@@ -1,5 +1,13 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Активность по дням": {"de": "Aktivität nach Tagen", "en": "Daily activity", "uk": "Активність за днями"},
+  "Дней с занятиями: {count}": {"de": "Tage mit Übungen: {count}", "en": "Days with practice: {count}", "uk": "Днів із заняттями: {count}"},
+  "Учебный часовой пояс: {zone}": {"de": "Lernzeitzone: {zone}", "en": "Study time zone: {zone}", "uk": "Навчальний часовий пояс: {zone}"},
+  "Первый и последний день могут быть неполными. Цвет показывает количество ответов. Выберите день, чтобы увидеть результаты.": {"de": "Der erste und letzte Tag können unvollständig sein. Die Farbe zeigt die Anzahl der Antworten. Wähle einen Tag, um die Ergebnisse zu sehen.", "en": "The first and last day may be partial. Colour shows the number of answers. Select a day to see its results.", "uk": "Перший та останній день можуть бути неповними. Колір показує кількість відповідей. Виберіть день, щоб побачити результати."},
+  "Выберите день": {"de": "Tag auswählen", "en": "Select a day", "uk": "Виберіть день"},
+  "{date}: ответов {answers}, знаю {known}, нужно повторить {review}": {"de": "{date}: {answers} Antworten, {known} gewusst, {review} wiederholen", "en": "{date}: {answers} answers, {known} know, {review} need review", "uk": "{date}: відповідей {answers}, знаю {known}, потрібно повторити {review}"},
+  "В этот день нет сохранённых тренировок": {"de": "An diesem Tag gibt es keine gespeicherten Übungen", "en": "No saved practice on this day", "uk": "Цього дня немає збережених тренувань"},
+  "Дневная активность пока недоступна": {"de": "Die Tagesaktivität ist noch nicht verfügbar", "en": "Daily activity is not available yet", "uk": "Денна активність поки недоступна"},
   "Обновить статистику": {"de": "Statistik aktualisieren", "en": "Refresh statistics", "uk": "Оновити статистику"},
   "Статистика обучения": {"de": "Lernstatistik", "en": "Learning statistics", "uk": "Статистика навчання"},
   "Период статистики": {"de": "Zeitraum der Statistik", "en": "Statistics period", "uk": "Період статистики"},

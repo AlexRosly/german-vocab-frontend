@@ -16,3 +16,19 @@
 .modes h4 { margin: 0; }
 .modes p { font-size: 14px; }
 @media(max-width: 600px) { .panel { padding: 18px; } .totals, .modes { grid-template-columns: minmax(0, 1fr); } }
+
+.activity { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 16px; }
+.activity h4 { font-size: 18px; margin: 0; }
+.calendar { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; max-width: 560px; margin: 16px 0; }
+.calendar .weekday { text-align: center; color: var(--muted); font-size: 12px; min-width: 0; }
+.calendar button { min-width: 0; padding: 8px 0; border-radius: 8px; font-size: 13px; }
+.calendar button.level0 { background: #fff; color: #58685e; }
+.calendar button.level1 { background: #e3f3e9; color: #18543c; }
+.calendar button.level2 { background: #a6d3b6; color: #123e2b; }
+.calendar button.level3 { background: #206849; color: #fff; }
+.calendar button[aria-pressed="true"] { outline: 2px solid #123e2b; outline-offset: 1px; box-shadow: inset 0 0 0 2px white; }
+.calendar button:focus-visible { outline: 3px solid #82b999; outline-offset: 2px; }
+.dayDetail { padding: 16px; background: #f3f7f2; border-radius: 12px; }
+.dayDetail h5 { margin: 0; font-size: 16px; }
+.dayDetail p { margin-bottom: 0; }
+@media(max-width: 400px) { .calendar { gap: 4px; } .calendar button { padding: 7px 0; font-size: 12px; } }

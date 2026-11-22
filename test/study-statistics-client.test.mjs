@@ -24,3 +24,34 @@ test('supports no data and old servers, and preserves cancellation and retryable
   const reason = new DOMException('cancelled', 'AbortError'); await assert.rejects(loadStudyStatistics(async () => { throw reason; }, 7), e => e === reason);
   await assert.rejects(loadStudyStatistics(async () => { throw Error('must not fetch'); }, 31), e => e.status === 400);
 });
+
+import { statisticsDates, statisticsDayLabel, dailyActivityLevel } from '../src/lib/study-statistics-client.ts';
+const activityFixture = () => {
+  const data = fixture(), dates = statisticsDates('Europe/Berlin', data.from, data.to);
+  data.activity = { timeZone: 'Europe/Berlin', activeDays: 1, days: dates.map((date, i) => ({ date, ...(i === 0 ? data.totals : { sessions: 0, answers: 0, known: 0, needsReview: 0 }) })) };
+  return data;
+};
+test('daily activity accepts zero-filled dates, keeps old summaries compatible, and reconciles all counters', async () => {
+  const data = activityFixture();
+  const received = await loadStudyStatistics(async () => Response.json(data), 30);
+  assert.equal(received.activity.activeDays, 1); assert.equal(received.activity.days.length, 31);
+  assert.equal(received.activity.days.at(-1).answers, 0);
+  assert.equal((await loadStudyStatistics(async () => Response.json(fixture()), 30)).activity, undefined);
+});
+test('rejects malformed activity without silently converting missing data to zeros', async () => {
+  for (const mutate of [d => d.activity = null, d => d.activity.timeZone = 'Mars/Test', d => d.activity.activeDays++,
+    d => d.activity.days.pop(), d => d.activity.days.reverse(), d => d.activity.days[0].date = '2026-02-31',
+    d => d.activity.days[0].sessions = -1, d => { d.activity.days[0].answers++; d.activity.days[0].known++; },
+    d => { d.activity.days[0].date = d.activity.days[1].date; }]) {
+    const data = activityFixture(); mutate(data);
+    await assert.rejects(loadStudyStatistics(async () => Response.json(data), 30), e => e.status === 502);
+  }
+});
+test('calendar labels remain on the stored date and DST windows can contain nine dates for seven elapsed days', () => {
+  const to = '2026-03-29T22:30:00.000Z', from = new Date(Date.parse(to) - 7 * 86400000).toISOString();
+  assert.equal(statisticsDates('Europe/Berlin', from, to).length, 9);
+  assert.deepEqual(statisticsDates('Asia/Kathmandu', '2026-11-01T18:14:59.000Z', '2026-11-01T18:15:00.000Z'), ['2026-11-01', '2026-11-02']);
+  assert.deepEqual(statisticsDates('Europe/Berlin', '2026-10-25T00:30:00.000Z', '2026-10-25T01:30:00.000Z'), ['2026-10-25']);
+  assert.equal(statisticsDayLabel('2026-11-21', 'en-GB'), '21 Nov 2026');
+  assert.equal(dailyActivityLevel(0, 10), 0); assert.equal(dailyActivityLevel(1, 10), 1); assert.equal(dailyActivityLevel(5, 10), 2); assert.equal(dailyActivityLevel(10, 10), 3);
+});

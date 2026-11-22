@@ -6,6 +6,7 @@ import { historyModeLabel } from "@/lib/study-history-client";
 import { safeErrorMessage } from "@/lib/i18n";
 import { loadStudyStatistics, type StudyStatistics } from "@/lib/study-statistics-client";
 import { useI18n } from "./ui-language-provider";
+import { StudyActivityCalendar } from "./study-activity-calendar";
 import styles from "./study-statistics-panel.module.css";
 
 export function StudyStatisticsPanel({ userId, version }: { userId: string; version: number }) {
@@ -48,6 +49,7 @@ export function StudyStatisticsPanel({ userId, version }: { userId: string; vers
           </li>)}
         </ul>
       </>}
+      {data.activity ? <StudyActivityCalendar key={`${userId}-${data.from}-${data.to}`} activity={data.activity} /> : <p className={styles.hint}>{t("Дневная активность пока недоступна")}</p>}
     </>}
     <p className={styles.hint}>{t("Ответы могут относиться к одним и тем же словам. Длинная тренировка сохраняется частями; каждая часть учитывается отдельно. «Знаю» — ваша оценка ответа, а не измерение уровня языка.")}</p>
   </section>;

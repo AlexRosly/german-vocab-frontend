@@ -32,3 +32,9 @@
 .dayDetail h5 { margin: 0; font-size: 16px; }
 .dayDetail p { margin-bottom: 0; }
 @media(max-width: 400px) { .calendar { gap: 4px; } .calendar button { padding: 7px 0; font-size: 12px; } }
+
+.bookRows { list-style: none; padding: 0; display: grid; gap: 12px; }
+.bookRows li { background: #f3f7f2; padding: 16px; border-radius: 12px; min-width: 0; }
+.bookRows h5, .bookTitle { margin: 12px 0; font-size: 16px; }
+.bookRows p { font-size: 14px; margin-bottom: 0; }
+.panel .bookButton { text-align: start; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }

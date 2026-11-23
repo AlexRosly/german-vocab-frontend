@@ -1,5 +1,17 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "По книгам и урокам": {"de": "Nach Büchern und Lektionen", "en": "By books and lessons", "uk": "За книгами та уроками"},
+  "Используются текущие общие и ваши личные привязки. Слово может входить в несколько книг или уроков: их результаты пересекаются, складывать их не нужно.": {"de": "Es gelten die aktuellen gemeinsamen und deine persönlichen Zuordnungen. Ein Wort kann zu mehreren Büchern oder Lektionen gehören. Ihre Ergebnisse überschneiden sich und sollten nicht addiert werden.", "en": "Uses current shared and your personal associations. A word can belong to several books or lessons: their results overlap and should not be added together.", "uk": "Використано поточні спільні та ваші особисті прив’язки. Слово може входити до кількох книг чи уроків: їхні результати перетинаються, додавати їх не потрібно."},
+  "Считаются сохранённые ответы с доступными записями карточек, включая архив и снятые из словаря слова. После полного удаления карточки её ответы в эту разбивку не входят.": {"de": "Gezählt werden gespeicherte Antworten mit vorhandenen Karteneinträgen, auch archivierte und aus dem Wörterbuch entfernte Wörter. Wird eine Karte vollständig gelöscht, entfallen ihre Antworten in dieser Aufschlüsselung.", "en": "Counts saved answers with existing card records, including archived words and words removed from your dictionary. Permanently deleted cards are excluded from this breakdown.", "uk": "Враховано збережені відповіді з наявними записами карток, включно з архівом і вилученими зі словника словами. Після повного видалення картки її відповіді до цього розподілу не входять."},
+  "Посмотреть уроки": {"de": "Lektionen ansehen", "en": "View lessons", "uk": "Переглянути уроки"},
+  "Разных слов: {count}": {"de": "Verschiedene Wörter: {count}", "en": "Distinct words: {count}", "uk": "Різних слів: {count}"},
+  "За этот период нет ответов для этой разбивки": {"de": "Keine Antworten für diese Aufschlüsselung im gewählten Zeitraum", "en": "No answers for this breakdown in this period", "uk": "За цей період немає відповідей для цього розподілу"},
+  "На этой странице нет результатов": {"de": "Keine Ergebnisse auf dieser Seite", "en": "No results on this page", "uk": "На цій сторінці немає результатів"},
+  "Страницы статистики книг": {"de": "Seiten der Buchstatistik", "en": "Book statistics pages", "uk": "Сторінки статистики книг"},
+  "Некорректный запрос статистики книг": {"de": "Ungültige Anfrage zur Buchstatistik", "en": "Invalid book statistics request", "uk": "Некоректний запит статистики книг"},
+  "Статистика книг пока недоступна": {"de": "Die Buchstatistik ist noch nicht verfügbar", "en": "Book statistics are not available yet", "uk": "Статистика книг поки недоступна"},
+  "Не удалось загрузить статистику книг": {"de": "Die Buchstatistik konnte nicht geladen werden", "en": "Could not load book statistics", "uk": "Не вдалося завантажити статистику книг"},
+  "Некорректный ответ статистики книг": {"de": "Ungültige Antwort der Buchstatistik", "en": "Invalid book statistics response", "uk": "Некоректна відповідь статистики книг"},
   "Активность по дням": {"de": "Aktivität nach Tagen", "en": "Daily activity", "uk": "Активність за днями"},
   "Дней с занятиями: {count}": {"de": "Tage mit Übungen: {count}", "en": "Days with practice: {count}", "uk": "Днів із заняттями: {count}"},
   "Учебный часовой пояс: {zone}": {"de": "Lernzeitzone: {zone}", "en": "Study time zone: {zone}", "uk": "Навчальний часовий пояс: {zone}"},

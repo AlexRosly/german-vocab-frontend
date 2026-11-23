@@ -69,3 +69,36 @@ export function statisticsDayLabel(date: string, locale: string): string {
 export function dailyActivityLevel(answers: number, maximum: number): number {
   return answers === 0 ? 0 : Math.max(1, Math.min(3, Math.ceil(3 * answers / Math.max(1, maximum))));
 }
+
+export type StudyBookRow = StatisticsCounts & { sourceBook: string | null; lessonNumber: number | null; words: number };
+export type StudyBookStatistics = {
+  days: number; from: string; to: string; scope: "books" | "lessons"; book: string | null;
+  page: number; pageSize: number; totalGroups: number; rows: StudyBookRow[];
+};
+export type StudyBookSelection = { book: string | null } | null;
+const normalizeStatisticsBook = (title: string) => title.normalize("NFC").trim().replace(/\s+/gu, " ");
+const statisticsBookKey = (title: string | null) => title === null ? null : normalizeStatisticsBook(title).toLocaleLowerCase("de");
+export async function loadStudyBookStatistics(request: Requester, days: number, page: number, selection: StudyBookSelection, signal?: AbortSignal): Promise<StudyBookStatistics> {
+  if (![7, 30, 90].includes(days) || !Number.isInteger(page) || page < 1 || page > 100000 ||
+      (selection?.book !== undefined && selection.book !== null && (typeof selection.book !== "string" || !normalizeStatisticsBook(selection.book) || [...selection.book].length > 120 || /\p{Cc}/u.test(selection.book)))) {
+    throw new StudyStatisticsError(400, "Некорректный запрос статистики книг");
+  }
+  const query = new URLSearchParams({ days: String(days), page: String(page) });
+  if (selection) { if (selection.book === null) query.set("unassigned", "true"); else query.set("book", normalizeStatisticsBook(selection.book)); }
+  const response = await request(`/study/statistics/books?${query}`, { cache: "no-store", signal });
+  if (response.status === 404 || response.status === 501) throw new StudyStatisticsError(response.status, "Статистика книг пока недоступна");
+  if (!response.ok) throw new StudyStatisticsError(response.status, "Не удалось загрузить статистику книг");
+  const data = await response.json().catch(() => null) as StudyBookStatistics | null;
+  const validBook = (value: unknown): value is string | null => value === null || (typeof value === "string" && !!value && [...value].length <= 120 && normalizeStatisticsBook(value) === value && !/\p{Cc}/u.test(value));
+  if (!data || data.days !== days || !validDate(data.from) || !validDate(data.to) || Date.parse(data.to) - Date.parse(data.from) !== days * 86400000 ||
+      data.scope !== (selection ? "lessons" : "books") || data.book !== (selection?.book == null ? null : normalizeStatisticsBook(selection.book)) || data.page !== page || data.pageSize !== 10 ||
+      !Number.isSafeInteger(data.totalGroups) || data.totalGroups < 0 || !Array.isArray(data.rows) ||
+      data.rows.length !== Math.max(0, Math.min(10, data.totalGroups - (page - 1) * 10)) ||
+      data.rows.some(row => !row || !counts(row) || row.answers === 0 || !Number.isSafeInteger(row.words) || row.words < 1 || row.words > row.answers ||
+        !validBook(row.sourceBook) || (selection && statisticsBookKey(row.sourceBook) !== statisticsBookKey(selection.book)) ||
+        (selection ? row.lessonNumber !== null && (!Number.isInteger(row.lessonNumber) || row.lessonNumber < 1 || row.lessonNumber > 10000) : row.lessonNumber !== null)) ||
+      new Set(data.rows.map(row => selection ? row.lessonNumber : statisticsBookKey(row.sourceBook))).size !== data.rows.length) {
+    throw new StudyStatisticsError(502, "Некорректный ответ статистики книг");
+  }
+  return data;
+}

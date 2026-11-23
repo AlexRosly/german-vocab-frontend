@@ -55,3 +55,29 @@ test('calendar labels remain on the stored date and DST windows can contain nine
   assert.equal(statisticsDayLabel('2026-11-21', 'en-GB'), '21 Nov 2026');
   assert.equal(dailyActivityLevel(0, 10), 0); assert.equal(dailyActivityLevel(1, 10), 1); assert.equal(dailyActivityLevel(5, 10), 2); assert.equal(dailyActivityLevel(10, 10), 3);
 });
+
+const {loadStudyBookStatistics} = await import('../src/lib/study-statistics-client.ts');
+const bookFixture = (selection=null, page=1) => ({ days:30, from:'2026-10-24T12:00:00.000Z',to:'2026-11-23T12:00:00.000Z',
+  scope:selection?'lessons':'books',book:selection?.book??null,page,pageSize:10,totalGroups:1,
+  rows:[{sourceBook:selection?selection.book:'Book A',lessonNumber:selection?2:null,sessions:2,answers:3,known:1,needsReview:2,words:2}] });
+test('book client requests private paginated statistics with safely encoded titles and optional cancellation',async()=>{
+ const controller=new AbortController(),selected={book:'B1+ & A2'};
+ await loadStudyBookStatistics(async(path,init)=>{assert.equal(path,'/study/statistics/books?days=30&page=1&book=B1%2B+%26+A2');assert.equal(init.cache,'no-store');assert.equal(init.signal,controller.signal);return Response.json(bookFixture(selected))},30,1,selected,controller.signal);
+ await loadStudyBookStatistics(async(path)=>{assert.match(path,/unassigned=true/);return Response.json(bookFixture({book:null}))},30,1,{book:null});
+ assert.equal((await loadStudyBookStatistics(async()=>Response.json(bookFixture()),30,1,null)).totalGroups,1);
+});
+test('book client rejects invalid scope, counts, titles, duplicates and pagination',async()=>{
+ for(const mutate of [d=>d.days=7,d=>d.scope='lessons',d=>d.book='wrong',d=>d.page=2,d=>d.pageSize=100,d=>d.totalGroups=-1,d=>d.rows=[],
+   d=>d.rows[0].words=4,d=>d.rows[0].words=0,d=>d.rows[0].known=9,d=>d.rows[0].sourceBook=' ',d=>d.rows[0].lessonNumber=1,
+   d=>{d.totalGroups=2;d.rows.push({...d.rows[0],sourceBook:'BOOK A'})},d=>d.to='invalid']){
+  const data=bookFixture();mutate(data);await assert.rejects(loadStudyBookStatistics(async()=>Response.json(data),30,1,null),e=>e.status===502);
+ }
+ for(const lessonNumber of [0,10001,1.5]){const d=bookFixture({book:'Book A'});d.rows[0].lessonNumber=lessonNumber;await assert.rejects(loadStudyBookStatistics(async()=>Response.json(d),30,1,{book:'Book A'}),e=>e.status===502)}
+ const d=bookFixture({book:'Book A'});d.rows[0].sourceBook='Foreign private book';await assert.rejects(loadStudyBookStatistics(async()=>Response.json(d),30,1,{book:'Book A'}),e=>e.status===502);
+});
+test('book client accepts empty and out-of-range pages and distinguishes old API and failures',async()=>{
+ const d={...bookFixture(),totalGroups:0,rows:[]};assert.deepEqual((await loadStudyBookStatistics(async()=>Response.json(d),30,1,null)).rows,[]);
+ const out={...d,page:3,totalGroups:11};assert.equal((await loadStudyBookStatistics(async()=>Response.json(out),30,3,null)).totalGroups,11);
+ for(const status of [401,404,501,503])await assert.rejects(loadStudyBookStatistics(async()=>new Response(null,{status}),30,1,null),e=>e.status===status);
+ for(const [days,page,selection]of [[8,1,null],[30,0,null],[30,1,{book:' '}],[30,1,{book:'a'.repeat(121)}]])await assert.rejects(loadStudyBookStatistics(async()=>{throw Error('not reached')},days,page,selection),e=>e.status===400);
+});

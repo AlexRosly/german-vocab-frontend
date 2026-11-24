@@ -1,7 +1,7 @@
 export type TranslationEntry = { language: string; text: string };
 export type ExampleDraft = { german: string; language: string; translations: Record<string, string> };
 export type WordExample = { id: string; wordId: string; german: string; translation: string;
-  translations: TranslationEntry[]; selectedTranslation: { language: string; text: string | null } };
+  translations: TranslationEntry[]; personalTranslationStale?: boolean; selectedTranslation: { language: string; text: string | null; source?: "personal" } };
 
 export function emptyExample(language: string): ExampleDraft { return { german: "", language, translations: {} }; }
 export function translationDraft(entries: TranslationEntry[]): Record<string, string> {

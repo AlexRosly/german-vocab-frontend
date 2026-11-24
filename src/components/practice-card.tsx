@@ -53,7 +53,7 @@ export function PracticeCard({ word, mode, examples, revealed, onReveal, onAnswe
       {!pluralMode && word.pluralForm && <p>{t("Множественное число:")} {word.pluralForm}</p>}
       {word.notes && <p>{word.notes}</p>}
       {examples.slice(0, 2).map(example => <div key={example.id} className="study-example">
-        <p>{example.german}</p><p dir="auto">{displayTranslation(example, t("Перевод отсутствует"))}</p>
+        <p>{example.german}</p><p dir="auto">{displayTranslation(example, t("Перевод отсутствует"))}</p>{example.selectedTranslation.source === "personal" && <p>{t("Мой перевод примера")}</p>}
         <button type="button" className="small-button secondary-button" disabled={!speechSupported || saving} onClick={() => onSpeakExample(example)}>{t("🔊 Слушать пример")}</button>
       </div>)}
     </div>}

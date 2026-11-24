@@ -1,4 +1,5 @@
 "use client";
+import { ExamplePersonalTranslation } from "./example-personal-translation";
 import { DictionaryExportPanel } from "./dictionary-export-panel";
 import { CollocationsPanel } from "./collocations";
 import { CollocationsClient } from "@/lib/collocations-client";
@@ -55,6 +56,7 @@ import { emptyExample, examplePayload, initialExamples, translationDraft, transl
 const dictionaryEntries = new DictionaryEntryClient(apiFetch);
 
 type Word = {
+  personalExampleTranslationsEnabled?: boolean;
   verbForms?: VerbForm[];
   dictionaryEntry?: DictionaryEntry;
   id: string;
@@ -2146,7 +2148,11 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                                         </button>
                                       </div>
 
-                                      <p>{displayTranslation(example, t("Перевод отсутствует"))}</p>
+                                      <ExamplePersonalTranslation key={`${user.id}-${word.id}-${example.id}-${user.translationLanguage}`} wordId={word.id} example={example} language={user.translationLanguage} enabled={word.personalExampleTranslationsEnabled === true} disabled={busy || trainingLocked} onSaved={(selected,german) => {
+  const patch = (item: WordExample) => item.id === example.id ? {...item,german,personalTranslationStale:false,selectedTranslation:selected} : item;
+  setWords(cards => cards.map(card => card.id === word.id ? {...card,examples:(card.examples ?? []).map(patch)} : card));
+  setExamplesByWord(current => ({...current,[word.id]:(current[word.id] ?? word.examples ?? []).map(patch)}));
+}} />
                                     </div>
 
                                     {editable && (

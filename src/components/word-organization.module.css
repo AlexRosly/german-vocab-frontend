@@ -1,0 +1,16 @@
+.panel { margin: .8rem 0; min-width: 0; }
+.editor { margin-top: .75rem; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: #f7faf7; min-width: 0; }
+.editor form, .editor fieldset { display: grid; gap: 12px; min-width: 0; }
+.editor fieldset { border: 0; padding: 0; margin: 0; }
+.editor label, .settings label { display: grid; gap: 6px; font-size: 14px; min-width: 0; }
+.editor input, .editor textarea, .editor select { box-sizing: border-box; width: 100%; min-width: 0; font: inherit; border: 1px solid #cbd6cd; border-radius: 10px; padding: 10px; background: white; color: #172c24; }
+.book { display: grid; gap: 10px; padding: 12px; border: 1px solid #d8e4dc; border-radius: 12px; }
+.nameRow { display: grid; grid-template-columns: minmax(90px,1fr) minmax(0,3fr); gap: 10px; }
+.editor button, .settings button { min-height: 44px; padding: 10px 14px; border: 1px solid #b7d5c2; background: #e3f3e9; color: #18543c; border-radius: 10px; cursor: pointer; }
+.editor button:disabled, .settings button:disabled { opacity: .6; cursor: default; }
+.error { color: #922d25; }
+.settings { padding: 24px; margin: 20px 0; border: 1px solid var(--line); border-radius: 24px; background: var(--panel); }
+.settings input[type="color"] { width: 80px; height: 44px; }
+.preview { padding: 20px; border: 2px solid; border-radius: 12px; color: #172c24; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+@media(max-width:500px) { .nameRow { grid-template-columns: minmax(0,1fr); } .editor, .settings { padding: 14px; } .book { padding: 10px; } }

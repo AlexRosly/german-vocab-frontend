@@ -5,10 +5,11 @@ import { displayTranslation } from "@/lib/word-view";
 import type { WordExample } from "@/lib/card-draft";
 import { useI18n } from "./ui-language-provider";
 import styles from "./practice-card.module.css";
+import { neutralCardStyle } from "@/lib/organization-client";
 import { WrittenAnswer } from "./written-answer";
 
-export function PracticeCard({ word, mode, examples, revealed, onReveal, onAnswer, saving, speechSupported, onSpeak, onSpeakExample, last }: {
-  word: PracticeWord; mode: PracticeMode; examples: WordExample[]; revealed: boolean;
+export function PracticeCard({ neutralColor, word, mode, examples, revealed, onReveal, onAnswer, saving, speechSupported, onSpeak, onSpeakExample, last }: {
+  neutralColor?: string|null; word: PracticeWord; mode: PracticeMode; examples: WordExample[]; revealed: boolean;
   onReveal: () => void; onAnswer: (known: boolean) => void; saving: boolean;
   speechSupported: boolean; onSpeak: () => void; onSpeakExample: (example: WordExample) => void; last: boolean;
 }) {
@@ -29,7 +30,7 @@ export function PracticeCard({ word, mode, examples, revealed, onReveal, onAnswe
     choiceLock.current = true; setChoice(article);
   }
 
-  return <div className={`study-card ${color} ${styles.card}`}>
+  return <div className={`study-card ${color} ${styles.card}`} style={neutralCardStyle(word,neutralColor)}>
     <p className="eyebrow">{t(mode === "reverse" ? "Перевод → немецкий" : articleMode ? "Выберите артикль" : spellingMode ? "Написание по переводу" : pluralMode ? "Введите множественное число" : "Немецкий → перевод")}</p>
     <h3 dir="auto">{((mode === "reverse" && !answerVisible) || spellingMode) ? word.selectedTranslation.text : articleMode && !answerVisible ? `___ ${barePracticeGerman(word)}` : fullPracticeGerman(word)}</h3>
 

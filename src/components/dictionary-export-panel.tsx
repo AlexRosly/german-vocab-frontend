@@ -46,6 +46,7 @@ export function DictionaryExportPanel({ userId }: { userId: string }) {
       <details><summary>{t("Как заполнить шаблон")}</summary><ul className={styles.help}>
         <li>{t("Одна строка — одна карточка. german — немецкое слово; word_type — noun, verb или other.")}</li>
         <li>{t("Для существительного укажите article: der, die или das; для глагола — none и формы прошедшего времени.")}</li>
+          <li>{t("Если артикль неизвестен: word_type=other, article=none, grammatical_number=singular. Когда артикль неприменим: other, none, not_applicable.")}</li>
         <li>{t("В экспортированном файле сохраните word_id: он поможет узнать существующую карточку при повторной загрузке.")}</li>
         <li>{t("CSV для Excel: UTF-8, разделитель — точка с запятой. Если колонки не разделились, откройте через импорт текста/CSV.")}</li>
         <li>{t("Дополнительные примеры, формы и книги сохранены в колонках с окончанием _json. Оставьте их без изменений для дальнейшего переноса.")}</li>

@@ -81,3 +81,28 @@ test('book client accepts empty and out-of-range pages and distinguishes old API
  for(const status of [401,404,501,503])await assert.rejects(loadStudyBookStatistics(async()=>new Response(null,{status}),30,1,null),e=>e.status===status);
  for(const [days,page,selection]of [[8,1,null],[30,0,null],[30,1,{book:' '}],[30,1,{book:'a'.repeat(121)}]])await assert.rejects(loadStudyBookStatistics(async()=>{throw Error('not reached')},days,page,selection),e=>e.status===400);
 });
+
+const {loadStudyDifficultStatistics} = await import('../src/lib/study-statistics-client.ts');
+const difficultFixture = () => ({days:30,from:'2026-10-25T12:00:00.000Z',to:'2026-11-24T12:00:00.000Z',
+ current:{words:4,active:3,archived:1},period:{words:3,withoutAnswers:1,sessions:2,answers:5,known:2,needsReview:3}});
+test('difficult statistics requests only personal results with cancellation and no caching',async()=>{
+ const controller=new AbortController();
+ const value=await loadStudyDifficultStatistics(async(path,init)=>{assert.equal(path,'/study/statistics/difficult?days=30');assert.equal(init.cache,'no-store');assert.equal(init.signal,controller.signal);return Response.json(difficultFixture())},30,controller.signal);
+ assert.equal(value.current.words,4);assert.equal(value.period.words,3);
+});
+test('difficult statistics accepts no current marks and current marks without saved answers',async()=>{
+ for(const words of [0,4]){const d=difficultFixture();d.current={words,active:words,archived:0};d.period={words:0,withoutAnswers:words,sessions:0,answers:0,known:0,needsReview:0};assert.deepEqual((await loadStudyDifficultStatistics(async()=>Response.json(d),30)).period,d.period)}
+});
+test('difficult statistics rejects inconsistent marks, periods and repeated-answer counters',async()=>{
+ for(const mutate of [d=>d.days=7,d=>d.from='bad',d=>d.to=d.from,d=>d.current=null,d=>d.period=null,
+   d=>d.current.active++,d=>d.current.archived=-1,d=>d.current.words=9007199254740992,d=>d.period.withoutAnswers++,
+   d=>d.period.words=6,d=>d.period.words=0,d=>d.period.known++,d=>d.period.sessions=0,d=>d.period.sessions=6,
+   d=>d.period.words=1.5,d=>d.period.answers='5']){
+  const d=difficultFixture();mutate(d);await assert.rejects(loadStudyDifficultStatistics(async()=>Response.json(d),30),e=>e.status===502);
+ }
+});
+test('difficult statistics distinguishes old API from failures without silently showing zeros',async()=>{
+ for(const status of [401,404,501,503])await assert.rejects(loadStudyDifficultStatistics(async()=>new Response(null,{status}),30),e=>e.status===status);
+ await assert.rejects(loadStudyDifficultStatistics(async()=>new Response('bad'),30),e=>e.status===502);
+ await assert.rejects(loadStudyDifficultStatistics(async()=>{throw Error('not reached')},8),e=>e.status===400);
+});

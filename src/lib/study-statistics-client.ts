@@ -102,3 +102,25 @@ export async function loadStudyBookStatistics(request: Requester, days: number, 
   }
   return data;
 }
+
+export type StudyDifficultStatistics = {
+  days: number; from: string; to: string;
+  current: { words: number; active: number; archived: number };
+  period: StatisticsCounts & { words: number; withoutAnswers: number };
+};
+export async function loadStudyDifficultStatistics(request: Requester, days: number, signal?: AbortSignal): Promise<StudyDifficultStatistics> {
+  if (![7, 30, 90].includes(days)) throw new StudyStatisticsError(400, "Некорректный период статистики");
+  const response = await request(`/study/statistics/difficult?days=${days}`, { cache: "no-store", signal });
+  if (response.status === 404 || response.status === 501) throw new StudyStatisticsError(response.status, "Статистика трудных слов пока недоступна");
+  if (!response.ok) throw new StudyStatisticsError(response.status, "Не удалось загрузить статистику трудных слов");
+  const data = await response.json().catch(() => null) as StudyDifficultStatistics | null;
+  const safe = (value: unknown) => typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
+  if (!data || data.days !== days || !validDate(data.from) || !validDate(data.to) || Date.parse(data.to) - Date.parse(data.from) !== days * 86400000 ||
+      !data.current || !data.period || ![data.current.words, data.current.active, data.current.archived, data.period.words, data.period.withoutAnswers].every(safe) ||
+      !counts(data.period) || data.current.active + data.current.archived !== data.current.words ||
+      data.period.words + data.period.withoutAnswers !== data.current.words || data.period.words > data.period.answers ||
+      (data.period.words === 0) !== (data.period.answers === 0)) {
+    throw new StudyStatisticsError(502, "Некорректный ответ статистики трудных слов");
+  }
+  return data;
+}

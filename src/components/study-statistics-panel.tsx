@@ -6,6 +6,7 @@ import { historyModeLabel } from "@/lib/study-history-client";
 import { safeErrorMessage } from "@/lib/i18n";
 import { loadStudyStatistics, type StudyStatistics } from "@/lib/study-statistics-client";
 import { useI18n } from "./ui-language-provider";
+import { StudyDifficultStatisticsPanel } from "./study-difficult-statistics";
 import { StudyBookStatisticsPanel } from "./study-book-statistics";
 import { StudyActivityCalendar } from "./study-activity-calendar";
 import styles from "./study-statistics-panel.module.css";
@@ -50,6 +51,7 @@ export function StudyStatisticsPanel({ userId, version }: { userId: string; vers
           </li>)}
         </ul>
       </>}
+      <StudyDifficultStatisticsPanel key={`${userId}-${days}-${data.to}-${version}-${attempt}`} userId={userId} days={days} />
       <StudyBookStatisticsPanel key={`${userId}-${days}-${data.to}`} userId={userId} days={days} refresh={`${version}-${attempt}`} />
       {data.activity ? <StudyActivityCalendar key={`${userId}-${data.from}-${data.to}`} activity={data.activity} /> : <p className={styles.hint}>{t("Дневная активность пока недоступна")}</p>}
     </>}

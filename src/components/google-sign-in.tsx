@@ -6,7 +6,7 @@ import { useI18n } from "./ui-language-provider";
 import styles from "./google-sign-in.module.css";
 
 export function GoogleSignIn({ purpose, disabled, onCredential, onBusy }: {
-  purpose: "login" | "link"; disabled: boolean; onCredential: (credential: string) => Promise<void>; onBusy?: (busy: boolean) => void;
+  purpose: "login" | "link" | "archive" | "restore"; disabled: boolean; onCredential: (credential: string) => Promise<void>; onBusy?: (busy: boolean) => void;
 }) {
   const { t, errorText, language } = useI18n();
   const host = useRef<HTMLDivElement>(null);
@@ -44,7 +44,7 @@ export function GoogleSignIn({ purpose, disabled, onCredential, onBusy }: {
     })();
     return () => { abort.abort(); element?.replaceChildren(); };
   }, [attempt, language, purpose]);
-  return <div className={styles.widget} hidden={enabled === false} aria-label={t(purpose === "login" ? "Вход через Google" : "Подключение Google")} aria-busy={busy}>
+  return <div className={styles.widget} hidden={enabled === false} aria-label={t(purpose === "archive" ? "Подтверждение архивирования через Google" : purpose === "restore" ? "Восстановление через Google" : purpose === "login" ? "Вход через Google" : "Подключение Google")} aria-busy={busy}>
     <div ref={host} className={disabled || busy || !ready ? styles.blocked : undefined} hidden={!!error} inert={disabled || busy || !ready || !!error} />
     {busy && <p role="status">{t("Подождите…")}</p>}
     {!ready && !error && !busy && <p role="status">{t("Загружаем Google-вход…")}</p>}

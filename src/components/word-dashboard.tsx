@@ -1,4 +1,6 @@
 "use client";
+import { AccountArchivePanel } from "./account-archive-panel";
+import { WordAuditPanel } from "./word-audit-panel";
 import { WordOrganizationPanel } from "./word-organization";
 import { NeutralColorSettings } from "./neutral-color-settings";
 import { wordLessonNames, personalTagOptions, matchesPersonalTag, lessonDisplayName, matchesArticleCategory, articleCategory, neutralCardStyle, type LessonName } from "@/lib/organization-client";
@@ -1143,7 +1145,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       {activeTab === "verbs" && verbCatalogEnabled && <VerbCatalog collocationsEnabled={collocationsEnabled} isAdmin={user.role === "ADMIN"} language={user.translationLanguage} initialWordId={verbTarget} />}
         {activeTab === "settings" && <><DictionaryExportPanel key={`export-${user.id}`} userId={user.id} />
             <GoogleAccountPanel key={`google-${user.id}`} userId={user.id} /><NeutralColorSettings key={`neutral-color-${user.id}`} userId={user.id} onSaved={color=>setWords(current=>current.map(w=>({...w,neutralCardColor:color})))}/>
-<StudySettingsPanel key={user.id} userId={user.id} onSaved={() => setSettingsVersion((value) => value + 1)} /><AccountSessionsPanel key={`sessions-${user.id}`} userId={user.id} /></>}
+<StudySettingsPanel key={user.id} userId={user.id} onSaved={() => setSettingsVersion((value) => value + 1)} /><AccountSessionsPanel key={`sessions-${user.id}`} userId={user.id} /><AccountArchivePanel key={`archive-${user.id}`} userId={user.id} />{user.role === "ADMIN" && <WordAuditPanel key={`audit-${user.id}`} userId={user.id} />}</>}
 
       {activeTab === "history" && <StudyHistoryPanel userId={user.id} language={user.translationLanguage} version={historyVersion} />}
 

@@ -82,7 +82,7 @@ export function AuthGate() {
 
 function AuthForm() {
   const { t, errorText, language, changeLanguage } = useI18n();
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register" | "restore">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -90,6 +90,7 @@ function AuthForm() {
   const [googlePending, setGooglePending] = useState(false);
   const [error, setError] = useState("");
   const registering = mode === "register";
+  const restoring = mode === "restore";
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError("");
@@ -102,6 +103,7 @@ function AuthForm() {
         await apiClient.register(email, password);
         await changeLanguage(language);
       }
+      else if (restoring) await apiClient.restoreAccount(email, password);
       else await apiClient.signIn(email, password);
     } catch (failure) {
       setError(failure instanceof Error ? safeErrorMessage(failure) : "Не удалось войти. Повторите попытку.");
@@ -113,9 +115,11 @@ function AuthForm() {
       <section className={styles.card} aria-labelledby="auth-heading">
         <div className={styles.brand}>W</div>
         <p className={styles.eyebrow}>WORTKARTEN</p>
-        <h1 id="auth-heading">{registering ? t("Создать аккаунт") : t("Войти в свой словарь")}</h1>
+        <h1 id="auth-heading">{restoring ? t("Восстановить аккаунт") : registering ? t("Создать аккаунт") : t("Войти в свой словарь")}</h1>
         <p className={styles.description}>{t("Немецкие слова, примеры и повторения — в твоём темпе.")}</p>
-        <form onSubmit={(event) => void submit(event)} className={styles.form} aria-busy={pending || googlePending}>
+        {restoring && <p>{t("Восстановление вернёт доступ к сохранённому словарю и прогрессу.")}</p>}
+      <button className={styles.secondary} type="button" disabled={pending || googlePending} onClick={() => { setMode(restoring ? 'login' : 'restore'); setError(''); setPassword(''); setConfirmation(''); }}>{t(restoring ? "Вернуться ко входу" : "Восстановить архивированный аккаунт")}</button>
+      <form onSubmit={(event) => void submit(event)} className={styles.form} aria-busy={pending || googlePending}>
           <label htmlFor="auth-email">{t("Email")}</label>
           <input id="auth-email" name="email" type="email" autoComplete="email" required maxLength={254}
             value={email} disabled={pending || googlePending} onChange={(event) => setEmail(event.target.value)} />
@@ -131,10 +135,10 @@ function AuthForm() {
           </>}
           {error && <p className={styles.error} role="alert">{errorText(error)}</p>}
           <button type="submit" className={styles.primary} disabled={pending || googlePending}>
-            {pending ? t("Подождите…") : registering ? t("Зарегистрироваться") : t("Войти")}
+            {pending ? t("Подождите…") : restoring ? t("Восстановить аккаунт и войти") : registering ? t("Зарегистрироваться") : t("Войти")}
           </button>
         </form>
-        <GoogleSignIn purpose="login" disabled={pending} onBusy={setGooglePending} onCredential={async credential => { await apiClient.signInWithGoogle(credential); }} />
+        <GoogleSignIn purpose={restoring ? "restore" : "login"} disabled={pending} onBusy={setGooglePending} onCredential={async credential => { if (restoring) await apiClient.restoreAccountWithGoogle(credential); else await apiClient.signInWithGoogle(credential); }} />
         <button type="button" className={styles.switchMode} disabled={pending || googlePending} onClick={() => {
           setMode(registering ? "login" : "register"); setError(""); setPassword(""); setConfirmation("");
         }}>

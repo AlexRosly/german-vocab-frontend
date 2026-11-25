@@ -2,8 +2,8 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useI18n } from "./ui-language-provider";
 import styles from "./moderation-panel.module.css";
-export function ModerationDialog({ children, locked, onClose, restoreFocus, title = "Проверка карточки" }: {
-  title?: string; children: ReactNode; locked: boolean; onClose: () => void; restoreFocus: () => void;
+export function ModerationDialog({ className, children, locked, onClose, restoreFocus, title = "Проверка карточки" }: {
+  className?: string; title?: string; children: ReactNode; locked: boolean; onClose: () => void; restoreFocus: () => void;
 }) {
   const { t } = useI18n();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -16,7 +16,7 @@ export function ModerationDialog({ children, locked, onClose, restoreFocus, titl
     element?.showModal();
     return () => { element?.close(); document.body.style.overflow = overflow; restore.current(); };
   }, []);
-  return <dialog ref={dialog} className={styles.dialog} aria-labelledby="moderation-dialog-title" onCancel={event => { event.preventDefault(); if (!locked) onClose(); }}>
+  return <dialog ref={dialog} className={[styles.dialog, className].filter(Boolean).join(" ")} aria-labelledby="moderation-dialog-title" onCancel={event => { event.preventDefault(); if (!locked) onClose(); }}>
     <header className={styles.dialogHeader}><h3 id="moderation-dialog-title">{t(title)}</h3><button type="button" disabled={locked} onClick={onClose}>{t("Закрыть")}</button></header>
     <div className={styles.dialogBody}>{children}</div>
   </dialog>;

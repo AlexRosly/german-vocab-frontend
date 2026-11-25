@@ -47,6 +47,7 @@ export class ApiClient {
   private authQueue: Promise<void> = Promise.resolve();
   private refreshPromise: Promise<AuthUser | null> | null = null;
   private logoutPromise: Promise<void> | null = null;
+  private archivePromise: Promise<void> | null = null;
 
   constructor(options: ClientOptions) {
     this.baseUrl = options.baseUrl.replace(/\/$/, "");
@@ -90,10 +91,10 @@ export class ApiClient {
     return data.enabled ? { enabled: true, clientId: data.clientId } : { enabled: false };
   }
 
-  async googleChallenge(purpose: "login" | "link", signal?: AbortSignal): Promise<{ clientId: string; nonce: string; expiresAt: string }> {
+  async googleChallenge(purpose: "login" | "link" | "archive" | "restore", signal?: AbortSignal): Promise<{ clientId: string; nonce: string; expiresAt: string }> {
     const generation = this.generation;
-    const response = purpose === "link" ? await this.googleAccountRequest("/auth/google/link-challenge", undefined, signal)
-      : await this.enqueueAuth(async () => { this.checkGeneration(generation); return this.raw("/auth/google/challenge", { method: "POST", signal }); });
+    const response = (purpose === "link" || purpose === "archive") ? await this.googleAccountRequest(purpose === "archive" ? "/auth/account/archive-challenge" : "/auth/google/link-challenge", undefined, signal)
+      : await this.enqueueAuth(async () => { this.checkGeneration(generation); return this.raw(purpose === "restore" ? "/auth/google/restore-challenge" : "/auth/google/challenge", { method: "POST", signal }); });
     this.checkGeneration(generation);
     if (!response.ok) throw await this.errorFrom(response);
     const data = await response.json();
@@ -101,6 +102,12 @@ export class ApiClient {
     if (!data || typeof data.clientId !== "string" || !/^[A-Za-z0-9._-]+\.apps\.googleusercontent\.com$/.test(data.clientId) ||
       typeof data.nonce !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(data.nonce) || typeof data.expiresAt !== "string" || !Number.isFinite(Date.parse(data.expiresAt)) || Date.parse(data.expiresAt) <= Date.now()) throw new ApiError(502, "Не удалось подготовить вход через Google");
     return { clientId: data.clientId, nonce: data.nonce, expiresAt: data.expiresAt };
+  }
+
+  restoreAccount(email: string, password: string): Promise<AuthUser> { return this.authenticate("/auth/restore", email, password); }
+  restoreAccountWithGoogle(credential: string): Promise<AuthUser> {
+    if (!this.validGoogleCredential(credential)) return Promise.reject(new ApiError(400, "Не удалось проверить вход через Google"));
+    return this.authenticateBody("/auth/google/restore", { credential });
   }
 
   signInWithGoogle(credential: string): Promise<AuthUser> {
@@ -230,6 +237,44 @@ export class ApiClient {
     });
     this.logoutPromise = work;
     void work.finally(() => { if (this.logoutPromise === work) this.logoutPromise = null; }).catch(() => {});
+    return work;
+  }
+
+  archiveAccount(proof: { confirmation: "ARCHIVE"; method: "password" | "google"; password?: string; credential?: string }): Promise<void> {
+    if (proof.confirmation !== 'ARCHIVE' || !['password','google'].includes(proof.method) || (proof.method === 'password' ? !proof.password || proof.credential !== undefined || new TextEncoder().encode(proof.password).length > 72 : !proof.credential || !this.validGoogleCredential(proof.credential) || proof.password !== undefined)) return Promise.reject(new ApiError(400, "Проверьте подтверждение архивирования"));
+    if (this.archivePromise) return this.archivePromise;
+    if (this.logoutPromise) return Promise.reject(new SessionChangedError());
+    const owner = this.snapshot.user?.id;
+    if (!owner) return Promise.reject(new SessionChangedError());
+    const generation = ++this.generation;
+    const work = this.enqueueAuth(async () => {
+      this.checkGeneration(generation);
+      const send = () => this.raw("/auth/account/archive", { method: "POST", headers: { Authorization: `Bearer ${this.accessToken ?? ""}`, "Content-Type": "application/json" }, body: JSON.stringify(proof) });
+      let response = await send();
+      if (response.status === 401) {
+        // Refresh inside the same auth lock; never queue another lock recursively.
+        const refresh = await this.raw("/auth/refresh", { method: "POST" });
+        this.checkGeneration(generation);
+        if (!refresh.ok) {
+          if (refresh.status === 401) { this.accessToken = null; this.publish(null); this.onAuthMutation?.(); }
+          throw await this.errorFrom(refresh);
+        }
+        const result = await this.readAuth(refresh);
+        this.checkGeneration(generation);
+        if (result.user.id !== owner) { this.accessToken = null; this.publish(null); this.onAuthMutation?.(); throw new SessionChangedError(); }
+        this.accessToken = result.accessToken;
+        response = await send();
+      }
+      if (response.status !== 204) {
+        if (response.status === 401 && this.generation === generation) { this.accessToken = null; this.publish(null); this.onAuthMutation?.(); }
+        throw await this.errorFrom(response);
+      }
+      this.onAuthMutation?.();
+      if (this.generation === generation) { this.accessToken = null; this.publish(null); }
+    });
+    this.archivePromise = work;
+    this.logoutPromise = work;
+    void work.finally(() => { if (this.logoutPromise === work) this.logoutPromise = null; if (this.archivePromise === work) this.archivePromise = null; }).catch(() => {});
     return work;
   }
 

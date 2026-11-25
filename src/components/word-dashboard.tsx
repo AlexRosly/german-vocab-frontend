@@ -26,6 +26,8 @@ import { OverdueReviewAction } from "./overdue-review-action";
 import { overdueReviewWords, type ReviewSchedule } from "@/lib/overdue-review";
 import { practiceWords, type PracticeMode } from "@/lib/practice-modes";
 import workspaceStyles from "./dictionary-workspace.module.css";
+import { LearningControls, TrainingSelectionControls } from "./dictionary-learning-controls";
+import { DEFAULT_TRAINING_SELECTION, learningLessonWords, learningPosition, trainingFromLesson, trainingSelectionWords, type DictionaryArea, type LessonSelection, type TrainingSelection } from "@/lib/dictionary-workspace";
 import { DraftRelatedWords } from "./draft-related-words";
 import type { RelatedCard } from "@/lib/word-relations-client";
 import { eligibleTrainingWords, saveTrainingAnswers } from "@/lib/dictionary-training";
@@ -152,7 +154,12 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     null,
   );
 
-  const [dictionaryArea, setDictionaryArea] = useState<"add" | "training">("training");
+  const [dictionaryArea, setDictionaryArea] = useState<DictionaryArea>("search");
+  const [learningSelection, setLearningSelection] = useState<LessonSelection>({ book: "", lesson: "" });
+  const [learningStarted, setLearningStarted] = useState(false);
+  const [learningIndex, setLearningIndex] = useState(0);
+  const learningCard = useRef<HTMLElement>(null);
+  const [trainingSelection, setTrainingSelection] = useState<TrainingSelection>({ ...DEFAULT_TRAINING_SELECTION });
   const [relatedDraft, setRelatedDraft] = useState<RelatedCard[]>([]);
   const formHeading = useRef<HTMLHeadingElement>(null);
   const studyHeading = useRef<HTMLHeadingElement>(null);
@@ -522,6 +529,23 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     } finally { dictionaryWrite.current = false; setBusy(false); }
   }
 
+  const [trainingDifficultBusy, setTrainingDifficultBusy] = useState(false);
+  const [trainingDifficultError, setTrainingDifficultError] = useState("");
+  useEffect(() => { setTrainingDifficultError(""); }, [studyIndex, studyMode]);
+  async function toggleTrainingDifficult() {
+    const current = studyWords[studyIndex];
+    const entry = words.find(word => word.id === current?.id)?.dictionaryEntry ?? current?.dictionaryEntry;
+    if (!current || !entry || typeof entry.isDifficult !== "boolean" || dictionaryWrite.current || trainingDifficultBusy || studySaving || dictionaryLoading || busy || answerLock.current) return;
+    dictionaryWrite.current = true; setTrainingDifficultBusy(true); setTrainingDifficultError("");
+    try {
+      const saved = await dictionaryEntries.save(current.id, entry, { isDifficult: !entry.isDifficult });
+      setWords(rows => rows.map(word => word.id === current.id ? { ...word, dictionaryEntry: saved } : word));
+      setStudyWords(rows => rows.map(word => word.id === current.id ? { ...word, dictionaryEntry: saved } : word));
+    } catch (error) {
+      setTrainingDifficultError(safeErrorMessage(error));
+    } finally { dictionaryWrite.current = false; setTrainingDifficultBusy(false); }
+  }
+
   async function deleteWord(word: Word) {
     if (studyMode || studySaving || (studyFinished && !studySaved)) return;
     if (
@@ -707,18 +731,21 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     void refreshNewWordsCount();
   }
 
-  function startStudyWithWords(wordsToStudy: Word[]) {
+  function startStudyWithWords(wordsToStudy: Word[], mode: PracticeMode = practiceMode) {
     if (studySaving || busy || dictionarySettingsBlocked) return;
-    wordsToStudy = practiceWords(activeTrainingWords(wordsToStudy), practiceMode);
+    wordsToStudy = practiceWords(activeTrainingWords(wordsToStudy), mode);
     if (wordsToStudy.length === 0) {
       setStatus("Нет слов для тренировки.");
       return;
     }
 
     stopSpeech();
+    setDictionaryArea("training");
+    setActiveTab("dictionary");
+    setPracticeMode(mode);
     studyRequestKey.current = crypto.randomUUID();
-    setSessionPracticeMode(practiceMode);
-    setSessionHistoryMode(studyProgress?.historyVersion === 2 ? practiceMode : undefined);
+    setSessionPracticeMode(mode);
+    setSessionHistoryMode(studyProgress?.historyVersion === 2 ? mode : undefined);
     setStudyWords(wordsToStudy);
     setStudyIndex(0);
     setShowTranslation(false);
@@ -731,7 +758,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   }
 
   function startStudy() {
-    startStudyWithWords(activeTrainingWords(filteredWords));
+    startStudyWithWords(filteredTrainingWords);
   }
 
   async function startDueStudy(overdueOnly = false) {
@@ -929,11 +956,35 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   const difficultEnabled = supportsDifficultWords(words);
   useEffect(() => { if (!dictionaryLoading && !difficultEnabled && dictionaryView === "difficult") setDictionaryView("active"); }, [dictionaryLoading, difficultEnabled, dictionaryView]);
 
-  const filteredTrainingWords = practiceWords(activeTrainingWords(filteredWords), practiceMode);
+  const filteredTrainingWords = practiceWords(trainingSelectionWords(words, trainingSelection), practiceMode);
+  const learningWords = learningLessonWords(words, learningSelection);
+  const learningCardIndex = learningPosition(learningIndex, learningWords.length);
+  const learningCurrentWordId = learningWords[learningCardIndex]?.id;
+  const visibleDictionaryWords = dictionaryArea === "learn"
+    ? learningWords.slice(learningCardIndex, learningCardIndex + 1)
+    : filteredWords.slice(0, visibleWordCount);
+  useEffect(() => {
+    if (dictionaryArea === "learn" && learningStarted) learningCard.current?.focus();
+  }, [dictionaryArea, learningStarted, learningCardIndex, learningCurrentWordId]);
   const dailyNewPlan = !progressError && !progressLoading ? dailyNewWordsPlan(studyProgress) : null;
   const filteredNewWords = eligibleTrainingWords(filteredTrainingWords, newPool);
   const filteredDueWords = eligibleTrainingWords(filteredTrainingWords, duePool);
   const trainingLocked = studyMode || studySaving || busy || dictionaryLoading || dictionarySettingsBlocked || newWordsLoading || dueLoading || (studyFinished && !studySaved);
+
+  function switchDictionaryArea(next: DictionaryArea) {
+    if (trainingLocked || exampleBusyWordId !== null) return;
+    stopSpeech();
+    setDictionaryArea(next);
+    if (studyFinished && studySaved) { setStudyFinished(false); setShowTranslation(false); }
+  }
+  function changeLearningSelection(next: LessonSelection) {
+    stopSpeech(); setLearningSelection(next); setLearningStarted(false); setLearningIndex(0);
+  }
+  function trainLearningLesson() {
+    if (trainingLocked || exampleBusyWordId !== null || !learningWords.length) return;
+    setTrainingSelection(trainingFromLesson(learningSelection));
+    startStudyWithWords(learningWords, "forward");
+  }
 
   useEffect(() => {
     if (dictionaryArea === "add") formHeading.current?.focus();
@@ -1506,12 +1557,11 @@ export function WordDashboard({ user }: { user: AuthUser }) {
       {activeTab === "dictionary" && (
         <>
         <div className={workspaceStyles.choices} role="group" aria-label={t("Действия со словарём")}>
-          <button type="button" aria-pressed={dictionaryArea === "add"} disabled={trainingLocked || exampleBusyWordId !== null} onClick={() => setDictionaryArea("add")}>
-            <strong>{editingId ? t("Редактировать слово") : t("Добавить слово")}</strong><span>{t("Слово, переводы, примеры и связи — в одной форме.")}</span>
-          </button>
-          <button type="button" aria-pressed={dictionaryArea === "training"} disabled={trainingLocked || exampleBusyWordId !== null} onClick={() => setDictionaryArea("training")}>
-            <strong>{t("Тренировка")}</strong><span>{t("Весь словарь, новые слова или повторение по выбранным фильтрам.")}</span>
-          </button>
+          {([
+            ["search", "Найти слово"], ["learn", "Начать обучение"], ["training", "Тренировка"],
+            ["add", editingId ? "Редактировать слово" : "Добавить слово"],
+          ] as const).map(([area, label]) => <button key={area} type="button" aria-pressed={dictionaryArea === area}
+            disabled={trainingLocked || exampleBusyWordId !== null} onClick={() => switchDictionaryArea(area)}><strong>{t(label)}</strong></button>)}
         </div>
         <section className={workspaceStyles.workspace}>
           {dictionaryArea === "add" && <section className={`panel form-panel ${workspaceStyles.formPanel}`} aria-labelledby="word-form-heading">
@@ -1631,7 +1681,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                   className="secondary-button"
                   disabled={busy}
                   type="button"
-                  onClick={() => { resetForm(); setDictionaryArea("training"); }}
+                  onClick={() => { resetForm(); setDictionaryArea("search"); }}
                 >{t("Отмена")}</button>
               )}
             </form>
@@ -1639,20 +1689,17 @@ export function WordDashboard({ user }: { user: AuthUser }) {
             <p className="hint">{t("Добавляй формы множественного числа, заметки и примеры употребления.")}</p>
           </section>}
 
-          {dictionaryArea === "training" && <section className="word-section">
-            <div className={workspaceStyles.trainingHeader}>
-              <div><p className="eyebrow">{t("ТВОЯ КОЛЛЕКЦИЯ")}</p><h3>{t("Тренировка")}</h3></div>
+          {dictionaryArea !== "add" && <section className="word-section">
+            <div className={workspaceStyles.trainingHeader} hidden={studyMode || studyFinished}>
+              <div><p className="eyebrow">{t("ТВОЯ КОЛЛЕКЦИЯ")}</p><h3>{t(dictionaryArea === "search" ? "Найти слово" : dictionaryArea === "learn" ? "Обучение" : "Тренировка")}</h3></div>
               <div className={workspaceStyles.headerActions}><span className="count">{count(words.length)}</span>
                   <button type="button" className="small-button secondary-button" disabled={busy || dictionaryLoading || studyMode || studySaving || (studyFinished && !studySaved)} onClick={() => void syncAfterCardChange()}>{t("Обновить словарь")}</button>
               </div>
             </div>
             {!studyMode && !studyFinished && <>
+              {dictionaryArea === "search" && <>
                 <fieldset className={workspaceStyles.filters} disabled={trainingLocked}>
-                  <legend>{t("Фильтры словаря и тренировки")}</legend>
-                  <div>
-                  <label>{t("Раздел словаря")} <select value={dictionaryView} onChange={event => setDictionaryView(event.target.value as DictionaryView)} disabled={busy}>
-                    <option value="active">{t("Активные слова")}</option><option value="favorites">{t("Избранное")}</option>{difficultEnabled && <option value="difficult">{t("Трудные слова")}</option>}<option value="archive">{t("Архив")}</option><option value="all">{t("Все слова")}</option>
-                  </select></label>
+                  <legend>{t("Поиск в словаре")}</legend>
                   <label>{t("Поиск")}{" "}<input
                       type="search"
                       value={searchQuery}
@@ -1660,8 +1707,13 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                       placeholder={t("Слово, перевод, заметка или пример…")}
                     />
                   </label>
+                  <details className={workspaceStyles.searchOptions}><summary>{t("Уточнить поиск")}</summary><div>
+                  <label>{t("Раздел словаря")} <select value={dictionaryView} onChange={event => setDictionaryView(event.target.value as DictionaryView)} disabled={busy}>
+                    <option value="active">{t("Активные слова")}</option><option value="favorites">{t("Избранное")}</option>{difficultEnabled && <option value="difficult">{t("Трудные слова")}</option>}<option value="archive">{t("Архив")}</option><option value="all">{t("Все слова")}</option>
+                  </select></label>
 
-                  <label>{t("Книга")}<select value={filterBook} onChange={event => setFilterBook(event.target.value)}>
+
+                  <label>{t("Книга")}<select value={filterBook} onChange={event => { setFilterBook(event.target.value); setFilterLesson("all"); }}>
                     <option value="">{t("Все книги")}</option><option value="none">{t("Без книги")}</option>{bookFilterOptions(words, filterBook).map(book => <option key={book.key} value={book.key}>{book.title}</option>)}
                   </select></label>
 {words.some(w=>w.organizationEnabled) && <label>{t("Личный тег")} <select value={filterTag} onChange={event=>setFilterTag(event.target.value)}><option value="">{t("Все теги")}</option><option value="none">{t("Без тегов")}</option>{personalTagOptions(words,filterTag).map(tag=><option key={tag.key} value={tag.key}>{tag.title}</option>)}</select></label>}
@@ -1732,7 +1784,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                     </label>
                   </div>
 
-                  </div>
+                  </div></details>
                   <p className="hint">{t("Архивные слова не участвуют в новых тренировках. Прогресс и личные материалы сохраняются.")}</p>
                   <p className="hint">{t("Показано {shown} из {total}", { shown: Math.min(visibleWordCount, filteredWords.length), total: filteredWords.length })}</p>
 
@@ -1756,6 +1808,18 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                     >{t("Сбросить поиск и фильтры")}</button>
                   )}
                 </fieldset>
+                <h3>{t("Найденные карточки")}</h3>
+              </>}
+              {dictionaryArea === "learn" && <LearningControls words={words} selection={learningSelection}
+                onChange={changeLearningSelection} total={learningWords.length} started={learningStarted} position={learningCardIndex}
+                disabled={trainingLocked || exampleBusyWordId !== null}
+                onBegin={() => { setLearningIndex(0); setLearningStarted(true); }}
+                onPrevious={() => { stopSpeech(); setLearningIndex(Math.max(0, learningCardIndex - 1)); }}
+                onNext={() => { stopSpeech(); setLearningIndex(Math.min(learningWords.length - 1, learningCardIndex + 1)); }}
+                onTrain={trainLearningLesson} />}
+              {dictionaryArea === "training" && <>
+                <TrainingSelectionControls words={words} selection={trainingSelection} onChange={setTrainingSelection}
+                  disabled={trainingLocked} difficultEnabled={difficultEnabled} />
             <fieldset className={practiceStyles.modes} disabled={trainingLocked}>
               <legend>{t("Режим тренировки")}</legend>
               <div className={practiceStyles.options}>
@@ -1768,21 +1832,21 @@ export function WordDashboard({ user }: { user: AuthUser }) {
               <p className={practiceStyles.hint}>{t(practiceMode === "reverse" ? "В этом режиме участвуют слова с переводом на выбранном языке." : practiceMode === "article" ? "В этом режиме участвуют существительные с der, die или das в единственном числе." : practiceMode === "plural" ? "В этом режиме участвуют существительные в единственном числе с полной формой множественного числа." : practiceMode === "spelling" ? "Напишите немецкое слово по переводу на выбранном языке. Карточки без перевода не участвуют." : "Вспомните перевод немецкого слова и оцените свой ответ.")}</p>
               <p className={practiceStyles.hint}>{t("Ответы всех режимов влияют на общий прогресс слова.")}</p>
             </fieldset>
-            <p className={workspaceStyles.hint}>{t("Фильтры применяются ко всем вариантам тренировки. Архивные слова не участвуют.")}</p>
+            <p className={workspaceStyles.hint}>{t("Набор применяется ко всем режимам тренировки. Архивные слова не участвуют.")}</p>
             <div className={workspaceStyles.trainingActions}>
                 <DifficultTrainingAction words={filteredTrainingWords} enabled={difficultEnabled} disabled={trainingLocked} onStart={startStudyWithWords} />
-              <div><h4>{t("Весь выбранный словарь")}</h4><p className={workspaceStyles.hint}>{t("По выбранным фильтрам: {0}", { 0: count(filteredTrainingWords.length) })}</p>
+              <div><h4>{t("Выбранный набор")}</h4><p className={workspaceStyles.hint}>{t("В наборе: {0}", { 0: count(filteredTrainingWords.length) })}</p>
                 <button type="button" disabled={trainingLocked || !filteredTrainingWords.length} onClick={startStudy}>{t("Начать тренировку ({count})", { count: count(filteredTrainingWords.length) })}</button>
                 {filteredTrainingWords.length > 500 && <p className={workspaceStyles.hint}>{t("Длинная тренировка будет записана в историю несколькими занятиями.")}</p>}
               </div>
               <div><h4>{t("Новые слова")}</h4><p className={workspaceStyles.hint}>{t("Ещё не изучались: {0}", { 0: count(filteredNewWords.length) })}</p>
-                <label htmlFor="new-words-limit">{t("Сколько новых слов изучить?")}</label>
+                <label htmlFor="new-words-limit">{t("Новых слов для тренировки")}</label>
                 <select id="new-words-limit" value={newWordsLimit === 0 ? "all" : String(newWordsLimit)} disabled={trainingLocked} onChange={event => setNewWordsLimit(event.target.value === "all" ? 0 : Number(event.target.value))}>
                   {[5, 10, 20].map(limit => <option key={limit} value={limit}>{count(limit)}</option>)}<option value="all">{t("Все новые слова")}</option>
                 </select>
-                <button type="button" disabled={trainingLocked || !filteredNewWords.length} onClick={() => void startNewWordsStudy()}>{t(dailyNewPlan?.remaining === 0 ? "Продолжить новые слова ({0})" : "Изучить новые слова ({0})", { 0: newWordsLimit ? Math.min(newWordsLimit, filteredNewWords.length) : filteredNewWords.length })}</button>
+                <button type="button" disabled={trainingLocked || !filteredNewWords.length} onClick={() => void startNewWordsStudy()}>{t(dailyNewPlan?.remaining === 0 ? "Продолжить новые слова ({0})" : "Тренировать новые слова ({0})", { 0: newWordsLimit ? Math.min(newWordsLimit, filteredNewWords.length) : filteredNewWords.length })}</button>
                 <DailyNewWordsSummary progress={!progressError && !progressLoading ? studyProgress : null} />
-                {dailyNewPlan && dailyNewPlan.remaining > 0 && <button type="button" disabled={trainingLocked || !filteredNewWords.length} onClick={() => void startNewWordsStudy(true)}>{t("Изучить по плану ({count})", { count: count(plannedNewWords(filteredNewWords, newWordsLimit, dailyNewPlan).length) })}</button>}
+                {dailyNewPlan && dailyNewPlan.remaining > 0 && <button type="button" disabled={trainingLocked || !filteredNewWords.length} onClick={() => void startNewWordsStudy(true)}>{t("Тренировать по плану ({count})", { count: count(plannedNewWords(filteredNewWords, newWordsLimit, dailyNewPlan).length) })}</button>}
                 {newWordsError && <p role="alert">{errorText(newWordsError)} <button type="button" onClick={() => void refreshNewWordsCount()}>{t("Повторить")}</button></p>}
               </div>
               <div><h4>{t("Пора повторить")}</h4><p className={workspaceStyles.hint}>{t("Повторение по расписанию: {0}", { 0: count(filteredDueWords.length) })}</p>
@@ -1791,9 +1855,9 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                           {dueError && <p role="alert">{errorText(dueError)} <button type="button" onClick={() => void loadDueWords()}>{t("Повторить")}</button></p>}
               </div>
             </div>
-            <h3>{t("Карточки по выбранным фильтрам")}</h3>
-            </>}
 
+              </>}
+            </>}
 
             {/* {words.length === 0 ? (
             <div className="empty-state">
@@ -1812,7 +1876,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                   <button
                     type="button"
                     className="small-button secondary-button"
-                    onClick={() => setStudyMode(false)}
+                    onClick={() => setStudyMode(false)} disabled={trainingDifficultBusy || dictionaryLoading}
                   >{t("Завершить")}</button>
                 </div>
 
@@ -1827,9 +1891,14 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
                 <PracticeCard neutralColor={words[0]?.neutralCardColor} key={`${sessionPracticeMode}:${studyWords[studyIndex].id}`} word={studyWords[studyIndex]} mode={sessionPracticeMode}
                   examples={examplesByWord[studyWords[studyIndex].id] ?? []} revealed={showTranslation} onReveal={revealTranslation}
-                  onAnswer={known => { void answerStudyCard(known); }} saving={studySaving} speechSupported={speechSupported}
+                  onAnswer={known => { void answerStudyCard(known); }} saving={studySaving || trainingDifficultBusy || dictionaryLoading} speechSupported={speechSupported}
                   onSpeak={() => speakWord(studyWords[studyIndex])} onSpeakExample={speakExample} last={studyIndex === studyWords.length - 1} />
 
+                <DifficultWordToggle german={studyWords[studyIndex].german}
+                  entry={words.find(word => word.id === studyWords[studyIndex].id)?.dictionaryEntry ?? studyWords[studyIndex].dictionaryEntry}
+                  disabled={trainingDifficultBusy || dictionaryLoading || studySaving || busy}
+                  onToggle={() => void toggleTrainingDifficult()} />
+                {trainingDifficultError && <p role="alert">{errorText(trainingDifficultError)} <button type="button" disabled={trainingDifficultBusy || dictionaryLoading} onClick={() => { setTrainingDifficultError(""); void loadWords(); }}>{t("Обновить словарь")}</button></p>}
                 <p className="study-session-stats">{t("Знаю:")}{" "}{knownWordIds.length}{" "}{t("· Повторить:")}{" "}
                   {unknownWordIds.length}
                 </p>
@@ -1949,6 +2018,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                     onClick={() => {
                       setStudyMode(false);
                       setStudyFinished(false);
+                      setDictionaryArea("search");
                       setShowTranslation(false);
                     }}
                   >{t("Вернуться к словарю")}</button>
@@ -1985,7 +2055,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
               </section>
             )}
 
-            {!studyMode && !studyFinished && (filteredWords.length === 0 ? (
+            {(dictionaryArea === "search" || (dictionaryArea === "learn" && learningStarted)) && !studyMode && !studyFinished && (visibleDictionaryWords.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-icon">Aa</div>
                 <h4>{t("Ничего не найдено")}</h4>
@@ -1993,7 +2063,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
               </div>
             ) : (
               <div className="word-list">
-                {filteredWords.slice(0, visibleWordCount).map((word) => {
+                {visibleDictionaryWords.map((word) => {
                   const examples = examplesByWord[word.id] ?? [];
                   const exampleInput = exampleInputs[word.id] ?? emptyExample(user.translationLanguage);
 
@@ -2005,6 +2075,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                   return (
                     <article
                       className={`word-card ${colorClass(word)} ${organizationStyles.card}`} style={neutralCardStyle(word,words[0]?.neutralCardColor)}
+                      ref={dictionaryArea === "learn" ? learningCard : undefined} tabIndex={dictionaryArea === "learn" ? -1 : undefined}
                       key={word.id}
                     >
                       <div className="word-color" />
@@ -2252,7 +2323,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                     </article>
                   );
                 })}
-                {visibleWordCount < filteredWords.length && <button type="button" className="small-button secondary-button" onClick={() => setVisibleWordCount(value => value + 30)}>{t("Показать ещё 30 карточек")}</button>}
+                {dictionaryArea === "search" && visibleWordCount < filteredWords.length && <button type="button" className="small-button secondary-button" onClick={() => setVisibleWordCount(value => value + 30)}>{t("Показать ещё 30 карточек")}</button>}
               </div>
             ))}
           </section>}

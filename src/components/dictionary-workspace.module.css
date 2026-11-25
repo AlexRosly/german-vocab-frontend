@@ -46,3 +46,28 @@
 
 .headerActions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .headerActions button { min-height: 44px; padding: 10px 14px; }
+
+/* Search, lesson preview and training have independent controls. */
+.choices { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.choices button { min-height: 64px; padding: 16px; align-content: center; }
+.choices strong { font-size: 17px; overflow-wrap: anywhere; }
+.searchOptions { margin-top: 16px; }
+.searchOptions summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-weight: 600; }
+.searchOptions summary::before { content: "+"; margin-right: 8px; }
+.searchOptions[open] summary::before { content: "−"; }
+.searchOptions > div, .scopeFields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.scopeFields label, .searchOptions label { min-width: 0; display: grid; gap: 8px; }
+.learningNavigation { margin: 16px 0; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: #f6f9f5; }
+.learningNavigation p { margin: 0 0 12px; }
+.lessonButtons { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+.lessonButtons button { min-height: 44px; white-space: normal; }
+@media (max-width:600px) {
+  .choices { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .choices button { min-height: 52px; padding: 12px; }
+  .choices strong { font-size: 15px; }
+  .searchOptions > div, .scopeFields { grid-template-columns: minmax(0,1fr); }
+  .lessonButtons { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .lessonButtons button:last-child { grid-column: 1 / -1; }
+}
+
+.trainingHeader[hidden] { display: none; }

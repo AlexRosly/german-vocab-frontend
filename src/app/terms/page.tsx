@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import styles from "../privacy/privacy.module.css";
-export const metadata: Metadata = { title: "Wortkarten — Nutzungsregeln / Правила проекта", description: "Use of the free vocabulary learning project, shared cards and account archiving." };
+export const metadata: Metadata = { title: "Wortkarten — Nutzungsregeln / Правила проекта", description: "Use of the free vocabulary learning project, shared cards and reversible account deactivation." };
 const sections = [
  { lang:"de", title:"Nutzungsregeln", rows:[
   ["Kostenloses Lernprojekt","Wortkarten von Oleksandr Roslyi, Deutschland, ist ein kostenloses persönliches Lernprojekt. Eine Registrierung eröffnet keine kostenpflichtige Mitgliedschaft. Änderungen an einem zukünftigen Bezahlangebot würden gesondert erläutert."],
   ["Konto und Materialien","Schütze deine Zugangsdaten. Persönliche Notizen, Übersetzungen, Bücher, Tags und Lernfortschritt gehören zum eigenen Profil. Inhalte einer gemeinsamen Karte und ihrer Verknüpfungen können nach Moderation veröffentlicht und von Administratoren für alle Nutzer berichtigt werden."],
   ["Eigene Beiträge und Rechte","Lade nur Inhalte hoch, für deren Nutzung du die nötigen Rechte hast. Keine personenbezogenen Daten Dritter, rechtswidrigen Inhalte oder fremden Buchseiten/Illustrationen ohne Erlaubnis hochladen. Bei Rechteproblemen kontaktiere den Betreiber mit der betroffenen Karte und einer Beschreibung."],
   ["Lernen und Korrekturen","Karten können Fehler enthalten. Die Anwendung unterstützt das Lernen; sie stellt keine amtliche Sprachprüfung oder Bescheinigung dar. Melde Ungenauigkeiten über die Korrekturfunktion. Die Veröffentlichung eines Vorschlags erfolgt nicht automatisch."],
-  ["Export und Archivierung","Eigene Wörter und Trainingshistorie können in den Einstellungen als CSV exportiert werden. Archivieren beendet alle Anmeldungen und erhält die Daten; die Wiederherstellung erfolgt ausdrücklich mit Passwort oder Google. Vollständige Löschung ist eine separate E-Mail-Anfrage an den Betreiber."],
+  ["Export und Kontozugriff","Eigene Wörter und Trainingshistorie können in den Einstellungen als CSV exportiert werden. „Konto löschen“ deaktiviert den Zugriff auf allen Geräten und erhält die Daten zur Wiederherstellung. Die Wiederherstellung erfolgt ausdrücklich mit Passwort oder Google. Vollständige Löschung ist eine separate E-Mail-Anfrage an den Betreiber."],
   ["Betrieb und Kontakt","Es besteht kein vereinbartes Verfügbarkeitsniveau. Wartungen und technische Störungen können den Zugriff unterbrechen. Für Unterstützung oder Beschwerden: rosly.a777@gmail.com. Diese Projektregeln ersetzen nicht die Datenschutzhinweise."],
  ]},
  { lang:"en", title:"Project rules", rows:[
@@ -16,7 +16,7 @@ const sections = [
   ["Account and materials","Protect your sign-in credentials. Personal notes, translations, books, tags and progress belong to your profile. Shared cards and relations can be published after moderation and corrected by administrators for all users."],
   ["Contributions and rights","Upload only material you have permission to use. Do not upload other people’s personal data, unlawful material, or third-party book pages and illustrations without permission. Report rights concerns to the operator with the affected card and a description."],
   ["Learning and corrections","Cards may contain mistakes. The application supports learning and is not an official language examination or certificate. Report inaccuracies through the correction feature; proposals are not published automatically."],
-  ["Export and archiving","Your dictionary and training history can be exported as CSV in Settings. Archiving ends all sign-ins while keeping data; restoring requires an explicit password or Google action. Full erasure is a separate email request to the operator."],
+  ["Export and account access","Your dictionary and training history can be exported as CSV in Settings. “Delete account” disables access on all devices while keeping data for restoration. Restoring requires an explicit password or Google action. Full erasure is a separate email request to the operator."],
   ["Operation and contact","No service availability level has been agreed. Maintenance and technical faults can interrupt access. For support or complaints: rosly.a777@gmail.com. These project rules do not replace the privacy notice."],
  ]},
  { lang:"ru", title:"Правила проекта", rows:[
@@ -24,7 +24,7 @@ const sections = [
   ["Аккаунт и материалы","Берегите данные входа. Личные заметки, переводы, книги, теги и прогресс относятся к вашему профилю. Общие карточки и связи могут публиковаться после модерации и исправляться администратором для всех пользователей."],
   ["Материалы и права","Загружайте только материалы, на использование которых у вас есть право. Не добавляйте персональные данные других людей, незаконные материалы, чужие страницы учебников и иллюстрации без разрешения. О нарушении прав сообщите владельцу, указав карточку и суть вопроса."],
   ["Обучение и исправления","В карточках могут быть ошибки. Приложение помогает учиться и не является официальным экзаменом или сертификатом уровня языка. Неточности сообщайте через предложения исправлений; они не публикуются автоматически."],
-  ["Экспорт и архивирование","Словарь и историю тренировок можно выгрузить в CSV из Настроек. Архивирование завершает все входы, сохраняя данные; восстановление требует явного действия с паролем или Google. Полное удаление данных — отдельный запрос владельцу по email."],
+  ["Экспорт и доступ к аккаунту","Словарь и историю тренировок можно выгрузить в CSV из Настроек. «Удалить аккаунт» отключает доступ на всех устройствах, сохраняя данные для восстановления. Восстановление требует явного действия с паролем или Google. Полное удаление данных — отдельный запрос владельцу по email."],
   ["Работа сервиса и контакты","Согласованного уровня доступности сервиса нет. Обслуживание и технические сбои могут временно прерывать доступ. Поддержка и обращения: rosly.a777@gmail.com. Эти правила не заменяют политику конфиденциальности."],
  ]},
 ] as const;

@@ -1,5 +1,17 @@
 // Russian source messages are stable UI keys, never vocabulary content.
 export const MESSAGES = {
+  "Удалить аккаунт": {"de": "Konto löschen", "en": "Delete account", "uk": "Видалити акаунт"},
+  "Перед удалением можно скачать свои данные": {"de": "Vor dem Löschen kannst du deine Daten herunterladen", "en": "You can download your data before deleting your account", "uk": "Перед видаленням можна завантажити свої дані"},
+  "Подтвердить удаление аккаунта": {"de": "Kontolöschung bestätigen", "en": "Confirm account deletion", "uk": "Підтвердити видалення акаунта"},
+  "Удалить аккаунт и выйти на всех устройствах": {"de": "Konto löschen und überall abmelden", "en": "Delete account and sign out everywhere", "uk": "Видалити акаунт і вийти на всіх пристроях"},
+  "Для подтверждения введите DELETE": {"de": "Zur Bestätigung DELETE eingeben", "en": "Type DELETE to confirm", "uk": "Для підтвердження введіть DELETE"},
+  "Это обратимое действие. Доступ к аккаунту будет отключён на всех устройствах. Словарь, личные материалы и прогресс сохранятся для восстановления.": {"de": "Diese Aktion ist umkehrbar. Der Kontozugriff wird auf allen Geräten deaktiviert. Wörterbuch, persönliche Materialien und Fortschritt bleiben zur Wiederherstellung gespeichert.", "en": "This is reversible. Account access will be disabled on all devices. Your dictionary, personal materials and progress stay saved for restoration.", "uk": "Цю дію можна скасувати. Доступ до акаунта буде вимкнено на всіх пристроях. Словник, особисті матеріали та прогрес збережуться для відновлення."},
+  "Персональные данные сохраняются. Для их полного удаления напишите владельцу сервиса.": {"de": "Personenbezogene Daten bleiben gespeichert. Für eine vollständige Löschung kontaktiere den Betreiber.", "en": "Personal data stays saved. Contact the operator to request full erasure.", "uk": "Персональні дані зберігаються. Для їх повного видалення напишіть власнику сервісу."},
+  "Подтверждение удаления аккаунта через Google": {"de": "Kontolöschung mit Google bestätigen", "en": "Confirm account deletion with Google", "uk": "Підтвердження видалення акаунта через Google"},
+  "Проверьте подтверждение удаления аккаунта": {"de": "Prüfe die Bestätigung der Kontolöschung", "en": "Check the account deletion confirmation", "uk": "Перевірте підтвердження видалення акаунта"},
+  "Доступ к аккаунту уже отключён": {"de": "Der Kontozugriff ist bereits deaktiviert", "en": "Account access is already disabled", "uk": "Доступ до акаунта вже вимкнено"},
+  "Доступ к аккаунту отключён. Выберите восстановление аккаунта.": {"de": "Der Kontozugriff ist deaktiviert. Wähle die Kontowiederherstellung.", "en": "Account access is disabled. Choose account restoration.", "uk": "Доступ до акаунта вимкнено. Виберіть відновлення акаунта."},
+  "Аккаунт изменился. Повторите подтверждение удаления": {"de": "Das Konto wurde geändert. Bestätige die Löschung erneut.", "en": "The account changed. Confirm deletion again.", "uk": "Акаунт змінився. Підтвердьте видалення знову."},
   "Администратор": {"de": "Administrator", "en": "Administrator", "uk": "Адміністратор"},
   "Архивировать аккаунт": {"de": "Konto archivieren", "en": "Archive account", "uk": "Архівувати акаунт"},
   "Все входы будут завершены. Словарь, личные материалы и прогресс сохранятся. Вернуться можно через восстановление аккаунта с паролем или Google.": {"de": "Alle Sitzungen werden beendet. Wörterbuch, persönliche Materialien und Fortschritt bleiben erhalten. Du kannst dein Konto mit Passwort oder Google wiederherstellen.", "en": "All sign-ins will end. Your dictionary, personal materials and progress stay saved. Restore your account with your password or Google to return.", "uk": "Усі сеанси буде завершено. Словник, особисті матеріали та прогрес збережуться. Повернутися можна через відновлення акаунта з паролем або Google."},
@@ -3103,6 +3115,9 @@ export function translate(language: UiLanguage, source: string, params?: Message
 export function safeErrorMessage(error: unknown, fallback = "Не удалось выполнить запрос. Повторите попытку."): string {
   const value = error && typeof error === "object" ? error as { message?: unknown; status?: unknown } : null;
   const message = typeof error === "string" ? error : typeof value?.message === "string" ? value.message : "";
+  // Keep the existing archive API contract; present account status in current UI wording.
+  const accountMessages: Readonly<Record<string, string>> = {"Проверьте подтверждение архивирования": "Проверьте подтверждение удаления аккаунта", "Аккаунт уже архивирован": "Доступ к аккаунту уже отключён", "Аккаунт архивирован. Выберите восстановление аккаунта.": "Доступ к аккаунту отключён. Выберите восстановление аккаунта.", "Аккаунт изменился. Повторите подтверждение архивирования": "Аккаунт изменился. Повторите подтверждение удаления"};
+  if (Object.hasOwn(accountMessages, message)) return accountMessages[message];
   if (resolve(message)) return message;
   const defaults: Record<string, string> = { "Internal server error": "Ошибка сервера. Повторите попытку позже.", Unauthorized: "Сессия завершена. Войдите снова.", Forbidden: "Действие недоступно для этого аккаунта.", "Too Many Requests": "Слишком много запросов. Подождите и попробуйте снова." };
   if (Object.hasOwn(defaults, message)) return defaults[message];

@@ -118,7 +118,7 @@ function AuthForm() {
         <h1 id="auth-heading">{restoring ? t("Восстановить аккаунт") : registering ? t("Создать аккаунт") : t("Войти в свой словарь")}</h1>
         <p className={styles.description}>{t("Немецкие слова, примеры и повторения — в твоём темпе.")}</p>
         {restoring && <p>{t("Восстановление вернёт доступ к сохранённому словарю и прогрессу.")}</p>}
-      <button className={styles.secondary} type="button" disabled={pending || googlePending} onClick={() => { setMode(restoring ? 'login' : 'restore'); setError(''); setPassword(''); setConfirmation(''); }}>{t(restoring ? "Вернуться ко входу" : "Восстановить архивированный аккаунт")}</button>
+      <button className={styles.secondary} type="button" disabled={pending || googlePending} onClick={() => { setMode(restoring ? 'login' : 'restore'); setError(''); setPassword(''); setConfirmation(''); }}>{t(restoring ? "Вернуться ко входу" : "Восстановить аккаунт")}</button>
       <form onSubmit={(event) => void submit(event)} className={styles.form} aria-busy={pending || googlePending}>
           <label htmlFor="auth-email">{t("Email")}</label>
           <input id="auth-email" name="email" type="email" autoComplete="email" required maxLength={254}

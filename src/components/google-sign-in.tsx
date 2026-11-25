@@ -44,7 +44,7 @@ export function GoogleSignIn({ purpose, disabled, onCredential, onBusy }: {
     })();
     return () => { abort.abort(); element?.replaceChildren(); };
   }, [attempt, language, purpose]);
-  return <div className={styles.widget} hidden={enabled === false} aria-label={t(purpose === "archive" ? "Подтверждение архивирования через Google" : purpose === "restore" ? "Восстановление через Google" : purpose === "login" ? "Вход через Google" : "Подключение Google")} aria-busy={busy}>
+  return <div className={styles.widget} hidden={enabled === false} aria-label={t(purpose === "archive" ? "Подтверждение удаления аккаунта через Google" : purpose === "restore" ? "Восстановление через Google" : purpose === "login" ? "Вход через Google" : "Подключение Google")} aria-busy={busy}>
     <div ref={host} className={disabled || busy || !ready ? styles.blocked : undefined} hidden={!!error} inert={disabled || busy || !ready || !!error} />
     {busy && <p role="status">{t("Подождите…")}</p>}
     {!ready && !error && !busy && <p role="status">{t("Загружаем Google-вход…")}</p>}

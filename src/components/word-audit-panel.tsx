@@ -5,7 +5,7 @@ import { WordAuditClient, type AuditPage } from "@/lib/word-audit-client";
 import { useI18n } from "./ui-language-provider";
 import styles from "./data-controls.module.css";
 const client = new WordAuditClient(apiFetch);
-const entities: Record<string,string> = { words:'Слово и грамматика',word_translations:'Перевод слова',word_examples:'Пример',word_example_translations:'Перевод примера',word_relations:'Связь слов',word_source_books:'Общий источник',word_verb_forms:'Формы глагола',word_collocations:'Сочетание с глаголом',word_collocation_translations:'Перевод сочетания' };
+const entities: Record<string,string> = { words:'Слово и грамматика',word_translations:'Перевод слова',word_examples:'Пример',word_example_translations:'Перевод примера',word_relations:'Связь слов',word_source_books:'Общий источник',word_verb_forms:'Формы глагола',word_collocations:'Сочетание с глаголом',word_collocation_translations:'Перевод сочетания',word_images:'Изображение карточки' };
 export function WordAuditPanel({ userId }: { userId: string }) {
   const { t, errorText, language } = useI18n();
   const [enabled,setEnabled]=useState<boolean|null>(null),[open,setOpen]=useState(false),[data,setData]=useState<AuditPage|null>(null),[page,setPage]=useState(1),[search,setSearch]=useState(''),[draft,setDraft]=useState(''),[attempt,setAttempt]=useState(0),[busy,setBusy]=useState(false),[error,setError]=useState<unknown>(null);

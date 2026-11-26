@@ -1,4 +1,5 @@
 "use client";
+import { WordImage, useWordImagesEnabled } from "./word-image";
 import { AccountArchivePanel } from "./account-archive-panel";
 import { WordAuditPanel } from "./word-audit-panel";
 import { WordOrganizationPanel } from "./word-organization";
@@ -138,6 +139,7 @@ async function fetchExamples(wordId: string): Promise<WordExample[]> {
 }
 
 export function WordDashboard({ user }: { user: AuthUser }) {
+  const wordImagesEnabled = useWordImagesEnabled(user.id);
   const { t, errorText, date, count, noun } = useI18n();
   const [words, setWords] = useState<Word[]>([]);
   const [examplesByWord, setExamplesByWord] = useState<
@@ -1894,7 +1896,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                   />
                 </div>
 
-                <PracticeCard neutralColor={words[0]?.neutralCardColor} key={`${sessionPracticeMode}:${studyWords[studyIndex].id}`} word={studyWords[studyIndex]} mode={sessionPracticeMode}
+                <PracticeCard imagesEnabled={wordImagesEnabled} neutralColor={words[0]?.neutralCardColor} key={`${sessionPracticeMode}:${studyWords[studyIndex].id}`} word={studyWords[studyIndex]} mode={sessionPracticeMode}
                   examples={examplesByWord[studyWords[studyIndex].id] ?? []} revealed={showTranslation} onReveal={revealTranslation}
                   onAnswer={known => { void answerStudyCard(known); }} saving={studySaving || trainingDifficultBusy || dictionaryLoading} speechSupported={speechSupported}
                   onSpeak={() => speakWord(studyWords[studyIndex])} onSpeakExample={speakExample} last={studyIndex === studyWords.length - 1} />
@@ -2148,7 +2150,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         {word.selectedTranslation.source === "personal" && <small>{t("Ваш личный перевод")}</small>}
                         <button type="button" disabled={busy || libraryBusy || moderationBusy || translationTarget !== null || studyMode || studySaving || (studyFinished && !studySaved)} onClick={() => { stopSpeech(); setPersonalTranslationTarget(word); }}>{t("Мой перевод")}</button>
 
-                        <VerbForms forms={word.verbForms} onOpenReference={verbCatalogEnabled ? () => openVerbReference(word.id) : undefined} />
+                        <WordImage key={`${user.id}-${word.id}`} wordId={word.id} german={word.german} enabled={wordImagesEnabled} editable={editable} disabled={busy || trainingLocked} />
+                                  <VerbForms forms={word.verbForms} onOpenReference={verbCatalogEnabled ? () => openVerbReference(word.id) : undefined} />
                          {word.pluralForm && (
                           <p className="word-extra">
                             <strong>{t("Мн. число:")}</strong> {word.pluralForm}

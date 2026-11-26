@@ -1,7 +1,7 @@
 type Requester = (path: string, init?: RequestInit) => Promise<Response>;
 export type AuditEvent = { id: string; wordId: string; wordGerman: string; entity: string; action: "INSERT" | "UPDATE" | "DELETE"; before: Record<string, unknown> | null; after: Record<string, unknown> | null; actor: "system" | "admin" | "user"; transactionId: string; createdAt: string };
 export type AuditPage = { page: number; pageSize: 25; total: number; items: AuditEvent[] };
-export const AUDIT_ENTITIES = ['words','word_translations','word_examples','word_example_translations','word_relations','word_source_books','word_verb_forms','word_collocations','word_collocation_translations'];
+export const AUDIT_ENTITIES = ['words','word_translations','word_examples','word_example_translations','word_relations','word_source_books','word_verb_forms','word_collocations','word_collocation_translations','word_images'];
 const object = (x: unknown) => x === null || !!x && typeof x === 'object' && !Array.isArray(x);
 export class WordAuditClient {
   private readonly request: Requester;

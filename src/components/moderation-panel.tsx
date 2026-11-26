@@ -1,4 +1,5 @@
 "use client";
+import { WordImage, useWordImagesEnabled } from "./word-image";
 import { CollocationsPanel } from "./collocations";
 import { VerbForms } from "./verb-forms";
 import { SourceBookEditor } from "./source-book-editor";
@@ -28,6 +29,7 @@ export function ModerationPanel({ initialWordId, collocationsEnabled = false, on
   translationLanguage: string; translationVersion: number; onEditTranslations: (word: { id: string; german: string }) => void;
 }) {
   const { t, errorText } = useI18n();
+  const wordImagesEnabled = useWordImagesEnabled("moderation");
   const [collocationLocked, setCollocationLocked] = useState(false);
   const [relationsOpen, setRelationsOpen] = useState(false);
   const [relationsBusy, setRelationsBusy] = useState(false);
@@ -182,6 +184,7 @@ export function ModerationPanel({ initialWordId, collocationsEnabled = false, on
               <div><dt>{t("Уровень / урок")}</dt><dd>{detail.level ?? "—"} / {detail.lessonNumber ?? "—"}</dd></div>
             </dl>
             {onEditWord && <button type="button" disabled={collocationLocked || saving || decisionsLocked || relationsOpen} onClick={() => onEditWord(detail)}>{t("Изменить слово")}</button>}
+            <WordImage key={detail.id + ":image"} wordId={detail.id} german={detail.german} enabled={wordImagesEnabled} editable disabled={collocationLocked || saving || decisionsLocked || relationsOpen} onChanged={() => { setConfirmation(null); setDetailAttempt(v => v + 1); setListAttempt(v => v + 1); }} />
             <SourceBookEditor key={`${detail.id}-${detail.revision}`} wordId={detail.id} sourceBook={detail.sourceBook} disabled={collocationLocked || saving || decisionsLocked || relationsOpen} onBusyChange={setRelationsBusy} onSaved={() => { setDetailAttempt(value => value + 1); setListAttempt(value => value + 1); }} />
             <VerbForms forms={detail.verbForms} onOpenReference={onOpenVerb ? () => onOpenVerb(detail.id) : undefined} />
             {detail.notes && <p className={styles.notes}>{detail.notes}</p>}

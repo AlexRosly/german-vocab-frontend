@@ -1,4 +1,5 @@
 "use client";
+import { WordImage } from "./word-image";
 import { useRef, useState } from "react";
 import { barePracticeGerman, correctPracticeArticle, fullPracticeGerman, type NounArticle, type PracticeMode, type PracticeWord } from "@/lib/practice-modes";
 import { displayTranslation } from "@/lib/word-view";
@@ -8,8 +9,8 @@ import styles from "./practice-card.module.css";
 import { neutralCardStyle } from "@/lib/organization-client";
 import { WrittenAnswer } from "./written-answer";
 
-export function PracticeCard({ neutralColor, word, mode, examples, revealed, onReveal, onAnswer, saving, speechSupported, onSpeak, onSpeakExample, last }: {
-  neutralColor?: string|null; word: PracticeWord; mode: PracticeMode; examples: WordExample[]; revealed: boolean;
+export function PracticeCard({ imagesEnabled = false, neutralColor, word, mode, examples, revealed, onReveal, onAnswer, saving, speechSupported, onSpeak, onSpeakExample, last }: {
+  imagesEnabled?: boolean; neutralColor?: string|null; word: PracticeWord; mode: PracticeMode; examples: WordExample[]; revealed: boolean;
   onReveal: () => void; onAnswer: (known: boolean) => void; saving: boolean;
   speechSupported: boolean; onSpeak: () => void; onSpeakExample: (example: WordExample) => void; last: boolean;
 }) {
@@ -50,6 +51,7 @@ export function PracticeCard({ neutralColor, word, mode, examples, revealed, onR
     {writtenMode && <WrittenAnswer word={word} mode={spellingMode ? "spelling" : "plural"} saving={saving} onChecked={setWrittenResult} />}
 
     {answerVisible && <div className="study-answer">
+      <WordImage key={word.id} wordId={word.id} german={word.german} enabled={imagesEnabled} />
       {!spellingMode && <h4 dir="auto">{displayTranslation(word, t("Перевод отсутствует"))}</h4>}
       {!pluralMode && word.pluralForm && <p>{t("Множественное число:")} {word.pluralForm}</p>}
       {word.notes && <p>{word.notes}</p>}

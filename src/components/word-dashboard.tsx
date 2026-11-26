@@ -147,6 +147,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
     Record<string, ExampleDraft>
   >({});
   const [editingExampleId, setEditingExampleId] = useState<string | null>(null);
+  const [addingExampleWordId, setAddingExampleWordId] = useState<string | null>(null);
   const [editingExampleWordId, setEditingExampleWordId] = useState<
     string | null
   >(null);
@@ -600,6 +601,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   }
 
   function beginEditExample(wordId: string, example: WordExample) {
+    if (exampleBusyWordId !== null) return;
+    setAddingExampleWordId(null);
     setEditingExampleId(example.id);
     setEditingExampleWordId(wordId);
 
@@ -614,6 +617,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
   }
 
   function cancelExampleEdit(wordId: string) {
+    setAddingExampleWordId(null);
     setEditingExampleId(null);
     setEditingExampleWordId(null);
 
@@ -671,6 +675,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
 
       setEditingExampleId(null);
       setEditingExampleWordId(null);
+      setAddingExampleWordId(null);
       setStatus(isEditing ? "Пример обновлён" : "Пример добавлен");
     } catch (error) {
       setStatus(
@@ -2177,8 +2182,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         </div>
                         {dictionarySettingsBlocked && dictionarySettingsErrorId === word.id && <div role="alert"><p>{errorText(status)}</p><button type="button" className="small-button secondary-button" disabled={busy || dictionaryLoading} onClick={() => void syncAfterCardChange()}>{t("Обновить словарь")}</button></div>}
                         {word.organizationEnabled ? <><WordOrganizationPanel wordId={word.id} userId={user.id} suggestions={bookSuggestions} disabled={busy||trainingLocked} onSaved={value=>setWords(current=>current.map(card=>{const updated=card.id===word.id?{...card,personalBooks:value.books.map(b=>b.title),personalBookLessons:Object.fromEntries(value.books.map(b=>[b.title,b.lessonNumbers])),personalTags:value.tags}:card;return {...updated,personalLessonNames:wordLessonNames(updated,value.lessonNames)};}))}/>{!!word.personalTags?.length&&<p className="hint">{t("Личные теги")}: {word.personalTags.join(", ")}</p>}</> : <PersonalBooks wordId={word.id} userId={user.id} suggestions={bookSuggestions} disabled={busy || trainingLocked} onSaved={titles => setWords(current => current.map(card => card.id === word.id ? { ...card, personalBooks: titles } : card))} />}
-                        <PersonalNote wordId={word.id} userId={user.id} disabled={busy} />
-                        {correctionsEnabled && word.publicationStatus === "PUBLISHED" && <ProposeCorrection wordId={word.id} german={word.german} disabled={busy || trainingLocked} onBusyChange={setCorrectionsBusy} />}
+                        <PersonalNote wordId={word.id} userId={user.id} disabled={busy}
+                          actions={correctionsEnabled && word.publicationStatus === "PUBLISHED" && <ProposeCorrection wordId={word.id} german={word.german} disabled={busy || trainingLocked} onBusyChange={setCorrectionsBusy} />} />
 
                         <section className="examples-section">
                           <h4 className="examples-title">{t("Примеры употребления")}{" "}<span>{examples.length}</span>
@@ -2264,7 +2269,8 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                             </div>
                           )}
 
-                          {editable && (
+                          {editable && !editingThisExample && addingExampleWordId !== word.id && <button type="button" className="small-button secondary-button" disabled={busy || exampleBusyWordId !== null} onClick={() => { cancelExampleEdit(word.id); setAddingExampleWordId(word.id); }}>{t("Добавить пример")}</button>}
+                          {editable && (editingThisExample || addingExampleWordId === word.id) && (
 <form
                             className="example-form"
                             onSubmit={(event) =>
@@ -2303,14 +2309,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                                     : t("Добавить пример")}
                               </button>
 
-                              {editingThisExample && (
-                                <button
-                                  type="button"
-                                  className="small-button secondary-button"
-                                  onClick={() => cancelExampleEdit(word.id)}
-                                  disabled={exampleBusyWordId === word.id}
-                                >{t("Отмена")}</button>
-                              )}
+                              <button type="button" className="small-button secondary-button" onClick={() => cancelExampleEdit(word.id)} disabled={exampleBusyWordId === word.id}>{t("Отмена")}</button>
                             </div>
                           </form>
 )}

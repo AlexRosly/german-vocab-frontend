@@ -1,15 +1,15 @@
 "use client";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState, type ReactNode } from "react";
 import { apiFetch } from "@/lib/api";
 import { PersonalNoteError, PersonalNotesClient, type PersonalNote as Note } from "@/lib/personal-notes-client";
 import { useI18n } from "./ui-language-provider";
 import styles from "./personal-note.module.css";
 const client = new PersonalNotesClient(apiFetch);
-export function PersonalNote({ wordId, userId, disabled }: { wordId: string; userId: string; disabled: boolean }) {
+export function PersonalNote({ wordId, userId, disabled, actions }: { wordId: string; userId: string; disabled: boolean; actions?: ReactNode }) {
   const { t } = useI18n(); const [open, setOpen] = useState(false);
   const [visited, setVisited] = useState(false);
   return <section className={styles.panel} aria-label={t("Личная заметка")}>
-    <button type="button" disabled={disabled} aria-expanded={open} aria-controls={`personal-note-${wordId}`} onClick={() => { setVisited(true); setOpen((value) => !value); }}>{t(open ? "Скрыть личную заметку" : "Моя заметка")}</button>
+    <div className={styles.actions}><button type="button" disabled={disabled} aria-expanded={open} aria-controls={`personal-note-${wordId}`} onClick={() => { setVisited(true); setOpen((value) => !value); }}>{t(open ? "Скрыть личную заметку" : "Моя заметка")}</button>{actions}</div>
     {visited && <div id={`personal-note-${wordId}`} hidden={!open}><NoteEditor key={`${userId}-${wordId}`} wordId={wordId} disabled={disabled} /></div>}
   </section>;
 }

@@ -22,3 +22,16 @@
 @media (max-width: 420px) {
   .filters > div { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Compact controls on laptop screens; keep comfortable touch targets on phones. */
+.card.card button { min-height: 32px; height: 32px; padding: 5px 10px; margin: 0; font-size: 12px; line-height: 20px; border-radius: 8px; max-width: 100%; }
+.card.card :global(.example-item) { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.card :global(.example-copy), .card :global(.example-actions) { display: contents; }
+.card :global(.example-copy) > p, .card :global(.example-german) { flex: 0 0 100%; min-width: 0; }
+.card :global(.example-copy) > p { margin: 4px 0; }
+.card :global(.example-form) { margin-top: 12px; }
+@media (max-width: 750px) {
+  .card.card button { min-height: 44px; height: auto; padding: 7px 10px; font-size: 13px; line-height: 20px; white-space: normal; }
+}
+
+.card.card :global(.examples-list) + button { margin-top: 8px; }

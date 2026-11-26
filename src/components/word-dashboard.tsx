@@ -2118,7 +2118,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                             title={t("Прослушать слово с артиклем")}
                           >
                             {speakingExampleId === `word-${word.id}`
-                              ? t("■ Стоп")
+                              ? "■"
                               : "🔊"}
                           </button>
                         </div>
@@ -2144,7 +2144,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                         >{t("Убрать из словаря")}</button>
                       </div>
                         </div>
-                        <p dir="auto">{displayTranslation(word, t("Перевод отсутствует"))}</p>
+                        <p className={organizationStyles.translation} dir="auto">{displayTranslation(word, t("Перевод отсутствует"))}</p>
                         {word.selectedTranslation.source === "personal" && <small>{t("Ваш личный перевод")}</small>}
                         <button type="button" disabled={busy || libraryBusy || moderationBusy || translationTarget !== null || studyMode || studySaving || (studyFinished && !studySaved)} onClick={() => { stopSpeech(); setPersonalTranslationTarget(word); }}>{t("Мой перевод")}</button>
 
@@ -2227,7 +2227,7 @@ export function WordDashboard({ user }: { user: AuthUser }) {
                                                 : t("Прослушать")
                                           }
                                         >
-                                          {isSpeaking ? t("■ Стоп") : t("🔊 Слушать")}
+                                          {isSpeaking ? "■" : "🔊"}
                                         </button>
                                       </div>
 
